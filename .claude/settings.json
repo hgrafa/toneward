@@ -1,0 +1,62 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "npx @biomejs/biome check --fix --unsafe \"$CLAUDE_FILE_PATH\" 2>nul || true"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "echo \"$CLAUDE_FILE_PATH\" | findstr /I \"pnpm-lock\" >nul 2>&1 && (echo BLOCK: Do not edit lock files directly. Use pnpm install. && exit 1) || exit 0"
+      },
+      {
+        "matcher": "Bash",
+        "command": "echo \"$CLAUDE_BASH_COMMAND\" | findstr /R /C:\"git merge\" >nul 2>&1 && (echo BLOCK: git merge is not allowed. Use PRs instead. && exit 1) || exit 0"
+      },
+      {
+        "matcher": "Bash",
+        "command": "echo \"$CLAUDE_BASH_COMMAND\" | findstr /R /C:\"git push\" >nul 2>&1 && (echo \"$CLAUDE_BASH_COMMAND\" | findstr /I /R /C:\"main\" /C:\"master\" /C:\"production\" /C:\"prod\" >nul 2>&1) && (echo BLOCK: Push to protected branches [main/master/production/prod] is not allowed. Push to a feature branch instead. && exit 1) || exit 0"
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm dev)",
+      "Bash(pnpm build)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm lint:fix)",
+      "Bash(pnpm format)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git branch:*)",
+      "Bash(git stash:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git show:*)",
+      "Bash(git tag:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh repo:*)",
+      "Bash(gh api:*)"
+    ],
+    "deny": [
+      "Bash(git merge:*)",
+      "Bash(git push *main*)",
+      "Bash(git push *master*)",
+      "Bash(git push *prod*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)"
+    ]
+  }
+}
