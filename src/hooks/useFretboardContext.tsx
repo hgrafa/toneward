@@ -7,6 +7,7 @@ import {
 	useState,
 } from "react";
 import { generateBoxPatterns, mapNotesToFretboard } from "@/core/fretboard";
+import { DEFAULT_INSTRUMENT } from "@/core/instruments";
 import { parseInput } from "@/core/parser";
 import type {
 	BoxPattern,
@@ -51,12 +52,16 @@ export function FretboardProvider({ children }: { children: ReactNode }) {
 
 	const positions = useMemo(() => {
 		if (!noteSet) return [];
-		return mapNotesToFretboard(noteSet, fretRange);
+		return mapNotesToFretboard(noteSet, DEFAULT_INSTRUMENT.tuning, fretRange);
 	}, [noteSet, fretRange]);
 
 	const boxPatterns = useMemo(() => {
 		if (!noteSet) return [];
-		return generateBoxPatterns(noteSet, notesPerString);
+		return generateBoxPatterns(
+			noteSet,
+			DEFAULT_INSTRUMENT.tuning,
+			notesPerString,
+		);
 	}, [noteSet, notesPerString]);
 
 	const handleSetInputText = useCallback((text: string) => {
