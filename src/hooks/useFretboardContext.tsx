@@ -3,18 +3,22 @@ import {
 	type ReactNode,
 	useCallback,
 	useContext,
+	useEffect,
 	useMemo,
 	useState,
 } from "react";
 import { generateBoxPatterns, mapNotesToFretboard } from "@/core/fretboard";
-import { DEFAULT_INSTRUMENT } from "@/core/instruments";
+import { INSTRUMENTS, matchInstrument } from "@/core/instruments";
 import { parseInput } from "@/core/parser";
+import { loadTuningState, saveTuningState } from "@/lib/tuningStorage";
 import type {
 	BoxPattern,
 	DisplayMode,
 	FretPosition,
+	NoteName,
 	NoteSet,
 	ParseError,
+	Tuning,
 } from "@/types/music";
 
 interface FretboardState {
@@ -32,6 +36,11 @@ interface FretboardState {
 	setHighlightRoot: (highlight: boolean) => void;
 	setFretRange: (range: [number, number]) => void;
 	setNotesPerString: (n: 2 | 3) => void;
+	tuning: Tuning;
+	instrumentId: string;
+	setInstrument: (id: string) => void;
+	setStringTuning: (stringIndex: number, note: NoteName) => void;
+	setStringCount: (n: number) => void;
 }
 
 const FretboardContext = createContext<FretboardState | null>(null);
@@ -44,6 +53,39 @@ export function FretboardProvider({ children }: { children: ReactNode }) {
 	const [highlightRoot, setHighlightRoot] = useState(true);
 	const [fretRange, setFretRange] = useState<[number, number]>([0, 12]);
 	const [notesPerString, setNotesPerString] = useState<2 | 3>(2);
+	const [tuning, setTuning] = useState<Tuning>(() => loadTuningState().tuning);
+	const instrumentId = useMemo(() => matchInstrument(tuning), [tuning]);
+
+	useEffect(() => {
+		saveTuningState({ instrumentId, tuning });
+	}, [instrumentId, tuning]);
+
+	const setInstrument = useCallback((id: string) => {
+		const inst = INSTRUMENTS.find((i) => i.id === id);
+		if (!inst) return;
+		setTuning([...inst.tuning]);
+	}, []);
+
+	const setStringTuning = useCallback((stringIndex: number, note: NoteName) => {
+		setTuning((prev) => {
+			const next = [...prev];
+			next[stringIndex] = note;
+			return next;
+		});
+	}, []);
+
+	const setStringCount = useCallback((n: number) => {
+		const count = Math.max(1, Math.min(12, n));
+		setTuning((prev) => {
+			if (count === prev.length) return prev;
+			if (count < prev.length) {
+				// drop lowest strings (start of the low→high array)
+				return prev.slice(prev.length - count);
+			}
+			const toAdd = count - prev.length;
+			return [...(Array(toAdd).fill("E") as NoteName[]), ...prev];
+		});
+	}, []);
 
 	const parsed = useMemo(() => parseInput(inputText), [inputText]);
 
@@ -52,17 +94,13 @@ export function FretboardProvider({ children }: { children: ReactNode }) {
 
 	const positions = useMemo(() => {
 		if (!noteSet) return [];
-		return mapNotesToFretboard(noteSet, DEFAULT_INSTRUMENT.tuning, fretRange);
-	}, [noteSet, fretRange]);
+		return mapNotesToFretboard(noteSet, tuning, fretRange);
+	}, [noteSet, tuning, fretRange]);
 
 	const boxPatterns = useMemo(() => {
 		if (!noteSet) return [];
-		return generateBoxPatterns(
-			noteSet,
-			DEFAULT_INSTRUMENT.tuning,
-			notesPerString,
-		);
-	}, [noteSet, notesPerString]);
+		return generateBoxPatterns(noteSet, tuning, notesPerString);
+	}, [noteSet, tuning, notesPerString]);
 
 	const handleSetInputText = useCallback((text: string) => {
 		setInputText(text);
@@ -100,6 +138,11 @@ export function FretboardProvider({ children }: { children: ReactNode }) {
 			setHighlightRoot: handleSetHighlightRoot,
 			setFretRange: handleSetFretRange,
 			setNotesPerString: handleSetNotesPerString,
+			tuning,
+			instrumentId,
+			setInstrument,
+			setStringTuning,
+			setStringCount,
 		}),
 		[
 			inputText,
@@ -116,6 +159,11 @@ export function FretboardProvider({ children }: { children: ReactNode }) {
 			handleSetHighlightRoot,
 			handleSetFretRange,
 			handleSetNotesPerString,
+			tuning,
+			instrumentId,
+			setInstrument,
+			setStringTuning,
+			setStringCount,
 		],
 	);
 
