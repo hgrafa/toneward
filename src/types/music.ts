@@ -34,7 +34,7 @@ export interface NoteSet {
 }
 
 export interface FretPosition {
-	string: number; // 1-6 (1 = high E, 6 = low E)
+	string: number; // 1..stringCount (1 = highest pitch, stringCount = lowest pitch)
 	fret: number; // 0-22
 	note: NoteName;
 	interval?: IntervalName;
@@ -57,4 +57,13 @@ export interface BoxPattern {
 	positions: FretPosition[];
 	minFret: number;
 	maxFret: number;
+}
+
+// Open note of each string, LOW → HIGH (index 0 = lowest-pitched string).
+export type Tuning = NoteName[];
+
+export interface InstrumentPreset {
+	id: string;
+	name: string;
+	tuning: Tuning;
 }
