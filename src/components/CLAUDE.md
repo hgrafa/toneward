@@ -29,8 +29,13 @@ Vertical stack: Editor on top, Fretboard below, Toolbar in between.
 - Fret range selector (start–end)
 - Export button (PNG / SVG)
 
+### TuningControls
+- Instrument dropdown (shadcn Select): Guitar / Bass (4) / Bass (5) / Custom
+- String-count stepper (1–12), adds/removes at the lowest string
+- One note picker per string, ordered low→high; editing → instrument becomes "Custom"
+
 ### Fretboard (SVG)
-- Renders guitar neck: 6 strings × configurable fret range
+- Renders neck: variable string count (from tuning) × configurable fret range
 - Dots at active note positions
 - Dot content controlled by display mode toggle (note/interval/none)
 - Root note optionally highlighted (different color/border)
@@ -43,5 +48,7 @@ Managed via React Context at App level:
 - `displayMode: 'note' | 'interval' | 'none'`
 - `highlightRoot: boolean`
 - `fretRange: [number, number]`
+- `tuning: NoteName[]` (low→high) — persisted to localStorage
+- `instrumentId: string` — derived from tuning via matchInstrument
 
 No external state library needed.
