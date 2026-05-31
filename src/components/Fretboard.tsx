@@ -3,7 +3,6 @@ import { DOUBLE_DOT_FRETS, SINGLE_DOT_FRETS } from "@/core/fretboard";
 import { useFretboard } from "@/hooks/useFretboardContext";
 import type { FretPosition } from "@/types/music";
 
-const STRING_COUNT = 6;
 const FRET_WIDTH = 80;
 const STRING_SPACING = 30;
 const TOP_PADDING = 40;
@@ -22,8 +21,9 @@ interface TooltipData {
 }
 
 export function Fretboard() {
-	const { positions, displayMode, highlightRoot, fretRange, noteSet } =
+	const { positions, displayMode, highlightRoot, fretRange, noteSet, tuning } =
 		useFretboard();
+	const STRING_COUNT = tuning.length;
 	const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
 	const [minFret, maxFret] = fretRange;
@@ -129,24 +129,29 @@ export function Fretboard() {
 				),
 			)}
 			{DOUBLE_DOT_FRETS.filter((f) => f > minFret && f <= maxFret).map(
-				(fret) => (
-					<g key={`double-marker-${fret}`}>
-						<circle
-							cx={fretX(fret) - FRET_WIDTH / 2}
-							cy={TOP_PADDING + STRING_SPACING * 1.5}
-							r={MARKER_RADIUS}
-							className="fill-muted-foreground"
-							fillOpacity={0.3}
-						/>
-						<circle
-							cx={fretX(fret) - FRET_WIDTH / 2}
-							cy={TOP_PADDING + STRING_SPACING * 3.5}
-							r={MARKER_RADIUS}
-							className="fill-muted-foreground"
-							fillOpacity={0.3}
-						/>
-					</g>
-				),
+				(fret) => {
+					const mid = TOP_PADDING + ((STRING_COUNT - 1) * STRING_SPACING) / 2;
+					const offset =
+						STRING_COUNT >= 4 ? STRING_SPACING : STRING_SPACING / 2;
+					return (
+						<g key={`double-marker-${fret}`}>
+							<circle
+								cx={fretX(fret) - FRET_WIDTH / 2}
+								cy={mid - offset}
+								r={MARKER_RADIUS}
+								className="fill-muted-foreground"
+								fillOpacity={0.3}
+							/>
+							<circle
+								cx={fretX(fret) - FRET_WIDTH / 2}
+								cy={mid + offset}
+								r={MARKER_RADIUS}
+								className="fill-muted-foreground"
+								fillOpacity={0.3}
+							/>
+						</g>
+					);
+				},
 			)}
 
 			{/* Fret numbers */}

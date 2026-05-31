@@ -2,7 +2,6 @@ import { DOUBLE_DOT_FRETS, SINGLE_DOT_FRETS } from "@/core/fretboard";
 import { useFretboard } from "@/hooks/useFretboardContext";
 import type { BoxPattern, FretPosition } from "@/types/music";
 
-const STRING_COUNT = 6;
 const FRET_WIDTH = 60;
 const STRING_SPACING = 26;
 const TOP_PADDING = 32;
@@ -19,12 +18,15 @@ function BoxFretboard({
 	displayMode,
 	highlightRoot,
 	root,
+	stringCount,
 }: {
 	pattern: BoxPattern;
 	displayMode: string;
 	highlightRoot: boolean;
 	root?: string;
+	stringCount: number;
 }) {
+	const STRING_COUNT = stringCount;
 	const { minFret, maxFret, positions } = pattern;
 
 	// Show extra frets for context, ensuring a minimum display width
@@ -138,24 +140,28 @@ function BoxFretboard({
 			))}
 			{DOUBLE_DOT_FRETS.filter(
 				(f) => f > displayMinFret && f <= displayMaxFret,
-			).map((fret) => (
-				<g key={`double-marker-${fret}`}>
-					<circle
-						cx={fretX(fret) - FRET_WIDTH / 2}
-						cy={TOP_PADDING + STRING_SPACING * 1.5}
-						r={MARKER_RADIUS}
-						className="fill-muted-foreground"
-						fillOpacity={0.3}
-					/>
-					<circle
-						cx={fretX(fret) - FRET_WIDTH / 2}
-						cy={TOP_PADDING + STRING_SPACING * 3.5}
-						r={MARKER_RADIUS}
-						className="fill-muted-foreground"
-						fillOpacity={0.3}
-					/>
-				</g>
-			))}
+			).map((fret) => {
+				const mid = TOP_PADDING + ((STRING_COUNT - 1) * STRING_SPACING) / 2;
+				const offset = STRING_COUNT >= 4 ? STRING_SPACING : STRING_SPACING / 2;
+				return (
+					<g key={`double-marker-${fret}`}>
+						<circle
+							cx={fretX(fret) - FRET_WIDTH / 2}
+							cy={mid - offset}
+							r={MARKER_RADIUS}
+							className="fill-muted-foreground"
+							fillOpacity={0.3}
+						/>
+						<circle
+							cx={fretX(fret) - FRET_WIDTH / 2}
+							cy={mid + offset}
+							r={MARKER_RADIUS}
+							className="fill-muted-foreground"
+							fillOpacity={0.3}
+						/>
+					</g>
+				);
+			})}
 
 			{/* Fret numbers */}
 			{Array.from({ length: fretCount }, (_, i) => {
@@ -223,7 +229,8 @@ function BoxFretboard({
 }
 
 export function BoxPatterns() {
-	const { boxPatterns, displayMode, highlightRoot, noteSet } = useFretboard();
+	const { boxPatterns, displayMode, highlightRoot, noteSet, tuning } =
+		useFretboard();
 
 	if (!noteSet || boxPatterns.length === 0) return null;
 
@@ -246,6 +253,7 @@ export function BoxPatterns() {
 							displayMode={displayMode}
 							highlightRoot={highlightRoot}
 							root={noteSet.root}
+							stringCount={tuning.length}
 						/>
 					</div>
 				))}

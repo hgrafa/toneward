@@ -3,6 +3,7 @@ import { BoxPatterns } from "@/components/BoxPatterns";
 import { Editor } from "@/components/Editor";
 import { Fretboard } from "@/components/Fretboard";
 import { Toolbar } from "@/components/Toolbar";
+import { TuningControls } from "@/components/TuningControls";
 import { FretboardProvider } from "@/hooks/useFretboardContext";
 
 export default function App() {
@@ -22,6 +23,8 @@ function AppContent() {
 				<h1 className="text-2xl font-bold tracking-tight">Scale Training</h1>
 
 				<Editor />
+
+				<TuningControls />
 
 				<Toolbar fretboardRef={fretboardRef} />
 

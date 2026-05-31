@@ -3,35 +3,39 @@ import type {
 	FretPosition,
 	NoteName,
 	NoteSet,
+	Tuning,
 } from "@/types/music";
 import { CHROMATIC, intervalBetween, noteIndex } from "./notes";
 
-// Standard tuning: string 6 (low E) to string 1 (high E)
-// Array index 0 = string 6 (low E), index 5 = string 1 (high E)
-const STANDARD_TUNING: NoteName[] = ["E", "A", "D", "G", "B", "E"];
-
 const MAX_FRETS = 22;
 
-export function getNoteAtPosition(stringIndex: number, fret: number): NoteName {
-	const openNote = STANDARD_TUNING[stringIndex];
+// stringIndex = index into tuning (0 = lowest-pitched string).
+export function getNoteAtPosition(
+	tuning: Tuning,
+	stringIndex: number,
+	fret: number,
+): NoteName {
+	const openNote = tuning[stringIndex];
 	const semitones = noteIndex(openNote) + fret;
 	return CHROMATIC[((semitones % 12) + 12) % 12];
 }
 
 export function mapNotesToFretboard(
 	noteSet: NoteSet,
+	tuning: Tuning,
 	fretRange: [number, number] = [0, 12],
 ): FretPosition[] {
 	const [minFret, maxFret] = fretRange;
 	const positions: FretPosition[] = [];
 	const noteSetLookup = new Set(noteSet.notes);
+	const stringCount = tuning.length;
 
-	for (let stringIdx = 0; stringIdx < 6; stringIdx++) {
+	for (let stringIdx = 0; stringIdx < stringCount; stringIdx++) {
 		for (let fret = minFret; fret <= Math.min(maxFret, MAX_FRETS); fret++) {
-			const note = getNoteAtPosition(stringIdx, fret);
+			const note = getNoteAtPosition(tuning, stringIdx, fret);
 			if (noteSetLookup.has(note)) {
 				const position: FretPosition = {
-					string: 6 - stringIdx, // Convert to 1-indexed (1=high E, 6=low E)
+					string: stringCount - stringIdx, // 1 = highest pitch
 					fret,
 					note,
 				};
@@ -55,18 +59,18 @@ export const DOUBLE_DOT_FRETS = [12];
 /**
  * Generates box patterns (positional regions) from a note set.
  *
- * Algorithm: uses string 6 (low E) as reference. Each box starts at the
- * next scale degree on string 6. For other strings, picks the N closest
- * notes to the reference fret position.
+ * Algorithm: uses the lowest string (string === tuning.length) as reference.
+ * Each box starts at the next scale degree on that string. For other strings,
+ * picks the N closest notes to the reference fret position.
  */
 export function generateBoxPatterns(
 	noteSet: NoteSet,
+	tuning: Tuning,
 	notesPerString: number = 2,
 ): BoxPattern[] {
-	// Generate positions across a wide range to cover all 5 boxes
-	const allPositions = mapNotesToFretboard(noteSet, [0, 17]);
+	const stringCount = tuning.length;
+	const allPositions = mapNotesToFretboard(noteSet, tuning, [0, 17]);
 
-	// Group by string, sort by fret
 	const byString = new Map<number, FretPosition[]>();
 	for (const pos of allPositions) {
 		const list = byString.get(pos.string) ?? [];
@@ -77,7 +81,7 @@ export function generateBoxPatterns(
 		list.sort((a, b) => a.fret - b.fret);
 	}
 
-	const refString = byString.get(6) ?? [];
+	const refString = byString.get(stringCount) ?? [];
 	const numBoxes = Math.min(
 		5,
 		Math.max(0, refString.length - notesPerString + 1),
@@ -88,9 +92,8 @@ export function generateBoxPatterns(
 		const boxPositions: FretPosition[] = [];
 		const refStartFret = refString[boxIdx].fret;
 
-		for (let str = 6; str >= 1; str--) {
+		for (let str = stringCount; str >= 1; str--) {
 			const notes = byString.get(str) ?? [];
-			// Find first note at or near the reference start fret
 			let startIdx = notes.findIndex((n) => n.fret >= refStartFret - 1);
 			if (startIdx === -1)
 				startIdx = Math.max(0, notes.length - notesPerString);

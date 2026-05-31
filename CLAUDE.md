@@ -28,7 +28,8 @@ src/
 - Double quotes, no semicolons (Biome handles formatting)
 - Functional components only, no class components
 - Core logic is pure TypeScript — no React dependencies in `core/`
-- Standard guitar tuning only: EADGBE (low to high)
+- Multiple instruments and custom tunings supported (presets: Guitar 6, Bass 4, Bass 5; plus per-string custom tuning, 1–12 strings)
+- A tuning is `NoteName[]` ordered low→high; string count derives from tuning length
 - Use shadcn/ui primitives for all UI controls
 - SVG rendered as React components (not canvas, not d3)
 
