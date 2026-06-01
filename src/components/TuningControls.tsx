@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { CUSTOM_ID, INSTRUMENTS } from "@/core/instruments";
 import { CHROMATIC } from "@/core/notes";
-import { useFretboard } from "@/hooks/useFretboardContext";
+import { useInstrument } from "@/hooks/useFretboardContext";
 import type { NoteName } from "@/types/music";
 
 const MIN_STRINGS = 1;
@@ -21,7 +21,7 @@ export function TuningControls() {
 		setInstrument,
 		setStringTuning,
 		setStringCount,
-	} = useFretboard();
+	} = useInstrument();
 
 	return (
 		<div className="flex flex-wrap items-center gap-4">

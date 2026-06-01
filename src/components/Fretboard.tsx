@@ -4,7 +4,12 @@ import {
 	FretboardDiagram,
 	MAIN_DIMENSIONS,
 } from "@/components/FretboardDiagram";
-import { useFretboard } from "@/hooks/useFretboardContext";
+import {
+	useDerived,
+	useDisplay,
+	useInput,
+	useInstrument,
+} from "@/hooks/useFretboardContext";
 
 interface TooltipData {
 	x: number;
@@ -14,8 +19,10 @@ interface TooltipData {
 }
 
 export function Fretboard() {
-	const { positions, displayMode, highlightRoot, fretRange, noteSet, tuning } =
-		useFretboard();
+	const { positions } = useDerived();
+	const { displayMode, highlightRoot, fretRange } = useDisplay();
+	const { noteSet } = useInput();
+	const { tuning } = useInstrument();
 	const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
 	const [minFret, maxFret] = fretRange;

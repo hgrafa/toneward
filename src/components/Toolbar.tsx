@@ -1,7 +1,7 @@
 import { toBlob } from "html-to-image";
 import { Check, Copy, Crosshair, Eye } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useFretboard } from "@/hooks/useFretboardContext";
+import { useDisplay } from "@/hooks/useFretboardContext";
 import type { DisplayMode } from "@/types/music";
 
 const DISPLAY_MODES: { value: DisplayMode; label: string }[] = [
@@ -24,7 +24,7 @@ export function Toolbar({ fretboardRef }: ToolbarProps) {
 		setFretRange,
 		notesPerString,
 		setNotesPerString,
-	} = useFretboard();
+	} = useDisplay();
 
 	const [copied, setCopied] = useState(false);
 

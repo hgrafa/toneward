@@ -2,7 +2,12 @@ import {
 	BOX_DIMENSIONS,
 	FretboardDiagram,
 } from "@/components/FretboardDiagram";
-import { useFretboard } from "@/hooks/useFretboardContext";
+import {
+	useDerived,
+	useDisplay,
+	useInput,
+	useInstrument,
+} from "@/hooks/useFretboardContext";
 import type { BoxPattern, DisplayMode, NoteName } from "@/types/music";
 
 const MIN_DISPLAY_FRETS = 7;
@@ -48,8 +53,10 @@ function BoxFretboard({
 }
 
 export function BoxPatterns() {
-	const { boxPatterns, displayMode, highlightRoot, noteSet, tuning } =
-		useFretboard();
+	const { boxPatterns } = useDerived();
+	const { displayMode, highlightRoot } = useDisplay();
+	const { noteSet } = useInput();
+	const { tuning } = useInstrument();
 
 	if (!noteSet || boxPatterns.length === 0) return null;
 

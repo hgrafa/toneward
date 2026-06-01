@@ -1,7 +1,7 @@
-import { useFretboard } from "@/hooks/useFretboardContext";
+import { useInput } from "@/hooks/useFretboardContext";
 
 export function Editor() {
-	const { inputText, setInputText, parseError } = useFretboard();
+	const { inputText, setInputText, parseError } = useInput();
 
 	return (
 		<div className="flex flex-col gap-2">
