@@ -16,6 +16,10 @@ describe("parseInput — notes mode", () => {
 		expect(labels(parseInput("C C E"))).toEqual(["C", "E"]);
 	});
 
+	it("dedupes enharmonic equivalents by pitch class", () => {
+		expect(labels(parseInput("C# Db"))).toEqual(["C#"]);
+	});
+
 	it("rejects an invalid note", () => {
 		expect(parseInput("C H")).toEqual({
 			success: false,

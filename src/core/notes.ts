@@ -147,7 +147,7 @@ export function parseSpelledNote(input: string): SpelledNote | null {
 	let accidental = 0;
 	for (const ch of rest) {
 		if (ch === "#") accidental += 1;
-		else if (ch === "b" || ch === "B") accidental -= 1;
+		else if (ch === "b") accidental -= 1;
 		else if (ch === "x") accidental += 2;
 		else return null;
 	}

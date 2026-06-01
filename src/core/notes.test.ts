@@ -76,6 +76,10 @@ describe("spelling helpers", () => {
 		expect(parseSpelledNote("H")).toBeNull();
 	});
 
+	it("rejects an uppercase B used as an accidental", () => {
+		expect(parseSpelledNote("AB")).toBeNull();
+	});
+
 	it("spells a degree from a root and target pitch class", () => {
 		// Db major: 4th degree is Gb, not F#
 		const root = { letter: "D", accidental: -1 } as const;

@@ -3,6 +3,7 @@ import type {
 	FretPosition,
 	NoteName,
 	NoteSet,
+	SpelledNote,
 	Tuning,
 } from "@/types/music";
 import {
@@ -34,7 +35,7 @@ export function mapNotesToFretboard(
 	const positions: FretPosition[] = [];
 	const stringCount = tuning.length;
 
-	const spellingByPc = new Map<NoteName, (typeof noteSet.notes)[number]>();
+	const spellingByPc = new Map<NoteName, SpelledNote>();
 	for (const s of noteSet.notes) {
 		spellingByPc.set(spelledToPitchClass(s), s);
 	}
