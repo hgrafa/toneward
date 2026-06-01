@@ -3,7 +3,7 @@ import {
 	FretboardDiagram,
 } from "@/components/FretboardDiagram";
 import { useFretboard } from "@/hooks/useFretboardContext";
-import type { BoxPattern } from "@/types/music";
+import type { BoxPattern, DisplayMode, NoteName } from "@/types/music";
 
 const MIN_DISPLAY_FRETS = 7;
 
@@ -16,9 +16,9 @@ function BoxFretboard({
 }: {
 	pattern: BoxPattern;
 	stringCount: number;
-	displayMode: "note" | "interval" | "none";
+	displayMode: DisplayMode;
 	highlightRoot: boolean;
-	rootPitchClass?: string;
+	rootPitchClass?: NoteName;
 }) {
 	const { minFret, maxFret, positions } = pattern;
 
@@ -42,7 +42,7 @@ function BoxFretboard({
 			dimensions={BOX_DIMENSIONS}
 			displayMode={displayMode}
 			highlightRoot={highlightRoot}
-			rootPitchClass={rootPitchClass as never}
+			rootPitchClass={rootPitchClass}
 		/>
 	);
 }

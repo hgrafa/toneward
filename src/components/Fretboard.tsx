@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+	computeViewBox,
 	FretboardDiagram,
 	MAIN_DIMENSIONS,
 } from "@/components/FretboardDiagram";
@@ -19,10 +20,12 @@ export function Fretboard() {
 
 	const [minFret, maxFret] = fretRange;
 	const d = MAIN_DIMENSIONS;
-	const fretCount = maxFret - minFret;
-	const totalWidth = d.leftPadding + fretCount * d.fretWidth + 20;
-	const totalHeight =
-		d.topPadding + (tuning.length - 1) * d.stringSpacing + d.bottomPadding;
+	const { width: totalWidth, height: totalHeight } = computeViewBox(
+		d,
+		tuning.length,
+		minFret,
+		maxFret,
+	);
 
 	return (
 		<div className="relative">

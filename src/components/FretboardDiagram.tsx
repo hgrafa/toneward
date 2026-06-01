@@ -52,6 +52,20 @@ export const BOX_DIMENSIONS: FretboardDimensions = {
 	stringStrokeWidth: (i) => 0.8 + i * 0.25,
 };
 
+export function computeViewBox(
+	d: FretboardDimensions,
+	stringCount: number,
+	minFret: number,
+	maxFret: number,
+): { width: number; height: number } {
+	const fretCount = maxFret - minFret;
+	return {
+		width: d.leftPadding + fretCount * d.fretWidth + 20,
+		height:
+			d.topPadding + (stringCount - 1) * d.stringSpacing + d.bottomPadding,
+	};
+}
+
 export interface FretboardDiagramProps {
 	positions: FretPosition[];
 	stringCount: number;
@@ -80,9 +94,12 @@ export function FretboardDiagram({
 	const fretCount = maxFret - minFret;
 	const showNut = minFret === 0;
 
-	const totalWidth = d.leftPadding + fretCount * d.fretWidth + 20;
-	const totalHeight =
-		d.topPadding + (stringCount - 1) * d.stringSpacing + d.bottomPadding;
+	const { width: totalWidth, height: totalHeight } = computeViewBox(
+		d,
+		stringCount,
+		minFret,
+		maxFret,
+	);
 
 	function fretX(fret: number): number {
 		return d.leftPadding + (fret - minFret) * d.fretWidth;
