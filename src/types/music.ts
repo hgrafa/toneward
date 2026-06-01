@@ -28,15 +28,25 @@ export type IntervalName =
 
 export type DisplayMode = "note" | "interval" | "none";
 
+export type Letter = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+
+// A note's written form: a letter plus an accidental offset in semitones
+// (-2 = double flat, -1 = flat, 0 = natural, +1 = sharp, +2 = double sharp).
+export interface SpelledNote {
+	letter: Letter;
+	accidental: number;
+}
+
 export interface NoteSet {
-	notes: NoteName[];
-	root?: NoteName;
+	notes: SpelledNote[];
+	root?: SpelledNote;
 }
 
 export interface FretPosition {
 	string: number; // 1..stringCount (1 = highest pitch, stringCount = lowest pitch)
 	fret: number; // 0-22
-	note: NoteName;
+	note: NoteName; // pitch class — the math identity
+	spelled: SpelledNote; // how to label this position
 	interval?: IntervalName;
 }
 

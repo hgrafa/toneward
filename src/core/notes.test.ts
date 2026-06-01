@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+	formatSpelled,
 	intervalBetween,
 	isValidInterval,
 	normalizeNote,
+	parseSpelledNote,
 	resolveInterval,
+	spellDegree,
+	spelledToPitchClass,
 	transpose,
 } from "./notes";
 
@@ -48,5 +52,36 @@ describe("note math", () => {
 	it("validates interval tokens", () => {
 		expect(isValidInterval("b3")).toBe(true);
 		expect(isValidInterval("9")).toBe(false);
+	});
+});
+
+describe("spelling helpers", () => {
+	it("converts a spelled note to its pitch class", () => {
+		expect(spelledToPitchClass({ letter: "D", accidental: -1 })).toBe("C#");
+		expect(spelledToPitchClass({ letter: "B", accidental: 0 })).toBe("B");
+		expect(spelledToPitchClass({ letter: "F", accidental: 2 })).toBe("G");
+	});
+
+	it("formats a spelled note", () => {
+		expect(formatSpelled({ letter: "D", accidental: -1 })).toBe("Db");
+		expect(formatSpelled({ letter: "F", accidental: 1 })).toBe("F#");
+		expect(formatSpelled({ letter: "B", accidental: -2 })).toBe("Bbb");
+		expect(formatSpelled({ letter: "F", accidental: 2 })).toBe("Fx");
+	});
+
+	it("parses a written note, preserving the chosen accidental", () => {
+		expect(parseSpelledNote("Bb")).toEqual({ letter: "B", accidental: -1 });
+		expect(parseSpelledNote("c#")).toEqual({ letter: "C", accidental: 1 });
+		expect(parseSpelledNote("G")).toEqual({ letter: "G", accidental: 0 });
+		expect(parseSpelledNote("H")).toBeNull();
+	});
+
+	it("spells a degree from a root and target pitch class", () => {
+		// Db major: 4th degree is Gb, not F#
+		const root = { letter: "D", accidental: -1 } as const;
+		expect(spellDegree(root, 4, "F#")).toEqual({ letter: "G", accidental: -1 });
+		// A minor pentatonic: b3 is C
+		const a = { letter: "A", accidental: 0 } as const;
+		expect(spellDegree(a, 3, "C")).toEqual({ letter: "C", accidental: 0 });
 	});
 });
