@@ -1,5 +1,7 @@
 import { Minus, Pause, Play, Plus } from "lucide-react";
-import { tempoMarking } from "@/audio/metronomeMath";
+import { useEffect, useState } from "react";
+import { beatInterval, tempoMarking } from "@/audio/metronomeMath";
+import { Button } from "@/components/ui/button";
 import {
 	Popover,
 	PopoverContent,
@@ -8,6 +10,7 @@ import {
 import { useMetronome } from "@/hooks/MetronomeContext";
 
 const BEATS_PER_BAR = [2, 3, 4, 5, 6] as const;
+const SWING_ANGLE = 16; // degrees the pendulum leans to each side
 
 export function MetronomePanel() {
 	const {
@@ -22,6 +25,19 @@ export function MetronomePanel() {
 		reset,
 	} = useMetronome();
 
+	// Monotonic swing counter: flips the pendulum to the opposite side on every
+	// beat (independent of the beat index, so odd meters don't stutter at the
+	// bar wrap). Phase-locked to the audio because it's driven by onBeat.
+	const [swing, setSwing] = useState(0);
+	useEffect(() => {
+		if (activeBeat >= 0) setSwing((s) => s + 1);
+	}, [activeBeat]);
+
+	const angle = isPlaying ? (swing % 2 === 0 ? -SWING_ANGLE : SWING_ANGLE) : 0;
+	// One swing spans one beat; ease so it lingers at each extreme like a real
+	// metronome (which ticks at the extremes).
+	const swingDuration = isPlaying ? `${beatInterval(bpm).toFixed(3)}s` : "0.4s";
+
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
@@ -33,13 +49,37 @@ export function MetronomePanel() {
 					Metronome
 				</button>
 			</PopoverTrigger>
-			<PopoverContent
-				align="start"
-				sideOffset={10}
-				className="w-72 overflow-hidden rounded-3xl border-zinc-800 bg-zinc-950 p-6 text-zinc-50 shadow-2xl"
-			>
+			<PopoverContent align="start" sideOffset={10} className="w-72 p-5">
+				{/* Pendulum */}
+				<div className="relative mx-auto flex h-24 w-full items-end justify-center">
+					{/* faint arc the weight travels along */}
+					<div
+						className={`absolute bottom-2 h-16 w-28 rounded-[50%] border border-dashed transition-colors ${
+							isPlaying ? "border-border" : "border-transparent"
+						}`}
+					/>
+					{/* arm + weight, pivoting at the base */}
+					<div
+						className="absolute bottom-2 h-20 w-[3px] origin-bottom rounded-full bg-foreground/80 ease-in-out"
+						style={{
+							transform: `rotate(${angle}deg)`,
+							transitionProperty: "transform",
+							transitionDuration: swingDuration,
+						}}
+					>
+						<div
+							className={`-translate-x-1/2 absolute top-5 left-1/2 size-3.5 rounded-full transition-colors ${
+								isPlaying ? "bg-primary" : "bg-muted-foreground/60"
+							}`}
+						/>
+					</div>
+					{/* base + pivot */}
+					<div className="absolute bottom-1 h-2 w-20 rounded-full bg-muted" />
+					<div className="absolute bottom-[5px] size-2.5 rounded-full bg-foreground" />
+				</div>
+
 				{/* Beat indicator */}
-				<div className="mb-5 flex items-center justify-center gap-2">
+				<div className="mt-1 mb-4 flex items-center justify-center gap-2">
 					{Array.from({ length: beatsPerBar }, (_, i) => {
 						const on = activeBeat === i;
 						const downbeat = i === 0 && accent;
@@ -49,58 +89,62 @@ export function MetronomePanel() {
 								key={i}
 								className={`h-1.5 rounded-full transition-all duration-150 ${
 									on
-										? `${downbeat ? "bg-amber-400" : "bg-zinc-100"} w-6`
-										: "w-3 bg-zinc-700"
+										? `w-6 ${downbeat ? "bg-foreground" : "bg-primary"}`
+										: "w-3 bg-border"
 								}`}
 							/>
 						);
 					})}
 				</div>
 
-				{/* Title + tempo marking */}
-				<div className="mb-4 text-center">
-					<p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-zinc-400">
+				{/* Title + tempo marking + live indicator */}
+				<div className="mb-4 flex flex-col items-center">
+					<p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
 						BPM
 					</p>
-					<p className="mt-0.5 text-sm font-medium text-amber-400">
-						{tempoMarking(bpm)}
-					</p>
+					<div className="mt-0.5 flex items-center gap-1.5">
+						{isPlaying && (
+							<span className="size-1.5 animate-pulse rounded-full bg-primary" />
+						)}
+						<p className="text-sm font-medium text-foreground">
+							{tempoMarking(bpm)}
+						</p>
+					</div>
 				</div>
 
 				{/* Stepper */}
 				<div className="flex items-stretch gap-2">
-					<button
-						type="button"
+					<Button
+						variant="outline"
+						size="icon-lg"
 						onClick={() => setBpm(bpm - 1)}
 						aria-label="Decrease tempo"
-						className="flex w-14 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-200 transition-colors hover:bg-zinc-700 active:bg-zinc-600"
+						className="h-auto w-12 rounded-xl"
 					>
 						<Minus className="size-5" />
-					</button>
-					<div className="flex flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-4 ring-1 ring-inset ring-zinc-800">
-						<span className="text-6xl font-bold leading-none tabular-nums tracking-tight">
+					</Button>
+					<div className="flex flex-1 items-center justify-center rounded-xl border bg-muted/40 py-3">
+						<span className="font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight">
 							{bpm}
 						</span>
 					</div>
-					<button
-						type="button"
+					<Button
+						variant="outline"
+						size="icon-lg"
 						onClick={() => setBpm(bpm + 1)}
 						aria-label="Increase tempo"
-						className="flex w-14 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-200 transition-colors hover:bg-zinc-700 active:bg-zinc-600"
+						className="h-auto w-12 rounded-xl"
 					>
 						<Plus className="size-5" />
-					</button>
+					</Button>
 				</div>
 
 				{/* Transport */}
-				<button
-					type="button"
+				<Button
 					onClick={toggle}
-					className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-semibold transition-colors ${
-						isPlaying
-							? "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-							: "bg-amber-400 text-zinc-950 hover:bg-amber-300"
-					}`}
+					size="lg"
+					variant={isPlaying ? "secondary" : "default"}
+					className="mt-4 w-full rounded-xl"
 				>
 					{isPlaying ? (
 						<>
@@ -111,7 +155,7 @@ export function MetronomePanel() {
 							<Play className="size-4" /> Start
 						</>
 					)}
-				</button>
+				</Button>
 
 				{/* Beats per bar */}
 				<div className="mt-5 flex items-center justify-center gap-1.5">
@@ -120,10 +164,10 @@ export function MetronomePanel() {
 							key={n}
 							type="button"
 							onClick={() => setBeatsPerBar(n)}
-							className={`size-8 rounded-lg text-xs font-medium tabular-nums transition-colors ${
+							className={`size-8 rounded-lg font-medium text-xs tabular-nums transition-colors ${
 								beatsPerBar === n
-									? "bg-zinc-100 text-zinc-950"
-									: "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+									? "bg-primary text-primary-foreground"
+									: "text-muted-foreground hover:bg-muted"
 							}`}
 						>
 							{n}
@@ -135,7 +179,7 @@ export function MetronomePanel() {
 				<button
 					type="button"
 					onClick={reset}
-					className="mt-4 w-full text-center text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-300"
+					className="mt-3 w-full text-center font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
 				>
 					Reset
 				</button>
