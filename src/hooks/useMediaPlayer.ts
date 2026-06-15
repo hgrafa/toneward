@@ -56,6 +56,7 @@ export function useMediaPlayer(
 	}, [source]);
 
 	// MP3 backend: bind to the <audio> element.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: apply current volume/rate once at bind; live changes handled by setVolume/setPlaybackRate
 	useEffect(() => {
 		if (source?.kind !== "mp3") return;
 		const el = audioRef.current;
@@ -90,9 +91,10 @@ export function useMediaPlayer(
 			el.removeAttribute("src");
 			el.load();
 		};
-	}, [source, audioRef, volume, playbackRate]);
+	}, [source, audioRef]);
 
 	// YouTube backend: create a hidden IFrame player.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: apply current volume/rate once at bind; live changes handled by setVolume/setPlaybackRate
 	useEffect(() => {
 		if (source?.kind !== "youtube") return;
 		const container = ytContainerRef.current;
@@ -109,10 +111,12 @@ export function useMediaPlayer(
 					playerVars: { autoplay: 0, controls: 0, playsinline: 1 },
 					events: {
 						onReady: (e) => {
+							if (cancelled) return;
 							e.target.setVolume(Math.round(volume * 100));
 							setDuration(e.target.getDuration());
 						},
 						onStateChange: (e) => {
+							if (cancelled) return;
 							setIsPlaying(e.data === YT.PlayerState.PLAYING);
 							if (e.data === YT.PlayerState.PLAYING) {
 								stopPolling();
@@ -127,7 +131,10 @@ export function useMediaPlayer(
 								stopPolling();
 							}
 						},
-						onError: () => setError("Could not play this YouTube video."),
+						onError: () => {
+							if (cancelled) return;
+							setError("Could not play this YouTube video.");
+						},
 					},
 				});
 			})
@@ -140,7 +147,7 @@ export function useMediaPlayer(
 			ytPlayerRef.current = null;
 			container.replaceChildren();
 		};
-	}, [source, ytContainerRef, volume, stopPolling]);
+	}, [source, ytContainerRef, stopPolling]);
 
 	const play = useCallback(() => {
 		if (source?.kind === "mp3")
