@@ -1,42 +1,31 @@
-import { useRef } from "react";
-import { BoxPatterns } from "@/components/BoxPatterns";
-import { Editor } from "@/components/Editor";
-import { Fretboard } from "@/components/Fretboard";
-import { Toolbar } from "@/components/Toolbar";
-import { TuningControls } from "@/components/TuningControls";
+import { AppSidebar } from "@/components/AppSidebar";
+import { FretboardView } from "@/components/FretboardView";
+import { ShowroomView } from "@/components/showroom/ShowroomView";
+import { ShowroomProvider } from "@/hooks/ShowroomContext";
 import { FretboardProvider } from "@/hooks/useFretboardContext";
+import { useView, ViewProvider } from "@/hooks/ViewContext";
 
 export default function App() {
 	return (
-		<FretboardProvider>
-			<AppContent />
-		</FretboardProvider>
+		<ViewProvider>
+			<FretboardProvider>
+				<ShowroomProvider>
+					<AppShell />
+				</ShowroomProvider>
+			</FretboardProvider>
+		</ViewProvider>
 	);
 }
 
-function AppContent() {
-	const fretboardRef = useRef<HTMLDivElement>(null);
+function AppShell() {
+	const { view } = useView();
 
 	return (
-		<div className="min-h-screen bg-background text-foreground">
-			<div className="mx-auto max-w-5xl space-y-6 p-6">
-				<h1 className="text-2xl font-bold tracking-tight">Scale Training</h1>
-
-				<Editor />
-
-				<TuningControls />
-
-				<Toolbar fretboardRef={fretboardRef} />
-
-				<div
-					ref={fretboardRef}
-					className="overflow-x-auto rounded-lg border border-border bg-card p-4"
-				>
-					<Fretboard />
-				</div>
-
-				<BoxPatterns />
-			</div>
+		<div className="flex h-screen bg-background text-foreground">
+			<AppSidebar />
+			<main className="flex-1 overflow-y-auto">
+				{view === "fretboard" ? <FretboardView /> : <ShowroomView />}
+			</main>
 		</div>
 	);
 }
