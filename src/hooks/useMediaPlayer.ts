@@ -113,6 +113,7 @@ export function useMediaPlayer(
 						onReady: (e) => {
 							if (cancelled) return;
 							e.target.setVolume(Math.round(volume * 100));
+							e.target.setPlaybackRate(playbackRate);
 							setDuration(e.target.getDuration());
 						},
 						onStateChange: (e) => {
