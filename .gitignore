@@ -35,3 +35,6 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Visual brainstorming companion
+.superpowers/

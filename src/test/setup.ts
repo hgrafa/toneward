@@ -23,6 +23,24 @@ import { afterEach } from "vitest";
 	}
 }
 
+// jsdom does not implement URL.createObjectURL / revokeObjectURL.
+// Define stubs so vi.spyOn can wrap them in component tests.
+if (!URL.createObjectURL) {
+	URL.createObjectURL = () => "";
+}
+if (!URL.revokeObjectURL) {
+	URL.revokeObjectURL = () => {};
+}
+
+// jsdom does not implement ResizeObserver (used by Radix UI Slider).
+if (!globalThis.ResizeObserver) {
+	globalThis.ResizeObserver = class ResizeObserver {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	};
+}
+
 afterEach(() => {
 	cleanup();
 });
