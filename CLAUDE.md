@@ -37,6 +37,15 @@ src/
 - Use shadcn/ui primitives for all UI controls
 - SVG rendered as React components (not canvas, not d3)
 
+## Git conventions
+
+- Branch names are **prefixed by change type**: `feat/...`, `fix/...`, or `refactor/...`
+  (kebab-case after the slash, e.g. `feat/multi-output-audio`, `fix/octave-derivation`).
+- Use the prefix that matches the work: `feat/` new functionality, `fix/` bug fixes,
+  `refactor/` behavior-preserving changes. Other conventional types (`docs/`, `chore/`,
+  `test/`) are fine when they fit better.
+- Feature work happens in an isolated git worktree and ships as a PR against `main`.
+
 ## Commands
 
 - `pnpm dev` — dev server
