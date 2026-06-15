@@ -32,6 +32,15 @@ if (!URL.revokeObjectURL) {
 	URL.revokeObjectURL = () => {};
 }
 
+// jsdom does not implement ResizeObserver (used by Radix UI Slider).
+if (!globalThis.ResizeObserver) {
+	globalThis.ResizeObserver = class ResizeObserver {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	};
+}
+
 afterEach(() => {
 	cleanup();
 });
