@@ -6,6 +6,10 @@ All rendering uses shadcn/ui primitives + SVG.
 ## Layout
 Vertical stack: Editor → TuningControls → Toolbar → Fretboard → BoxPatterns (see `App.tsx`).
 
+The app shell (`App.tsx`) is a sidebar (`AppSidebar`) + a single active view:
+`FretboardView` (the stack above) or `showroom/ShowroomView`. View state lives in
+`hooks/ViewContext` (`useView`).
+
 ## Components
 
 ### FretboardDiagram (the one SVG primitive)
