@@ -1,6 +1,8 @@
 import { AppSidebar } from "@/components/AppSidebar";
 import { FretboardView } from "@/components/FretboardView";
 import { ShowroomView } from "@/components/showroom/ShowroomView";
+import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
+import { MetronomeProvider } from "@/hooks/MetronomeContext";
 import { ShowroomProvider } from "@/hooks/ShowroomContext";
 import { FretboardProvider } from "@/hooks/useFretboardContext";
 import { useView, ViewProvider } from "@/hooks/ViewContext";
@@ -9,9 +11,13 @@ export default function App() {
 	return (
 		<ViewProvider>
 			<FretboardProvider>
-				<ShowroomProvider>
-					<AppShell />
-				</ShowroomProvider>
+				<AudioDevicesProvider>
+					<MetronomeProvider>
+						<ShowroomProvider>
+							<AppShell />
+						</ShowroomProvider>
+					</MetronomeProvider>
+				</AudioDevicesProvider>
 			</FretboardProvider>
 		</ViewProvider>
 	);
