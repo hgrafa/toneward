@@ -102,6 +102,15 @@ post_runner_checkpoint() {
 		exit "$exit_code"
 	fi
 
+	local header resume_arg
+	if [[ -n "${CLAUDE_PR_NUMBER:-}" ]]; then
+		header="PR: #$target"
+		resume_arg="/address-review $target"
+	else
+		header="Issue: #$target"
+		resume_arg="$CLAUDE_COMMAND_NAME $target"
+	fi
+
 	# Allow disabling exit checkpoint if needed.
 	if [[ "${CLAUDE_SKIP_EXIT_CHECKPOINT:-false}" == "true" ]]; then
 		exit "$exit_code"
@@ -124,7 +133,7 @@ post_runner_checkpoint() {
 	local body
 	body="## Claude runner checkpoint
 
-Issue: #${CLAUDE_ISSUE_NUMBER:-$target}
+$header
 Branch: \`$current_branch\`
 Status: $checkpoint_status
 Runner exit code: \`$exit_code\`
@@ -150,7 +159,7 @@ $status
 
 \`\`\`bash
 git switch $current_branch
-claude -p --permission-mode $CLAUDE_PERMISSION_MODE --max-turns $CLAUDE_MAX_TURNS \"$CLAUDE_COMMAND_NAME $CLAUDE_ISSUE_NUMBER\"
+claude -p --permission-mode $CLAUDE_PERMISSION_MODE --max-turns $CLAUDE_MAX_TURNS \"$resume_arg\"
 \`\`\`
 "
 
