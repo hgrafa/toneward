@@ -71,4 +71,25 @@ describe("AudioDock", () => {
 		fireEvent.click(screen.getByRole("button", { name: "0.5×" }));
 		expect(api.setPlaybackRate).toHaveBeenCalledWith(0.5);
 	});
+
+	it("offers fine-grained slow speeds (0.7, 0.8, 0.9)", () => {
+		const api = fakeApi();
+		render(
+			<AudioDock
+				api={api}
+				title="My Track"
+				kind="mp3"
+				audioRef={createRef()}
+				ytContainerRef={createRef()}
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: /speed/i }));
+		for (const rate of [0.7, 0.8, 0.9]) {
+			expect(
+				screen.getByRole("button", { name: `${rate}×` }),
+			).toBeInTheDocument();
+		}
+		fireEvent.click(screen.getByRole("button", { name: "0.8×" }));
+		expect(api.setPlaybackRate).toHaveBeenCalledWith(0.8);
+	});
 });

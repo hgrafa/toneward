@@ -12,7 +12,8 @@ import { type RefObject, useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import type { MediaPlayerApi } from "@/hooks/useMediaPlayer";
 
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5] as const;
+// 0.1 steps so slow practice speeds (0.7, 0.8, 0.9) are selectable.
+const SPEEDS = [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5] as const;
 
 function formatTime(seconds: number): string {
 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
