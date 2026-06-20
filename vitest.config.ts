@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { defaultExclude, defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [react()],
@@ -11,6 +11,6 @@ export default defineConfig({
 		globals: true,
 		environment: "jsdom",
 		setupFiles: ["./src/test/setup.ts"],
-		exclude: ["**/node_modules/**", "**/dist/**", "**/.claude/worktrees/**"],
+		exclude: [...defaultExclude, "**/.claude/worktrees/**"],
 	},
 });

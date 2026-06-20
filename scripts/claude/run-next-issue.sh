@@ -306,7 +306,8 @@ Start Claude Code with the work-issue skill."
 
 	echo "Preparing git branch..."
 	git fetch origin "$BASE_REF"
-	run git switch -c "$BRANCH" "origin/$BASE_REF" 2>/dev/null || run git switch "$BRANCH"
+	run git switch -c "$BRANCH" "origin/$BASE_REF" 2>/dev/null \
+		|| { run git switch "$BRANCH" && run git reset --hard "origin/$BASE_REF"; }
 
 	echo
 	echo "Starting Claude Code..."
