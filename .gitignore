@@ -35,6 +35,8 @@ Thumbs.db
 
 # Claude Code
 .claude/
+!.claude/skills/
 
-# Visual brainstorming companion
+# Claude/agent scratch artifacts (brainstorm output, leftover worktrees)
 .superpowers/
+.claire/

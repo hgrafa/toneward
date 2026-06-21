@@ -43,6 +43,26 @@
           }
         ]
       }
+    ],
+   "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "scripts/claude/session-end-checkpoint.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "scripts/claude/session-end-checkpoint.sh"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
