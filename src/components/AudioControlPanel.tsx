@@ -1,4 +1,5 @@
 import { RefreshCw, SlidersHorizontal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
 	Popover,
 	PopoverContent,
@@ -31,11 +32,12 @@ interface OutputRow {
 }
 
 export function AudioControlPanel() {
+	const { t } = useTranslation();
 	const { routingSupported, devices, deviceId, setDeviceId, refreshDevices } =
 		useMetronome();
 
 	const rows: OutputRow[] = [
-		{ id: "metronome", label: "Metronome", deviceId, setDeviceId },
+		{ id: "metronome", label: t("ui.audio.metronome"), deviceId, setDeviceId },
 	];
 
 	return (
@@ -46,14 +48,14 @@ export function AudioControlPanel() {
 					className="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted data-[state=open]:border-foreground/30 data-[state=open]:text-foreground"
 				>
 					<SlidersHorizontal className="size-3.5" />
-					Audio
+					{t("ui.audio.trigger")}
 				</button>
 			</PopoverTrigger>
 			<PopoverContent align="start" sideOffset={10} className="w-80">
 				<div className="space-y-1">
-					<p className="text-sm font-semibold">Audio output</p>
+					<p className="text-sm font-semibold">{t("ui.audio.outputTitle")}</p>
 					<p className="text-xs text-muted-foreground">
-						Choose which device each sound plays through.
+						{t("ui.audio.outputDesc")}
 					</p>
 				</div>
 
@@ -69,7 +71,7 @@ export function AudioControlPanel() {
 										className="flex items-center gap-1 text-[0.7rem] text-muted-foreground transition-colors hover:text-foreground"
 									>
 										<RefreshCw className="size-3" />
-										Refresh
+										{t("ui.audio.refresh")}
 									</button>
 								</div>
 								<Select
@@ -77,7 +79,7 @@ export function AudioControlPanel() {
 									onValueChange={(v) => row.setDeviceId(fromSelectValue(v))}
 								>
 									<SelectTrigger className="w-full">
-										<SelectValue placeholder="System default" />
+										<SelectValue placeholder={t("ui.audio.systemDefault")} />
 									</SelectTrigger>
 									<SelectContent>
 										{devices.map((d) => (
@@ -93,14 +95,12 @@ export function AudioControlPanel() {
 							</div>
 						))}
 						<p className="pt-1 text-[0.7rem] leading-relaxed text-muted-foreground">
-							Tip: pick different devices per sound to play them separately —
-							e.g. a click on your speakers while practice plays on headphones.
+							{t("ui.audio.tip")}
 						</p>
 					</div>
 				) : (
 					<p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-						This browser plays through the system default output. Per-device
-						routing needs Chrome or Edge.
+						{t("ui.audio.noRoutingMsg")}
 					</p>
 				)}
 			</PopoverContent>

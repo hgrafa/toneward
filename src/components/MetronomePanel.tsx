@@ -1,5 +1,6 @@
 import { Minus, Pause, Play, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { beatInterval, tempoMarking } from "@/audio/metronomeMath";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,7 @@ const BEATS_PER_BAR = [2, 3, 4, 5, 6] as const;
 const SWING_ANGLE = 16; // degrees the pendulum leans to each side
 
 export function MetronomePanel() {
+	const { t } = useTranslation();
 	const {
 		isPlaying,
 		bpm,
@@ -46,7 +48,7 @@ export function MetronomePanel() {
 					className="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted data-[state=open]:border-foreground/30 data-[state=open]:text-foreground"
 				>
 					<Play className="size-3.5" />
-					Metronome
+					{t("ui.metronome.trigger")}
 				</button>
 			</PopoverTrigger>
 			<PopoverContent align="start" sideOffset={10} className="w-72 p-5">
@@ -148,11 +150,11 @@ export function MetronomePanel() {
 				>
 					{isPlaying ? (
 						<>
-							<Pause className="size-4" /> Stop
+							<Pause className="size-4" /> {t("ui.metronome.stop")}
 						</>
 					) : (
 						<>
-							<Play className="size-4" /> Start
+							<Play className="size-4" /> {t("ui.metronome.start")}
 						</>
 					)}
 				</Button>
@@ -181,7 +183,7 @@ export function MetronomePanel() {
 					onClick={reset}
 					className="mt-3 w-full text-center font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
 				>
-					Reset
+					{t("ui.metronome.reset")}
 				</button>
 			</PopoverContent>
 		</Popover>
