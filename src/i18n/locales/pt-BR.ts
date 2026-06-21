@@ -2,7 +2,7 @@ import type { TranslationSchema } from "./en";
 
 const ptBR: TranslationSchema = {
 	ui: {
-		appName: "Scale Training",
+		appName: "Toneward",
 		sidebar: {
 			expand: "Expandir menu",
 			collapse: "Recolher menu",

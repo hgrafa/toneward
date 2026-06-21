@@ -1,4 +1,4 @@
-# Scale Training
+# Toneward
 
 Guitar fretboard visualization tool. Write notes or intervals in a text syntax, see them rendered on an interactive fretboard diagram.
 

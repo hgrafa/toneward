@@ -1,6 +1,6 @@
 const en = {
 	ui: {
-		appName: "Scale Training",
+		appName: "Toneward",
 		sidebar: {
 			expand: "Expand sidebar",
 			collapse: "Collapse sidebar",

@@ -121,7 +121,7 @@
   </g>
 
   <!-- Title -->
-  <text x="450" y="36" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="system-ui, -apple-system, sans-serif" letter-spacing="1">🎸 Scale Training</text>
+  <text x="450" y="36" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="system-ui, -apple-system, sans-serif" letter-spacing="1">Toneward</text>
   <text x="450" y="56" text-anchor="middle" fill="#a1a1aa" font-size="12" font-family="system-ui, -apple-system, sans-serif">write scales · see the fretboard · learn the neck</text>
 
   <!-- Fret numbers -->
