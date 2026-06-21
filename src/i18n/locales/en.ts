@@ -57,6 +57,20 @@ const en = {
 			youtubePlaceholder: "Paste a YouTube link…",
 			load: "Load",
 			uploadMp3: "Upload MP3",
+			play: "Play",
+			pause: "Pause",
+			seekBack: "Back 10 seconds",
+			seekForward: "Forward 10 seconds",
+			seek: "Seek",
+			speed: "Speed",
+			playbackSpeed: "Playback speed",
+			volume: "Volume",
+			expandDock: "Expand dock",
+			collapseDock: "Collapse dock",
+			pdfUpload: "Upload a PDF",
+			pdfDrag: "…or drag a file onto the page",
+			pdfDrop: "Drop a PDF to open it",
+			pdfClose: "Close",
 		},
 	},
 	errors: {
@@ -69,6 +83,7 @@ const en = {
 		invalidInterval: 'Invalid interval: "{{token}}"',
 		invalidYoutubeLink: "Enter a valid YouTube link.",
 		invalidAudioFile: "Choose an audio file.",
+		invalidPdfFile: "Only PDF files are supported.",
 	},
 };
 

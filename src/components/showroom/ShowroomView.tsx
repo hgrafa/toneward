@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useShowroom } from "@/hooks/ShowroomContext";
 import { useMediaPlayer } from "@/hooks/useMediaPlayer";
 import { AudioDock } from "./AudioDock";
@@ -6,6 +7,7 @@ import { MediaSourceBar } from "./MediaSourceBar";
 import { PdfViewer } from "./PdfViewer";
 
 export function ShowroomView() {
+	const { t } = useTranslation();
 	const { audioSource, setCurrentDocument } = useShowroom();
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const ytContainerRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +45,7 @@ export function ShowroomView() {
 
 			{dragging && (
 				<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-lg border-2 border-primary border-dashed bg-background/80 text-sm font-medium">
-					Drop a PDF to open it
+					{t("ui.showroom.pdfDrop")}
 				</div>
 			)}
 

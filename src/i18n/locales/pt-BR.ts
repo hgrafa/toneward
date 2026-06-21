@@ -60,6 +60,20 @@ const ptBR: TranslationSchema = {
 			youtubePlaceholder: "Cole um link do YouTube…",
 			load: "Carregar",
 			uploadMp3: "Enviar MP3",
+			play: "Reproduzir",
+			pause: "Pausar",
+			seekBack: "Voltar 10 segundos",
+			seekForward: "Avançar 10 segundos",
+			seek: "Avançar",
+			speed: "Velocidade",
+			playbackSpeed: "Velocidade de reprodução",
+			volume: "Volume",
+			expandDock: "Expandir painel",
+			collapseDock: "Recolher painel",
+			pdfUpload: "Enviar PDF",
+			pdfDrag: "…ou arraste um arquivo para a página",
+			pdfDrop: "Solte um PDF para abrir",
+			pdfClose: "Fechar",
 		},
 	},
 	errors: {
@@ -72,6 +86,7 @@ const ptBR: TranslationSchema = {
 		invalidInterval: 'Intervalo inválido: "{{token}}"',
 		invalidYoutubeLink: "Insira um link válido do YouTube.",
 		invalidAudioFile: "Escolha um arquivo de áudio.",
+		invalidPdfFile: "Apenas arquivos PDF são suportados.",
 	},
 };
 
