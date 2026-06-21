@@ -111,6 +111,8 @@ const ptBR: TranslationSchema = {
 			colDate: "Data",
 			mute: "Silenciar",
 			unmute: "Ativar som",
+			lastMatch: "Última partida",
+			lastMatchScore: "{{score}} pts em {{time}}",
 		},
 	},
 	errors: {

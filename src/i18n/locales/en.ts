@@ -107,6 +107,8 @@ const en = {
 			colDate: "Date",
 			mute: "Mute",
 			unmute: "Unmute",
+			lastMatch: "Last match",
+			lastMatchScore: "{{score}} pts in {{time}}",
 		},
 	},
 	errors: {

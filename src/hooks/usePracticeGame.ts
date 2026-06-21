@@ -18,6 +18,12 @@ import type {
 	Tuning,
 } from "@/types/music";
 
+export interface LastResult {
+	score: number;
+	totalTimeMs: number;
+	endedAt: number;
+}
+
 export interface PracticeState {
 	phase: "idle" | "playing" | "game_over";
 	challenge: Challenge | null;
@@ -29,6 +35,7 @@ export interface PracticeState {
 	markedPositions: Set<string>;
 	gameStartedAt: number;
 	endedAt: number;
+	lastResult: LastResult | null;
 }
 
 type Action =
@@ -66,6 +73,7 @@ const INITIAL_STATE: PracticeState = {
 	markedPositions: new Set(),
 	gameStartedAt: 0,
 	endedAt: 0,
+	lastResult: null,
 };
 
 function pickRandomType(score: number): ChallengeType {
@@ -128,12 +136,34 @@ function reducer(state: PracticeState, action: Action): PracticeState {
 			}
 			return { ...state, markedPositions: next };
 		}
-		case "TIMEOUT":
-			return { ...state, phase: "game_over", endedAt: action.payload };
-		case "GAME_OVER":
-			return { ...state, phase: "game_over", endedAt: action.payload };
+		case "TIMEOUT": {
+			const endedAt = action.payload;
+			return {
+				...state,
+				phase: "game_over",
+				endedAt,
+				lastResult: {
+					score: state.score,
+					totalTimeMs: endedAt - state.gameStartedAt,
+					endedAt,
+				},
+			};
+		}
+		case "GAME_OVER": {
+			const endedAt = action.payload;
+			return {
+				...state,
+				phase: "game_over",
+				endedAt,
+				lastResult: {
+					score: state.score,
+					totalTimeMs: endedAt - state.gameStartedAt,
+					endedAt,
+				},
+			};
+		}
 		case "RESTART":
-			return { ...INITIAL_STATE };
+			return { ...INITIAL_STATE, lastResult: state.lastResult };
 		default:
 			return state;
 	}

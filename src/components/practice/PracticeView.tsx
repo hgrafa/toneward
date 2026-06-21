@@ -67,6 +67,7 @@ export function PracticeView() {
 
 	if (state.phase === "idle") {
 		const scores = loadScores();
+		const prev = state.lastResult;
 		const rankStyle = [
 			{ iconColor: "text-yellow-400", textColor: "text-yellow-500" },
 			{ iconColor: "text-slate-400", textColor: "text-slate-400" },
@@ -84,55 +85,86 @@ export function PracticeView() {
 					<Button size="lg" onClick={start} className="px-10">
 						{t("ui.practice.start")}
 					</Button>
+					{prev !== null && (
+						<div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-border bg-muted/40 text-sm">
+							<span className="text-muted-foreground font-medium">
+								{t("ui.practice.lastMatch")}
+							</span>
+							<span className="font-black text-foreground tabular-nums">
+								{t("ui.practice.lastMatchScore", {
+									score: prev.score,
+									time: formatTime(prev.totalTimeMs),
+								})}
+							</span>
+							<span className="text-muted-foreground text-xs">
+								{formatDate(prev.endedAt).date} {formatDate(prev.endedAt).time}
+							</span>
+						</div>
+					)}
 					{scores.length > 0 && (
-						<div className="w-full space-y-2 text-left">
+						<div className="w-full space-y-2">
 							<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground text-center">
 								{t("ui.practice.bestScores")}
 							</p>
 							<div className="rounded-lg border border-border overflow-hidden">
-								{/* column headers */}
-								<div className="grid grid-cols-[2.5rem_1fr_3.5rem_5.5rem] md:grid-cols-[3.5rem_1fr_6rem_8.5rem] items-center px-3 md:px-6 py-2 bg-muted/60 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
-									<span>{t("ui.practice.colRank")}</span>
-									<span className="text-center">{t("ui.practice.score")}</span>
-									<span className="text-right">{t("ui.practice.colTime")}</span>
-									<span className="text-right">{t("ui.practice.colDate")}</span>
-								</div>
-								{scores.slice(0, 5).map((s, i) => {
-									const style = rankStyle[i];
-									return (
-										<div
-											key={`${s.date}-${i}`}
-											className="grid grid-cols-[2.5rem_1fr_3.5rem_5.5rem] md:grid-cols-[3.5rem_1fr_6rem_8.5rem] items-center px-3 md:px-6 py-3 bg-card text-sm border-b border-border last:border-0"
-										>
-											<span className="flex items-center gap-1">
-												{style && (
-													<Trophy
-														size={12}
-														className={style.iconColor}
-														strokeWidth={2.5}
-													/>
-												)}
-												<span
-													className={`font-bold tabular-nums text-xs ${style ? style.textColor : "text-muted-foreground"}`}
+								<table className="w-full text-sm border-collapse">
+									<thead>
+										<tr className="bg-muted/60 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											<th className="text-left px-4 md:px-6 py-2.5 whitespace-nowrap">
+												{t("ui.practice.colRank")}
+											</th>
+											<th className="text-center px-4 md:px-6 py-2.5 w-full">
+												{t("ui.practice.score")}
+											</th>
+											<th className="text-right px-4 md:px-6 py-2.5 whitespace-nowrap">
+												{t("ui.practice.colTime")}
+											</th>
+											<th className="text-right px-4 md:px-6 py-2.5 whitespace-nowrap">
+												{t("ui.practice.colDate")}
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										{scores.slice(0, 5).map((s, i) => {
+											const style = rankStyle[i];
+											const { date, time } = formatDate(s.date);
+											return (
+												<tr
+													key={`${s.date}-${i}`}
+													className="bg-card border-b border-border last:border-0"
 												>
-													#{i + 1}
-												</span>
-											</span>
-											<span className="text-center font-black text-lg tabular-nums">
-												{s.score}
-											</span>
-											<span className="text-right text-muted-foreground tabular-nums text-xs">
-												{formatTime(s.totalTimeMs)}
-											</span>
-											<span className="flex flex-col md:flex-row md:justify-end md:gap-1.5 text-right text-muted-foreground text-xs leading-tight">
-												<span>{formatDate(s.date).date}</span>
-												<span className="tabular-nums">
-													{formatDate(s.date).time}
-												</span>
-											</span>
-										</div>
-									);
-								})}
+													<td className="px-4 md:px-6 py-3 whitespace-nowrap">
+														<span className="flex items-center gap-1.5">
+															{style && (
+																<Trophy
+																	size={13}
+																	className={style.iconColor}
+																	strokeWidth={2.5}
+																/>
+															)}
+															<span
+																className={`font-bold text-sm ${style ? style.textColor : "text-muted-foreground"}`}
+															>
+																#{i + 1}
+															</span>
+														</span>
+													</td>
+													<td className="px-4 md:px-6 py-3 text-center">
+														<span className="font-black text-xl tabular-nums">
+															{s.score}
+														</span>
+													</td>
+													<td className="px-4 md:px-6 py-3 text-right text-muted-foreground tabular-nums whitespace-nowrap">
+														{formatTime(s.totalTimeMs)}
+													</td>
+													<td className="px-4 md:px-6 py-3 text-right text-muted-foreground whitespace-nowrap">
+														{date} · {time}
+													</td>
+												</tr>
+											);
+										})}
+									</tbody>
+								</table>
 							</div>
 						</div>
 					)}
