@@ -74,7 +74,7 @@ export function PracticeView() {
 		];
 		return (
 			<div className="flex items-center justify-center h-full p-4 overflow-y-auto">
-				<div className="flex flex-col items-center gap-8 text-center py-8 w-full max-w-sm">
+				<div className="flex flex-col items-center gap-8 text-center py-8 w-full max-w-sm md:max-w-2xl">
 					<div className="space-y-2">
 						<h1 className="text-3xl font-black">{t("ui.practice.title")}</h1>
 						<p className="text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export function PracticeView() {
 							</p>
 							<div className="rounded-lg border border-border overflow-hidden">
 								{/* column headers */}
-								<div className="grid grid-cols-[2.5rem_1fr_3.5rem_5.5rem] items-center px-3 py-1.5 bg-muted/60 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
+								<div className="grid grid-cols-[2.5rem_1fr_3.5rem_5.5rem] md:grid-cols-[3.5rem_1fr_6rem_8.5rem] items-center px-3 md:px-6 py-2 bg-muted/60 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
 									<span>{t("ui.practice.colRank")}</span>
 									<span className="text-center">{t("ui.practice.score")}</span>
 									<span className="text-right">{t("ui.practice.colTime")}</span>
@@ -102,7 +102,7 @@ export function PracticeView() {
 									return (
 										<div
 											key={`${s.date}-${i}`}
-											className="grid grid-cols-[2.5rem_1fr_3.5rem_5.5rem] items-center px-3 py-2.5 bg-card text-sm border-b border-border last:border-0"
+											className="grid grid-cols-[2.5rem_1fr_3.5rem_5.5rem] md:grid-cols-[3.5rem_1fr_6rem_8.5rem] items-center px-3 md:px-6 py-3 bg-card text-sm border-b border-border last:border-0"
 										>
 											<span className="flex items-center gap-1">
 												{style && (
