@@ -70,7 +70,7 @@ const en = {
 		invalidYoutubeLink: "Enter a valid YouTube link.",
 		invalidAudioFile: "Choose an audio file.",
 	},
-} as const;
+};
 
 export default en;
 export type TranslationSchema = typeof en;
