@@ -55,9 +55,18 @@ export interface ParseResult {
 	noteSet: NoteSet;
 }
 
+export type ErrorCode =
+	| "EMPTY_INPUT"
+	| "NO_VALID_NOTES"
+	| "INVALID_NOTE"
+	| "MISSING_ROOT"
+	| "INVALID_ROOT_NOTE"
+	| "NO_INTERVALS"
+	| "INVALID_INTERVAL";
+
 export interface ParseError {
 	success: false;
-	error: string;
+	error: { code: ErrorCode; token?: string };
 }
 
 export type ParseOutput = ParseResult | ParseError;

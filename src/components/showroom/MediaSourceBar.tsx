@@ -1,9 +1,11 @@
 import { Music, Youtube } from "lucide-react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useShowroom } from "@/hooks/ShowroomContext";
 import { fetchYouTubeTitle, parseYouTubeId } from "@/lib/youtube";
 
 export function MediaSourceBar() {
+	const { t } = useTranslation();
 	const { setAudioSource } = useShowroom();
 	const [url, setUrl] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -12,7 +14,7 @@ export function MediaSourceBar() {
 	function loadYouTube() {
 		const videoId = parseYouTubeId(url);
 		if (!videoId) {
-			setError("Enter a valid YouTube link.");
+			setError(t("errors.invalidYoutubeLink"));
 			return;
 		}
 		setError(null);
@@ -28,7 +30,7 @@ export function MediaSourceBar() {
 	function loadMp3(file: File | undefined) {
 		if (!file) return;
 		if (!file.type.startsWith("audio/")) {
-			setError("Choose an audio file.");
+			setError(t("errors.invalidAudioFile"));
 			return;
 		}
 		setError(null);
@@ -50,7 +52,7 @@ export function MediaSourceBar() {
 					onKeyDown={(e) => {
 						if (e.key === "Enter") loadYouTube();
 					}}
-					placeholder="Paste a YouTube link…"
+					placeholder={t("ui.showroom.youtubePlaceholder")}
 					className="min-w-40 flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm"
 				/>
 				<button
@@ -58,7 +60,7 @@ export function MediaSourceBar() {
 					onClick={loadYouTube}
 					className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
 				>
-					Load
+					{t("ui.showroom.load")}
 				</button>
 			</div>
 
@@ -67,7 +69,7 @@ export function MediaSourceBar() {
 				className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
 			>
 				<Music className="size-4" />
-				Upload MP3
+				{t("ui.showroom.uploadMp3")}
 			</label>
 			<input
 				id={fileId}

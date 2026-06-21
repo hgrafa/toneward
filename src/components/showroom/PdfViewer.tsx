@@ -1,8 +1,10 @@
 import { FileText, Upload } from "lucide-react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useShowroom } from "@/hooks/ShowroomContext";
 
 export function PdfViewer() {
+	const { t } = useTranslation();
 	const { currentDocument, setCurrentDocument } = useShowroom();
 	const [error, setError] = useState<string | null>(null);
 	const inputId = useId();
@@ -10,7 +12,7 @@ export function PdfViewer() {
 	function acceptFile(file: File | undefined) {
 		if (!file) return;
 		if (file.type !== "application/pdf") {
-			setError("Only PDF files are supported.");
+			setError(t("errors.invalidPdfFile"));
 			return;
 		}
 		setError(null);
@@ -33,7 +35,7 @@ export function PdfViewer() {
 						onClick={() => setCurrentDocument(null)}
 						className="rounded-md border border-input px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
 					>
-						Close
+						{t("ui.showroom.pdfClose")}
 					</button>
 				</div>
 				<iframe
@@ -53,10 +55,10 @@ export function PdfViewer() {
 				className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
 			>
 				<Upload className="size-4" />
-				Upload a PDF
+				{t("ui.showroom.pdfUpload")}
 			</label>
 			<p className="text-xs text-muted-foreground">
-				…or drag a file onto the page
+				{t("ui.showroom.pdfDrag")}
 			</p>
 			{error && <p className="text-xs text-destructive">{error}</p>}
 			<input

@@ -1,4 +1,5 @@
 import { Minus, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
 	Select,
 	SelectContent,
@@ -15,6 +16,7 @@ const MIN_STRINGS = 1;
 const MAX_STRINGS = 12;
 
 export function TuningControls() {
+	const { t } = useTranslation();
 	const {
 		tuning,
 		instrumentId,
@@ -27,7 +29,9 @@ export function TuningControls() {
 		<div className="flex flex-wrap items-center gap-4">
 			{/* Instrument */}
 			<div className="flex items-center gap-2">
-				<span className="text-xs text-muted-foreground">Instrument</span>
+				<span className="text-xs text-muted-foreground">
+					{t("ui.tuning.instrument")}
+				</span>
 				<Select value={instrumentId} onValueChange={setInstrument}>
 					<SelectTrigger className="h-8 w-[130px] text-xs">
 						<SelectValue />
@@ -39,7 +43,7 @@ export function TuningControls() {
 							</SelectItem>
 						))}
 						{instrumentId === CUSTOM_ID && (
-							<SelectItem value={CUSTOM_ID}>Custom</SelectItem>
+							<SelectItem value={CUSTOM_ID}>{t("ui.tuning.custom")}</SelectItem>
 						)}
 					</SelectContent>
 				</Select>
@@ -49,7 +53,7 @@ export function TuningControls() {
 			<div className="flex items-center gap-2">
 				<button
 					type="button"
-					aria-label="Remove string"
+					aria-label={t("ui.tuning.removeString")}
 					disabled={tuning.length <= MIN_STRINGS}
 					onClick={() => setStringCount(tuning.length - 1)}
 					className="flex size-7 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
@@ -57,11 +61,11 @@ export function TuningControls() {
 					<Minus className="size-3.5" />
 				</button>
 				<span className="text-xs text-muted-foreground tabular-nums">
-					{tuning.length} strings
+					{t("ui.tuning.strings", { count: tuning.length })}
 				</span>
 				<button
 					type="button"
-					aria-label="Add string"
+					aria-label={t("ui.tuning.addString")}
 					disabled={tuning.length >= MAX_STRINGS}
 					onClick={() => setStringCount(tuning.length + 1)}
 					className="flex size-7 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
@@ -72,7 +76,9 @@ export function TuningControls() {
 
 			{/* Per-string tuning (low → high) */}
 			<div className="flex items-center gap-2">
-				<span className="text-xs text-muted-foreground">Tuning</span>
+				<span className="text-xs text-muted-foreground">
+					{t("ui.tuning.tuning")}
+				</span>
 				<div className="flex flex-wrap gap-1">
 					{tuning.map((note, index) => (
 						<Select
@@ -84,7 +90,9 @@ export function TuningControls() {
 							}
 						>
 							<SelectTrigger
-								aria-label={`String ${tuning.length - index} tuning`}
+								aria-label={t("ui.tuning.stringTuning", {
+									n: tuning.length - index,
+								})}
 								className="h-8 w-[58px] text-xs"
 							>
 								<SelectValue />

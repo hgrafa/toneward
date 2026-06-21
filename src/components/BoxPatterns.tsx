@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
 	BOX_DIMENSIONS,
 	FretboardDiagram,
@@ -54,6 +55,7 @@ function BoxFretboard({
 }
 
 export function BoxPatterns() {
+	const { t } = useTranslation();
 	const { boxPatterns } = useDerived();
 	const { displayMode, highlightRoot } = useDisplay();
 	const { noteSet } = useInput();
@@ -64,7 +66,7 @@ export function BoxPatterns() {
 	return (
 		<div className="space-y-3">
 			<h2 className="text-sm font-medium text-muted-foreground">
-				Box Patterns
+				{t("ui.boxPatterns.heading")}
 			</h2>
 			<div className="space-y-3">
 				{boxPatterns.map((pattern) => (
@@ -73,7 +75,7 @@ export function BoxPatterns() {
 						className="overflow-x-auto rounded-lg border border-border bg-card p-4"
 					>
 						<p className="mb-2 text-xs font-medium text-muted-foreground">
-							Pattern {pattern.index + 1}
+							{t("ui.boxPatterns.pattern", { n: pattern.index + 1 })}
 						</p>
 						<BoxFretboard
 							pattern={pattern}

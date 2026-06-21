@@ -1,20 +1,16 @@
 import { toBlob } from "html-to-image";
 import { Check, Copy, Crosshair, Eye } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDisplay } from "@/hooks/useFretboardContext";
 import type { DisplayMode } from "@/types/music";
-
-const DISPLAY_MODES: { value: DisplayMode; label: string }[] = [
-	{ value: "note", label: "Notes" },
-	{ value: "interval", label: "Intervals" },
-	{ value: "none", label: "None" },
-];
 
 interface ToolbarProps {
 	fretboardRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function Toolbar({ fretboardRef }: ToolbarProps) {
+	const { t } = useTranslation();
 	const {
 		displayMode,
 		setDisplayMode,
@@ -27,6 +23,12 @@ export function Toolbar({ fretboardRef }: ToolbarProps) {
 	} = useDisplay();
 
 	const [copied, setCopied] = useState(false);
+
+	const DISPLAY_MODES: { value: DisplayMode; label: string }[] = [
+		{ value: "note", label: t("ui.toolbar.notes") },
+		{ value: "interval", label: t("ui.toolbar.intervals") },
+		{ value: "none", label: t("ui.toolbar.none") },
+	];
 
 	const handleCopy = useCallback(async () => {
 		const node = fretboardRef.current;
@@ -83,12 +85,14 @@ export function Toolbar({ fretboardRef }: ToolbarProps) {
 				}`}
 			>
 				<Crosshair className="size-3.5" />
-				Root
+				{t("ui.toolbar.root")}
 			</button>
 
 			{/* Notes per string */}
 			<div className="flex items-center gap-2">
-				<span className="text-xs text-muted-foreground">NPS</span>
+				<span className="text-xs text-muted-foreground">
+					{t("ui.toolbar.nps")}
+				</span>
 				<div className="flex rounded-md border border-input">
 					{([2, 3] as const).map((n) => (
 						<button
@@ -109,7 +113,7 @@ export function Toolbar({ fretboardRef }: ToolbarProps) {
 
 			{/* Fret range */}
 			<div className="flex items-center gap-2 text-xs text-muted-foreground">
-				<span>Frets</span>
+				<span>{t("ui.toolbar.frets")}</span>
 				<input
 					type="number"
 					min={0}
@@ -138,12 +142,12 @@ export function Toolbar({ fretboardRef }: ToolbarProps) {
 				{copied ? (
 					<>
 						<Check className="size-3.5" />
-						Copied
+						{t("ui.toolbar.copied")}
 					</>
 				) : (
 					<>
 						<Copy className="size-3.5" />
-						Copy
+						{t("ui.toolbar.copy")}
 					</>
 				)}
 			</button>

@@ -9,6 +9,7 @@ import {
 	Volume2,
 } from "lucide-react";
 import { type RefObject, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	Popover,
 	PopoverContent,
@@ -45,6 +46,7 @@ export function AudioDock({
 	audioRef,
 	ytContainerRef,
 }: AudioDockProps) {
+	const { t } = useTranslation();
 	const [collapsed, setCollapsed] = useState(false);
 	const [seeking, setSeeking] = useState<number | null>(null);
 
@@ -58,7 +60,9 @@ export function AudioDock({
 			<div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2">
 				<button
 					type="button"
-					aria-label={api.isPlaying ? "Pause" : "Play"}
+					aria-label={
+						api.isPlaying ? t("ui.showroom.pause") : t("ui.showroom.play")
+					}
 					onClick={api.toggle}
 					className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
 				>
@@ -73,7 +77,7 @@ export function AudioDock({
 					<>
 						<button
 							type="button"
-							aria-label="Back 10 seconds"
+							aria-label={t("ui.showroom.seekBack")}
 							onClick={() => api.skip(-10)}
 							className="text-muted-foreground hover:text-foreground"
 						>
@@ -81,7 +85,7 @@ export function AudioDock({
 						</button>
 						<button
 							type="button"
-							aria-label="Forward 10 seconds"
+							aria-label={t("ui.showroom.seekForward")}
 							onClick={() => api.skip(10)}
 							className="text-muted-foreground hover:text-foreground"
 						>
@@ -92,7 +96,7 @@ export function AudioDock({
 							{formatTime(seeking ?? api.currentTime)}
 						</span>
 						<Slider
-							aria-label="Seek"
+							aria-label={t("ui.showroom.seek")}
 							min={0}
 							max={api.duration || 0}
 							step={1}
@@ -112,7 +116,7 @@ export function AudioDock({
 							<PopoverTrigger asChild>
 								<button
 									type="button"
-									aria-label="Speed"
+									aria-label={t("ui.showroom.speed")}
 									className="flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
 								>
 									<Gauge className="size-4" />
@@ -125,7 +129,7 @@ export function AudioDock({
 										{formatSpeed(api.playbackRate)}
 									</span>
 									<Slider
-										aria-label="Playback speed"
+										aria-label={t("ui.showroom.playbackSpeed")}
 										min={0.25}
 										max={2}
 										step={0.05}
@@ -156,7 +160,7 @@ export function AudioDock({
 						<div className="hidden items-center gap-2 sm:flex">
 							<Volume2 className="size-4 text-muted-foreground" />
 							<Slider
-								aria-label="Volume"
+								aria-label={t("ui.showroom.volume")}
 								min={0}
 								max={1}
 								step={0.01}
@@ -175,7 +179,11 @@ export function AudioDock({
 
 				<button
 					type="button"
-					aria-label={collapsed ? "Expand dock" : "Collapse dock"}
+					aria-label={
+						collapsed
+							? t("ui.showroom.expandDock")
+							: t("ui.showroom.collapseDock")
+					}
 					onClick={() => setCollapsed((c) => !c)}
 					className="ml-auto text-muted-foreground hover:text-foreground"
 				>

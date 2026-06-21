@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { AudioControlPanel } from "@/components/AudioControlPanel";
 import { BoxPatterns } from "@/components/BoxPatterns";
 import { Editor } from "@/components/Editor";
@@ -8,11 +9,12 @@ import { Toolbar } from "@/components/Toolbar";
 import { TuningControls } from "@/components/TuningControls";
 
 export function FretboardView() {
+	const { t } = useTranslation();
 	const fretboardRef = useRef<HTMLDivElement>(null);
 
 	return (
 		<div className="mx-auto max-w-5xl space-y-6 p-6">
-			<h1 className="font-bold text-2xl tracking-tight">Scale Training</h1>
+			<h1 className="font-bold text-2xl tracking-tight">{t("ui.appName")}</h1>
 
 			<Editor />
 
