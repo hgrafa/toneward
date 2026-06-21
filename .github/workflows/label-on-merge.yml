@@ -14,15 +14,6 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Ensure claude:completed label exists
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          gh label create "claude:completed" --repo "$REPO" \
-            --description "Issue/PR closed and merged to main" \
-            --color "0075CA" 2>/dev/null || true
-
       - name: Remove WIP labels from PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
