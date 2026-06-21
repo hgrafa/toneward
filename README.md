@@ -51,6 +51,20 @@ pnpm dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
+## 🤖 Claude Code skills
+
+This project uses [Claude Code](https://claude.ai/code) with custom skills for autonomous development.
+
+| Skill | Usage | What it does |
+|---|---|---|
+| `/work-issue <url>` | `claude "/work-issue https://github.com/.../issues/42"` | Works a GitHub issue end-to-end: claims it, creates a worktree, implements, validates, and opens a PR |
+| `/pr` | `claude "/pr"` | Creates or updates a pull request for the current branch |
+| `/commit` | `claude "/commit"` | Stages changes and writes a conventional commit message |
+| `/review-issues` | `claude "/review-issues"` | Triages open issue comments and acts on clear feedback autonomously |
+| `/address-review` | `claude "/address-review"` | Reads PR review comments, applies fixes, and re-requests review |
+| `/new-issue` | `claude "/new-issue"` | Creates a GitHub issue with automatic type/size classification |
+| `/code-review` | `claude "/code-review"` | Reviews the current diff for bugs, security, and code quality |
+
 ## 📖 Input syntax
 
 | Input | Mode | Result |
