@@ -98,6 +98,8 @@ const en = {
 			whatInterval: "What interval is this?",
 			whatNote: "What note is the {{interval}} of {{root}}?",
 			markInterval: "Mark all {{interval}} from {{root}} on the fretboard",
+			description:
+				"Answer as many interval questions as you can before the timer runs out. It gets faster as you score!",
 		},
 	},
 	errors: {

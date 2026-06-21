@@ -102,6 +102,8 @@ const ptBR: TranslationSchema = {
 			whatNote: "Qual é a {{interval}} de {{root}}?",
 			markInterval:
 				"Marque todas as {{interval}} a partir de {{root}} no braço",
+			description:
+				"Responda o máximo de perguntas sobre intervalos antes do tempo acabar. Fica mais rápido conforme você pontua!",
 		},
 	},
 	errors: {

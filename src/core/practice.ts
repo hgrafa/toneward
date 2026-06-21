@@ -61,7 +61,7 @@ export const TIMER_CONFIG: Record<
 > = {
 	"identify-interval": { start: 8000, min: 3000, step: 500 },
 	"identify-note": { start: 8000, min: 3000, step: 500 },
-	"fretboard-mark": { start: 25000, min: 10000, step: 1500 },
+	"fretboard-mark": { start: 35000, min: 12000, step: 2000 },
 };
 
 function pickRandom<T>(arr: T[]): T {
@@ -87,7 +87,7 @@ export function generateChallenge(
 		const target = resolveInterval(root, answer);
 		const wrongs = shuffle(
 			PRACTICE_INTERVALS.filter((i) => i !== answer),
-		).slice(0, 3) as IntervalName[];
+		).slice(0, 2) as IntervalName[];
 		return {
 			type,
 			root,
@@ -103,7 +103,7 @@ export function generateChallenge(
 		const answer = resolveInterval(root, interval);
 		const wrongs = shuffle(CHROMATIC.filter((n) => n !== answer)).slice(
 			0,
-			3,
+			2,
 		) as NoteName[];
 		return {
 			type,

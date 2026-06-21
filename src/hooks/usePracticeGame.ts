@@ -59,14 +59,23 @@ const INITIAL_STATE: PracticeState = {
 	markedPositions: new Set(),
 };
 
-const CHALLENGE_TYPES: ChallengeType[] = [
-	"identify-interval",
-	"identify-note",
-	"fretboard-mark",
-];
-
-function pickRandomType(): ChallengeType {
-	return CHALLENGE_TYPES[Math.floor(Math.random() * CHALLENGE_TYPES.length)];
+function pickRandomType(score: number): ChallengeType {
+	// First 5 correct answers: text-only challenges
+	if (score < 5) {
+		return Math.random() < 0.5 ? "identify-interval" : "identify-note";
+	}
+	// Score 5–9: fretboard appears 15% of the time
+	if (score < 10) {
+		const r = Math.random();
+		if (r < 0.425) return "identify-interval";
+		if (r < 0.85) return "identify-note";
+		return "fretboard-mark";
+	}
+	// Score 10+: fretboard appears 25% of the time
+	const r = Math.random();
+	if (r < 0.375) return "identify-interval";
+	if (r < 0.75) return "identify-note";
+	return "fretboard-mark";
 }
 
 function reducer(state: PracticeState, action: Action): PracticeState {
@@ -131,7 +140,7 @@ export function usePracticeGame(tuning: Tuning) {
 	}, [state.timerStartedAt, state.phase, state.currentTimerMs]);
 
 	function start() {
-		const type = pickRandomType();
+		const type = pickRandomType(0);
 		const challenge = generateChallenge(type, tuningRef.current);
 		dispatch({ type: "START", payload: { challenge, now: Date.now() } });
 	}
@@ -143,7 +152,8 @@ export function usePracticeGame(tuning: Tuning) {
 		const newDuration = isCorrect
 			? nextDuration(state.durations[prevType], prevType)
 			: state.durations[prevType];
-		const nextType = pickRandomType();
+		const nextScore = isCorrect ? state.score + 1 : state.score;
+		const nextType = pickRandomType(nextScore);
 		const nextChallenge = generateChallenge(nextType, tuningRef.current);
 		dispatch({
 			type: "NEXT",
@@ -171,7 +181,8 @@ export function usePracticeGame(tuning: Tuning) {
 		const newDuration = isCorrect
 			? nextDuration(state.durations[prevType], prevType)
 			: state.durations[prevType];
-		const nextType = pickRandomType();
+		const nextScore = isCorrect ? state.score + 1 : state.score;
+		const nextType = pickRandomType(nextScore);
 		const nextChallenge = generateChallenge(nextType, tuningRef.current);
 		dispatch({
 			type: "NEXT",

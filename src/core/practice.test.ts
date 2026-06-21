@@ -15,7 +15,7 @@ describe("generateChallenge – identify-interval", () => {
 		const c = generateChallenge("identify-interval", GUITAR);
 		if (c.type !== "identify-interval") throw new Error("wrong type");
 		expect(c.options).toContain(c.answer);
-		expect(c.options).toHaveLength(4);
+		expect(c.options).toHaveLength(3);
 	});
 
 	it("target equals resolveInterval(root, answer)", () => {
@@ -27,7 +27,7 @@ describe("generateChallenge – identify-interval", () => {
 	it("has 4 unique options", () => {
 		const c = generateChallenge("identify-interval", GUITAR);
 		if (c.type !== "identify-interval") throw new Error("wrong type");
-		expect(new Set(c.options).size).toBe(4);
+		expect(new Set(c.options).size).toBe(3);
 	});
 });
 
@@ -36,7 +36,7 @@ describe("generateChallenge – identify-note", () => {
 		const c = generateChallenge("identify-note", GUITAR);
 		if (c.type !== "identify-note") throw new Error("wrong type");
 		expect(c.options).toContain(c.answer);
-		expect(c.options).toHaveLength(4);
+		expect(c.options).toHaveLength(3);
 	});
 
 	it("answer equals resolveInterval(root, interval)", () => {
@@ -48,7 +48,7 @@ describe("generateChallenge – identify-note", () => {
 	it("has 4 unique options", () => {
 		const c = generateChallenge("identify-note", GUITAR);
 		if (c.type !== "identify-note") throw new Error("wrong type");
-		expect(new Set(c.options).size).toBe(4);
+		expect(new Set(c.options).size).toBe(3);
 	});
 });
 

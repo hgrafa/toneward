@@ -13,26 +13,31 @@ export function GameHeader({
 }: GameHeaderProps) {
 	const { t } = useTranslation();
 	return (
-		<div className="flex flex-col gap-2 px-6 py-3 border-b border-border">
+		<div className="flex flex-col gap-3 px-6 py-4 border-b border-border bg-card">
 			<div className="flex items-center justify-between">
-				<span className="text-sm font-medium text-muted-foreground">
+				<span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
 					{t("ui.practice.score")}
 				</span>
-				<span className="text-lg font-bold tabular-nums">{score}</span>
+				<span className="text-2xl font-black tabular-nums">{score}</span>
 			</div>
-			<div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+			<div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
 				<div
 					key={timerStartedAt}
-					className="h-full bg-primary rounded-full"
+					className="h-full rounded-full timer-bar"
 					style={{
-						animation: `shrink ${timerMs}ms linear forwards`,
+						animation: `timerShrink ${timerMs}ms linear forwards`,
 					}}
 				/>
 			</div>
 			<style>{`
-        @keyframes shrink {
-          from { width: 100%; }
-          to { width: 0%; }
+        @keyframes timerShrink {
+          0%   { width: 100%; background-color: oklch(0.6 0.17 145); }
+          50%  { width: 50%;  background-color: oklch(0.72 0.18 75); }
+          80%  { width: 20%;  background-color: oklch(0.65 0.22 30); }
+          100% { width: 0%;   background-color: oklch(0.55 0.24 20); }
+        }
+        .timer-bar {
+          background-color: oklch(0.6 0.17 145);
         }
       `}</style>
 		</div>

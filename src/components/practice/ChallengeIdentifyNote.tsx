@@ -19,7 +19,7 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 		setTimeout(() => {
 			setSelected(null);
 			onAnswer(opt);
-		}, 600);
+		}, 700);
 	}
 
 	function buttonVariant(opt: NoteName) {
@@ -30,20 +30,24 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 	}
 
 	return (
-		<div className="flex flex-col items-center gap-8 p-6 max-w-md mx-auto w-full">
-			<p className="text-sm font-medium text-muted-foreground">
-				{t("ui.practice.whatNote", {
-					interval: t(`ui.intervals.${challenge.interval}`),
-					root: challenge.root,
-				})}
-			</p>
-			<span className="text-6xl font-bold">{challenge.root}</span>
-			<div className="grid grid-cols-2 gap-3 w-full">
+		<div className="flex flex-col items-center gap-10 p-8 max-w-sm mx-auto w-full">
+			<div className="text-center space-y-2">
+				<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+					{t("ui.practice.whatNote", {
+						interval: t(`ui.intervals.${challenge.interval}`),
+						root: challenge.root,
+					})}
+				</p>
+				<span className="block text-7xl font-black tracking-tight mt-4">
+					{challenge.root}
+				</span>
+			</div>
+			<div className="flex flex-col gap-3 w-full">
 				{challenge.options.map((opt) => (
 					<Button
 						key={opt}
 						variant={buttonVariant(opt)}
-						className="h-14 text-base"
+						className="h-14 text-base w-full"
 						onClick={() => pick(opt)}
 						disabled={Boolean(selected)}
 					>

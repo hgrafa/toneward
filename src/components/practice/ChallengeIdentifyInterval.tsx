@@ -19,7 +19,7 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 		setTimeout(() => {
 			setSelected(null);
 			onAnswer(opt);
-		}, 600);
+		}, 700);
 	}
 
 	function buttonVariant(opt: IntervalName) {
@@ -30,21 +30,27 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 	}
 
 	return (
-		<div className="flex flex-col items-center gap-8 p-6 max-w-md mx-auto w-full">
-			<p className="text-sm font-medium text-muted-foreground">
-				{t("ui.practice.whatInterval")}
-			</p>
-			<div className="flex items-center gap-6">
-				<span className="text-5xl font-bold">{challenge.root}</span>
-				<span className="text-muted-foreground text-2xl">→</span>
-				<span className="text-5xl font-bold">{challenge.target}</span>
+		<div className="flex flex-col items-center gap-10 p-8 max-w-sm mx-auto w-full">
+			<div className="text-center space-y-2">
+				<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+					{t("ui.practice.whatInterval")}
+				</p>
+				<div className="flex items-center justify-center gap-5 mt-4">
+					<span className="text-6xl font-black tracking-tight">
+						{challenge.root}
+					</span>
+					<span className="text-3xl text-muted-foreground">→</span>
+					<span className="text-6xl font-black tracking-tight">
+						{challenge.target}
+					</span>
+				</div>
 			</div>
-			<div className="grid grid-cols-2 gap-3 w-full">
+			<div className="flex flex-col gap-3 w-full">
 				{challenge.options.map((opt) => (
 					<Button
 						key={opt}
 						variant={buttonVariant(opt)}
-						className="h-14 text-base"
+						className="h-14 text-base w-full"
 						onClick={() => pick(opt)}
 						disabled={Boolean(selected)}
 					>

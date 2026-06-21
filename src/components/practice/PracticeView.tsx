@@ -20,9 +20,14 @@ export function PracticeView() {
 
 	if (state.phase === "idle") {
 		return (
-			<div className="flex flex-col items-center justify-center h-full gap-4">
-				<h1 className="text-2xl font-bold">{t("ui.practice.title")}</h1>
-				<Button size="lg" onClick={start}>
+			<div className="flex flex-col items-center justify-center h-full gap-6 px-6 text-center">
+				<div className="space-y-2">
+					<h1 className="text-3xl font-black">{t("ui.practice.title")}</h1>
+					<p className="text-sm text-muted-foreground max-w-xs mx-auto">
+						{t("ui.practice.description")}
+					</p>
+				</div>
+				<Button size="lg" onClick={start} className="px-10">
 					{t("ui.practice.start")}
 				</Button>
 			</div>
@@ -36,7 +41,7 @@ export function PracticeView() {
 				timerMs={state.currentTimerMs}
 				timerStartedAt={state.timerStartedAt}
 			/>
-			<div className="flex-1 flex items-center justify-center">
+			<div className="flex-1 flex items-center justify-center overflow-y-auto">
 				{state.challenge?.type === "identify-interval" && (
 					<ChallengeIdentifyInterval
 						challenge={state.challenge}
