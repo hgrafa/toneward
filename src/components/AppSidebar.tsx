@@ -4,9 +4,33 @@ import { useView } from "@/hooks/ViewContext";
 import i18n from "@/i18n/index";
 import type { AppView } from "@/types/showroom";
 
+function BrazilFlag() {
+	return (
+		<svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+			<rect width="20" height="14" rx="1" fill="#009c3b" />
+			<polygon points="10,1.5 18.5,7 10,12.5 1.5,7" fill="#ffdf00" />
+			<circle cx="10" cy="7" r="3" fill="#002776" />
+		</svg>
+	);
+}
+
+function USFlag() {
+	const sh = 14 / 13;
+	return (
+		<svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+			<rect width="20" height="14" rx="1" fill="#fff" />
+			{[0, 2, 4, 6, 8, 10, 12].map((i) => (
+				<rect key={i} x="0" y={i * sh} width="20" height={sh} fill="#b22234" />
+			))}
+			<rect x="0" y="0" width="8" height={7 * sh} fill="#3c3b6e" />
+		</svg>
+	);
+}
+
 export function AppSidebar() {
 	const { t } = useTranslation();
 	const { view, setView, sidebarCollapsed, toggleSidebar } = useView();
+	const isPt = i18n.language.startsWith("pt");
 
 	const NAV: { view: AppView; label: string; icon: typeof Guitar }[] = [
 		{ view: "fretboard", label: t("ui.sidebar.fretboard"), icon: Guitar },
@@ -14,8 +38,7 @@ export function AppSidebar() {
 	];
 
 	function toggleLanguage() {
-		const next = i18n.language.startsWith("pt") ? "en" : "pt-BR";
-		i18n.changeLanguage(next);
+		i18n.changeLanguage(isPt ? "en" : "pt-BR");
 	}
 
 	return (
@@ -46,6 +69,20 @@ export function AppSidebar() {
 				</button>
 			</div>
 
+			<div
+				className={`px-2 pb-1 ${sidebarCollapsed ? "flex justify-center" : ""}`}
+			>
+				<button
+					type="button"
+					onClick={toggleLanguage}
+					aria-label={t("ui.sidebar.langToggle")}
+					title={t("ui.sidebar.langToggle")}
+					className="flex size-9 items-center justify-center rounded-full border border-input bg-background hover:bg-muted"
+				>
+					{isPt ? <USFlag /> : <BrazilFlag />}
+				</button>
+			</div>
+
 			<nav className="flex flex-col gap-1 p-2">
 				{NAV.map(({ view: v, label, icon: Icon }) => (
 					<button
@@ -65,19 +102,6 @@ export function AppSidebar() {
 					</button>
 				))}
 			</nav>
-
-			<div className="mt-auto p-2">
-				<button
-					type="button"
-					onClick={toggleLanguage}
-					className={`flex w-full items-center justify-center rounded-md px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted ${
-						sidebarCollapsed ? "" : "gap-1.5"
-					}`}
-					title={t("ui.sidebar.langToggle")}
-				>
-					{t("ui.sidebar.langToggle")}
-				</button>
-			</div>
 		</aside>
 	);
 }

@@ -8,7 +8,7 @@ const ptBR: TranslationSchema = {
 			collapse: "Recolher menu",
 			fretboard: "Braço",
 			showroom: "Showroom",
-			langToggle: "EN",
+			langToggle: "Mudar para Inglês",
 		},
 		editor: {
 			label: "Notas ou intervalos",
@@ -19,7 +19,7 @@ const ptBR: TranslationSchema = {
 			notes: "Notas",
 			intervals: "Intervalos",
 			none: "Nenhum",
-			root: "Raíz",
+			root: "Tônica",
 			nps: "NPS",
 			frets: "Trastes",
 			copy: "Copiar",

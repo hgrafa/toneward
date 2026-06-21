@@ -6,7 +6,7 @@ const en = {
 			collapse: "Collapse sidebar",
 			fretboard: "Fretboard",
 			showroom: "Showroom",
-			langToggle: "PT",
+			langToggle: "Switch to Portuguese",
 		},
 		editor: {
 			label: "Notes or intervals",
