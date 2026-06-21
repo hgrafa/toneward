@@ -104,6 +104,8 @@ const ptBR: TranslationSchema = {
 				"Marque todas as {{interval}} a partir de {{root}} no braço",
 			description:
 				"Responda o máximo de perguntas sobre intervalos antes do tempo acabar. Fica mais rápido conforme você pontua!",
+			bestScores: "Melhores Pontuações",
+			allTime: "de todos os tempos",
 		},
 	},
 	errors: {

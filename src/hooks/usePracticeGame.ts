@@ -68,12 +68,6 @@ const INITIAL_STATE: PracticeState = {
 	endedAt: 0,
 };
 
-const _CHALLENGE_TYPES: ChallengeType[] = [
-	"identify-interval",
-	"identify-note",
-	"fretboard-mark",
-];
-
 function pickRandomType(score: number): ChallengeType {
 	if (score < 5) {
 		return Math.random() < 0.5 ? "identify-interval" : "identify-note";
@@ -180,7 +174,6 @@ export function usePracticeGame(tuning: Tuning) {
 				date: state.endedAt,
 			});
 		}
-		// biome-ignore lint/correctness/useExhaustiveDependencies: save exactly once on endedAt set
 	}, [state.endedAt, state.gameStartedAt, state.phase, state.score]);
 
 	function start() {

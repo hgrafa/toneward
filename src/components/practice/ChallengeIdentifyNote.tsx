@@ -42,7 +42,7 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 					{challenge.root}
 				</span>
 			</div>
-			<div className="flex flex-col gap-3 w-full">
+			<div className="flex flex-col md:flex-row gap-3 w-full">
 				{challenge.options.map((opt) => (
 					<Button
 						key={opt}
