@@ -306,8 +306,16 @@ After opening PR:
 
    * remove `claude:in-progress`
    * add `claude:review`
-3. Ensure `CLAUDE_REVIEWER` is requested as a reviewer (if `gh pr create` didn't already).
-4. Leave a final checkpoint with exact resume instructions.
+3. Mirror `claude:review` to the issue (so the issue reflects current status without drilling into the PR):
+
+   ```bash
+   gh issue edit "$CLAUDE_ISSUE_NUMBER" \
+     --repo "$CLAUDE_REPO" \
+     --add-label "claude:review" \
+     --remove-label "claude:in-progress" || true
+   ```
+4. Ensure `CLAUDE_REVIEWER` is requested as a reviewer (if `gh pr create` didn't already).
+5. Leave a final checkpoint with exact resume instructions.
 
 ## Blocker policy
 

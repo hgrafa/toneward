@@ -253,6 +253,11 @@ dispatch_new() {
 		--remove-label "$READY_LABEL" \
 		--add-label "$IN_PROGRESS_LABEL" || true
 
+	# If stacking on an existing PR, mirror in-progress there too so the stack is visibly active.
+	if [[ -n "${BASE_PR:-}" ]]; then
+		run gh pr edit "$BASE_PR" --repo "$REPO" --add-label "$IN_PROGRESS_LABEL" || true
+	fi
+
 	echo "Posting start checkpoint..."
 	run gh issue comment "$ISSUE_NUMBER" \
 		--repo "$REPO" \
@@ -333,6 +338,19 @@ dispatch_revise() {
 
 	run gh pr edit "$PR" --repo "$REPO" \
 		--remove-label "$REVISE_LABEL" --add-label "$IN_PROGRESS_LABEL" || true
+
+	# Mirror claude:in-progress to the linked issue so the issue reflects active work.
+	local LINKED_ISSUE
+	LINKED_ISSUE="$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences \
+		--jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)"
+	if [[ -z "$LINKED_ISSUE" ]]; then
+		LINKED_ISSUE="$(gh pr view "$PR" --repo "$REPO" --json body --jq '.body' \
+			| grep -oiE '(closes|fixes) #[0-9]+' | grep -oE '[0-9]+' | head -1 || true)"
+	fi
+	if [[ -n "$LINKED_ISSUE" ]]; then
+		run gh issue edit "$LINKED_ISSUE" --repo "$REPO" --add-label "$IN_PROGRESS_LABEL" || true
+	fi
+
 	run gh pr comment "$PR" --repo "$REPO" --body "## Claude runner checkpoint
 
 PR: #$PR

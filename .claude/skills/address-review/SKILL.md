@@ -45,7 +45,29 @@ passed without running it.
 2. Reply to each addressed review thread noting what changed.
 3. Post a final checkpoint comment on the PR summarizing changes per comment.
 4. Labels: remove `claude:in-progress`, add `claude:review`.
-5. Re-request review:
+5. Mirror `claude:review` to the linked issue:
+
+   ```bash
+   # Resolve the linked issue number from PR closing references
+   LINKED_ISSUE="$(gh pr view "$ARGUMENTS" --repo "$CLAUDE_REPO" \
+     --json closingIssuesReferences \
+     --jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)"
+
+   # Fallback: parse "Closes #N" / "Fixes #N" from PR body
+   if [[ -z "$LINKED_ISSUE" ]]; then
+     LINKED_ISSUE="$(gh pr view "$ARGUMENTS" --repo "$CLAUDE_REPO" --json body --jq '.body' \
+       | grep -oiE '(closes|fixes) #[0-9]+' | grep -oE '[0-9]+' | head -1 || true)"
+   fi
+
+   if [[ -n "$LINKED_ISSUE" ]]; then
+     gh issue edit "$LINKED_ISSUE" --repo "$CLAUDE_REPO" \
+       --add-label "claude:review" \
+       --remove-label "claude:in-progress" || true
+   fi
+   ```
+
+   If the linked issue cannot be resolved, log a warning and continue — do not fail the handoff.
+6. Re-request review:
 
    ```bash
    gh pr edit $ARGUMENTS --repo "$CLAUDE_REPO" --add-reviewer "$CLAUDE_REVIEWER"
