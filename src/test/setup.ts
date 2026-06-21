@@ -44,3 +44,16 @@ if (!globalThis.ResizeObserver) {
 afterEach(() => {
 	cleanup();
 });
+
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+import en from "@/i18n/locales/en";
+
+if (!i18next.isInitialized) {
+	i18next.use(initReactI18next).init({
+		lng: "en",
+		fallbackLng: "en",
+		resources: { en: { translation: en } },
+		interpolation: { escapeValue: false },
+	});
+}
