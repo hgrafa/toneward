@@ -3,7 +3,8 @@ import { formatSpelled } from "./notes";
 import { parseInput } from "./parser";
 
 function labels(out: ReturnType<typeof parseInput>): string[] {
-	if (!out.success) throw new Error(`expected success, got ${out.error}`);
+	if (!out.success)
+		throw new Error(`expected success, got ${JSON.stringify(out.error)}`);
 	return out.noteSet.notes.map(formatSpelled);
 }
 
@@ -23,7 +24,7 @@ describe("parseInput — notes mode", () => {
 	it("rejects an invalid note", () => {
 		expect(parseInput("C H")).toEqual({
 			success: false,
-			error: 'Invalid note: "H"',
+			error: { code: "INVALID_NOTE", token: "H" },
 		});
 	});
 });
@@ -55,20 +56,23 @@ describe("parseInput — intervals mode", () => {
 	it("rejects an invalid interval", () => {
 		expect(parseInput("root: A\n1 b9")).toEqual({
 			success: false,
-			error: 'Invalid interval: "b9"',
+			error: { code: "INVALID_INTERVAL", token: "b9" },
 		});
 	});
 
 	it("rejects an invalid root", () => {
 		expect(parseInput("root: H\n1 3 5")).toEqual({
 			success: false,
-			error: 'Invalid root note: "H"',
+			error: { code: "INVALID_ROOT_NOTE", token: "H" },
 		});
 	});
 });
 
 describe("parseInput — errors", () => {
 	it("rejects empty input", () => {
-		expect(parseInput("   ")).toEqual({ success: false, error: "Empty input" });
+		expect(parseInput("   ")).toEqual({
+			success: false,
+			error: { code: "EMPTY_INPUT" },
+		});
 	});
 });

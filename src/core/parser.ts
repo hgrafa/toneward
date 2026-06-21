@@ -23,7 +23,7 @@ import {
 export function parseInput(text: string): ParseOutput {
 	const trimmed = text.trim();
 	if (!trimmed) {
-		return { success: false, error: "Empty input" };
+		return { success: false, error: { code: "EMPTY_INPUT" } };
 	}
 
 	const lines = trimmed
@@ -58,13 +58,13 @@ function parseNotesMode(text: string): ParseOutput {
 	for (const token of tokens) {
 		const note = parseSpelledNote(token);
 		if (!note) {
-			return { success: false, error: `Invalid note: "${token}"` };
+			return { success: false, error: { code: "INVALID_NOTE", token } };
 		}
 		pushUnique(notes, seen, note);
 	}
 
 	if (notes.length === 0) {
-		return { success: false, error: "No valid notes found" };
+		return { success: false, error: { code: "NO_VALID_NOTES" } };
 	}
 
 	return { success: true, noteSet: { notes } };
@@ -73,12 +73,15 @@ function parseNotesMode(text: string): ParseOutput {
 function parseIntervalsMode(lines: string[], rootLine: string): ParseOutput {
 	const rootValue = rootLine.split(":")[1]?.trim();
 	if (!rootValue) {
-		return { success: false, error: "Missing root note after 'root:'" };
+		return { success: false, error: { code: "MISSING_ROOT" } };
 	}
 
 	const root = parseSpelledNote(rootValue);
 	if (!root) {
-		return { success: false, error: `Invalid root note: "${rootValue}"` };
+		return {
+			success: false,
+			error: { code: "INVALID_ROOT_NOTE", token: rootValue },
+		};
 	}
 
 	const intervalLines = lines.filter(
@@ -90,14 +93,14 @@ function parseIntervalsMode(lines: string[], rootLine: string): ParseOutput {
 		.filter(Boolean);
 
 	if (tokens.length === 0) {
-		return { success: false, error: "No intervals provided" };
+		return { success: false, error: { code: "NO_INTERVALS" } };
 	}
 
 	const notes: SpelledNote[] = [];
 	const seen = new Set<NoteName>();
 	for (const token of tokens) {
 		if (!isValidInterval(token)) {
-			return { success: false, error: `Invalid interval: "${token}"` };
+			return { success: false, error: { code: "INVALID_INTERVAL", token } };
 		}
 		const interval = token as IntervalName;
 		const targetPc = resolveInterval(spelledToPitchClass(root), interval);

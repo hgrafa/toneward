@@ -19,7 +19,12 @@ export function Editor() {
 				spellCheck={false}
 				className="min-h-[100px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 			/>
-			{parseError && <p className="text-sm text-destructive">{parseError}</p>}
+			{parseError && (
+				<p className="text-sm text-destructive">
+					{parseError.code}
+					{parseError.token ? `: "${parseError.token}"` : ""}
+				</p>
+			)}
 		</div>
 	);
 }

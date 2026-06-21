@@ -6,12 +6,14 @@ import {
 	useState,
 } from "react";
 import { parseInput } from "@/core/parser";
-import type { NoteSet, ParseError } from "@/types/music";
+import type { ErrorCode, NoteSet, ParseError } from "@/types/music";
+
+export type ParseErrorValue = { code: ErrorCode; token?: string };
 
 interface InputState {
 	inputText: string;
 	noteSet: NoteSet | null;
-	parseError: string | null;
+	parseError: ParseErrorValue | null;
 	setInputText: (text: string) => void;
 }
 
