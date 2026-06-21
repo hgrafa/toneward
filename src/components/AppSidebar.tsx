@@ -1,14 +1,22 @@
 import { Guitar, Music4, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useView } from "@/hooks/ViewContext";
+import i18n from "@/i18n/index";
 import type { AppView } from "@/types/showroom";
 
-const NAV: { view: AppView; label: string; icon: typeof Guitar }[] = [
-	{ view: "fretboard", label: "Fretboard", icon: Guitar },
-	{ view: "showroom", label: "Showroom", icon: Music4 },
-];
-
 export function AppSidebar() {
+	const { t } = useTranslation();
 	const { view, setView, sidebarCollapsed, toggleSidebar } = useView();
+
+	const NAV: { view: AppView; label: string; icon: typeof Guitar }[] = [
+		{ view: "fretboard", label: t("ui.sidebar.fretboard"), icon: Guitar },
+		{ view: "showroom", label: t("ui.sidebar.showroom"), icon: Music4 },
+	];
+
+	function toggleLanguage() {
+		const next = i18n.language.startsWith("pt") ? "en" : "pt-BR";
+		i18n.changeLanguage(next);
+	}
 
 	return (
 		<aside
@@ -19,12 +27,14 @@ export function AppSidebar() {
 			<div className="flex h-14 items-center justify-between px-3">
 				{!sidebarCollapsed && (
 					<span className="font-bold text-sm tracking-tight">
-						Scale Training
+						{t("ui.appName")}
 					</span>
 				)}
 				<button
 					type="button"
-					aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+					aria-label={
+						sidebarCollapsed ? t("ui.sidebar.expand") : t("ui.sidebar.collapse")
+					}
 					onClick={toggleSidebar}
 					className="text-muted-foreground hover:text-foreground"
 				>
@@ -55,6 +65,19 @@ export function AppSidebar() {
 					</button>
 				))}
 			</nav>
+
+			<div className="mt-auto p-2">
+				<button
+					type="button"
+					onClick={toggleLanguage}
+					className={`flex w-full items-center justify-center rounded-md px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted ${
+						sidebarCollapsed ? "" : "gap-1.5"
+					}`}
+					title={t("ui.sidebar.langToggle")}
+				>
+					{t("ui.sidebar.langToggle")}
+				</button>
+			</div>
 		</aside>
 	);
 }
