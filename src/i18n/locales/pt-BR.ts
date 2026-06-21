@@ -109,6 +109,8 @@ const ptBR: TranslationSchema = {
 			colRank: "Pos.",
 			colTime: "Tempo",
 			colDate: "Data",
+			mute: "Silenciar",
+			unmute: "Ativar som",
 		},
 	},
 	errors: {

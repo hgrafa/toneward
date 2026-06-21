@@ -1,3 +1,4 @@
+import { Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PixelHeart } from "./PixelHeart";
 
@@ -6,6 +7,8 @@ interface GameHeaderProps {
 	lives: number;
 	timerMs: number;
 	timerStartedAt: number;
+	muted: boolean;
+	onToggleMute: () => void;
 }
 
 export function GameHeader({
@@ -13,6 +16,8 @@ export function GameHeader({
 	lives,
 	timerMs,
 	timerStartedAt,
+	muted,
+	onToggleMute,
 }: GameHeaderProps) {
 	const { t } = useTranslation();
 	return (
@@ -23,11 +28,21 @@ export function GameHeader({
 						<PixelHeart key={i} filled={i < lives} pixelSize={5} />
 					))}
 				</div>
-				<div className="flex items-center gap-2">
-					<span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-						{t("ui.practice.score")}
-					</span>
-					<span className="text-2xl font-black tabular-nums">{score}</span>
+				<div className="flex items-center gap-3">
+					<button
+						type="button"
+						onClick={onToggleMute}
+						title={t(muted ? "ui.practice.unmute" : "ui.practice.mute")}
+						className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+					>
+						{muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+					</button>
+					<div className="flex items-center gap-2">
+						<span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+							{t("ui.practice.score")}
+						</span>
+						<span className="text-2xl font-black tabular-nums">{score}</span>
+					</div>
 				</div>
 			</div>
 			<div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">

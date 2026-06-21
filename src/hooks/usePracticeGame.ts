@@ -213,8 +213,9 @@ export function usePracticeGame(tuning: Tuning) {
 		});
 	}
 
-	function submitFretboard() {
-		if (!state.challenge || state.challenge.type !== "fretboard-mark") return;
+	function submitFretboard(): boolean {
+		if (!state.challenge || state.challenge.type !== "fretboard-mark")
+			return false;
 		const isCorrect = checkFretboardAnswer(
 			state.challenge as FretboardMarkChallenge,
 			state.markedPositions,
@@ -238,6 +239,7 @@ export function usePracticeGame(tuning: Tuning) {
 				nextLives,
 			},
 		});
+		return isCorrect;
 	}
 
 	function restart() {

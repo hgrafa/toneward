@@ -105,6 +105,8 @@ const en = {
 			colRank: "Rank",
 			colTime: "Time",
 			colDate: "Date",
+			mute: "Mute",
+			unmute: "Unmute",
 		},
 	},
 	errors: {

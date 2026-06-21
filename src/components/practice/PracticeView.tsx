@@ -1,8 +1,16 @@
 import { Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useInstrument } from "@/hooks/useFretboardContext";
 import { usePracticeGame } from "@/hooks/usePracticeGame";
+import {
+	getMuted,
+	playCorrect,
+	playGameOver,
+	playWrong,
+	setMuted,
+} from "@/lib/practiceAudio";
 import { formatDate, formatTime, loadScores } from "@/lib/practiceScores";
 import { ChallengeFretboardMark } from "./ChallengeFretboardMark";
 import { ChallengeIdentifyInterval } from "./ChallengeIdentifyInterval";
@@ -22,6 +30,25 @@ export function PracticeView() {
 		submitFretboard,
 		restart,
 	} = usePracticeGame(tuning);
+
+	const [muted, setMutedState] = useState(() => getMuted());
+
+	function toggleMute() {
+		const next = !muted;
+		setMutedState(next);
+		setMuted(next);
+	}
+
+	// Play game-over sound once when round ends
+	useEffect(() => {
+		if (state.phase === "game_over") playGameOver();
+	}, [state.phase]);
+
+	function handleSubmitFretboard() {
+		const wasCorrect = submitFretboard();
+		if (wasCorrect) playCorrect();
+		else playWrong();
+	}
 
 	if (state.phase === "game_over") {
 		return (
@@ -123,6 +150,8 @@ export function PracticeView() {
 					lives={state.lives}
 					timerMs={state.currentTimerMs}
 					timerStartedAt={state.timerStartedAt}
+					muted={muted}
+					onToggleMute={toggleMute}
 				/>
 				<div className="p-6">
 					{state.challenge?.type === "identify-interval" && (
@@ -143,7 +172,7 @@ export function PracticeView() {
 							tuning={tuning}
 							markedPositions={state.markedPositions}
 							onToggle={togglePosition}
-							onSubmit={submitFretboard}
+							onSubmit={handleSubmitFretboard}
 						/>
 					)}
 				</div>

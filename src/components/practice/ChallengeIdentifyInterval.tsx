@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type { IdentifyIntervalChallenge } from "@/core/practice";
+import { playCorrect, playWrong } from "@/lib/practiceAudio";
 import type { IntervalName } from "@/types/music";
 
 interface Props {
@@ -15,6 +16,9 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 
 	function pick(opt: IntervalName) {
 		if (selected) return;
+		const isCorrect = opt === challenge.answer;
+		if (isCorrect) playCorrect();
+		else playWrong();
 		setSelected(opt);
 		setTimeout(() => {
 			setSelected(null);
@@ -22,10 +26,19 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 		}, 700);
 	}
 
+	function buttonClass(opt: IntervalName): string {
+		const base =
+			"aspect-square h-auto text-sm font-semibold leading-tight text-center whitespace-normal transition-all duration-200";
+		if (!selected) return base;
+		if (opt === challenge.answer)
+			return `${base} !bg-green-500 !text-white !border-green-500 scale-[1.04] shadow-lg shadow-green-500/25`;
+		if (opt === selected) return base;
+		return `${base} opacity-40`;
+	}
+
 	function buttonVariant(opt: IntervalName) {
-		if (!selected) return "outline" as const;
-		if (opt === challenge.answer) return "default" as const;
-		if (opt === selected) return "destructive" as const;
+		if (selected && opt === selected && opt !== challenge.answer)
+			return "destructive" as const;
 		return "outline" as const;
 	}
 
@@ -50,7 +63,7 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 					<Button
 						key={opt}
 						variant={buttonVariant(opt)}
-						className="aspect-square h-auto text-sm font-semibold leading-tight text-center whitespace-normal"
+						className={buttonClass(opt)}
 						onClick={() => pick(opt)}
 						disabled={Boolean(selected)}
 					>
