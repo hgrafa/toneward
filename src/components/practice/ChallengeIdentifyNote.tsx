@@ -35,10 +35,14 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 
 	function buttonClass(opt: NoteName): string {
 		const base =
-			"pixel-btn aspect-square h-auto text-2xl font-black transition-all duration-200";
+			"pixel-btn w-full aspect-square h-auto text-2xl font-black transition-all duration-200";
 		if (!selected) return base;
-		if (opt === challenge.answer)
+		if (opt === challenge.answer) {
+			// Picked right → blink green/white; picked wrong → steady green reveal.
+			if (selected === challenge.answer)
+				return `${base} anim-correct-blink !text-green-900 !border-green-500 scale-[1.04] shadow-lg shadow-green-500/25`;
 			return `${base} !bg-green-500 !text-white !border-green-500 scale-[1.04] shadow-lg shadow-green-500/25`;
+		}
 		if (opt === selected) return base;
 		return `${base} opacity-40`;
 	}
@@ -61,8 +65,7 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 						root: challenge.root,
 					})}
 				</p>
-				<div className="relative flex items-center justify-center">
-					{showBurst && <PixelBurst />}
+				<div className="flex items-center justify-center">
 					<span className="block text-6xl font-black tracking-tight mt-2">
 						{challenge.root}
 					</span>
@@ -70,15 +73,17 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 			</div>
 			<div className="grid grid-cols-3 gap-3 w-full">
 				{challenge.options.map((opt) => (
-					<Button
-						key={opt}
-						variant={buttonVariant(opt)}
-						className={buttonClass(opt)}
-						onClick={() => pick(opt)}
-						disabled={Boolean(selected)}
-					>
-						{opt}
-					</Button>
+					<div key={opt} className="relative">
+						{showBurst && opt === challenge.answer && <PixelBurst />}
+						<Button
+							variant={buttonVariant(opt)}
+							className={buttonClass(opt)}
+							onClick={() => pick(opt)}
+							disabled={Boolean(selected)}
+						>
+							{opt}
+						</Button>
+					</div>
 				))}
 			</div>
 		</div>

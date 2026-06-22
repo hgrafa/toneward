@@ -218,6 +218,39 @@
 		transform: translate(var(--tx), var(--ty)) scale(0.4);
 	}
 }
+/* Correct-answer feedback: crisp green/white blink ~3 times, settling on green.
+   The flat paired stops make each flash snap rather than fade. Background is
+   driven entirely by this animation (no !important Tailwind bg on the blinking
+   button) because !important author rules would otherwise override keyframes. */
+@keyframes correctBlink {
+	0%,
+	15% {
+		background-color: #22c55e;
+	}
+	16%,
+	32% {
+		background-color: #ffffff;
+	}
+	33%,
+	49% {
+		background-color: #22c55e;
+	}
+	50%,
+	66% {
+		background-color: #ffffff;
+	}
+	67%,
+	83% {
+		background-color: #22c55e;
+	}
+	84%,
+	99% {
+		background-color: #ffffff;
+	}
+	100% {
+		background-color: #22c55e;
+	}
+}
 
 .anim-score-pop {
 	animation: scorePop 0.25s ease;
@@ -237,6 +270,9 @@
 .anim-burst {
 	animation: burstOut 0.35s ease-out forwards;
 }
+.anim-correct-blink {
+	animation: correctBlink 0.7s linear forwards;
+}
 
 @media (prefers-reduced-motion: reduce) {
 	.anim-score-pop,
@@ -246,6 +282,11 @@
 	.anim-combo-flash,
 	.anim-burst {
 		animation: none;
+	}
+	/* No blink under reduced motion — fall back to a steady green reveal. */
+	.anim-correct-blink {
+		animation: none;
+		background-color: #22c55e;
 	}
 	.pixel-btn {
 		transition: none;

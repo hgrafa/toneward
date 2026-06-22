@@ -35,10 +35,14 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 
 	function buttonClass(opt: IntervalName): string {
 		const base =
-			"pixel-btn aspect-square h-auto text-sm font-semibold leading-tight text-center whitespace-normal transition-all duration-200";
+			"pixel-btn w-full aspect-square h-auto text-sm font-semibold leading-tight text-center whitespace-normal transition-all duration-200";
 		if (!selected) return base;
-		if (opt === challenge.answer)
+		if (opt === challenge.answer) {
+			// Picked right → blink green/white; picked wrong → steady green reveal.
+			if (selected === challenge.answer)
+				return `${base} anim-correct-blink !text-green-900 !border-green-500 scale-[1.04] shadow-lg shadow-green-500/25`;
 			return `${base} !bg-green-500 !text-white !border-green-500 scale-[1.04] shadow-lg shadow-green-500/25`;
+		}
 		if (opt === selected) return base;
 		return `${base} opacity-40`;
 	}
@@ -58,8 +62,7 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 				<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
 					{t("ui.practice.whatInterval")}
 				</p>
-				<div className="relative flex items-center justify-center gap-4">
-					{showBurst && <PixelBurst />}
+				<div className="flex items-center justify-center gap-4">
 					<span className="text-5xl font-black tracking-tight">
 						{challenge.root}
 					</span>
@@ -71,15 +74,17 @@ export function ChallengeIdentifyInterval({ challenge, onAnswer }: Props) {
 			</div>
 			<div className="grid grid-cols-3 gap-3 w-full">
 				{challenge.options.map((opt) => (
-					<Button
-						key={opt}
-						variant={buttonVariant(opt)}
-						className={buttonClass(opt)}
-						onClick={() => pick(opt)}
-						disabled={Boolean(selected)}
-					>
-						{t(`ui.intervals.${opt}`)}
-					</Button>
+					<div key={opt} className="relative">
+						{showBurst && opt === challenge.answer && <PixelBurst />}
+						<Button
+							variant={buttonVariant(opt)}
+							className={buttonClass(opt)}
+							onClick={() => pick(opt)}
+							disabled={Boolean(selected)}
+						>
+							{t(`ui.intervals.${opt}`)}
+						</Button>
+					</div>
 				))}
 			</div>
 		</div>

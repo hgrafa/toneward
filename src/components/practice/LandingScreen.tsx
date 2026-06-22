@@ -33,9 +33,7 @@ export function LandingScreen({ lastResult, onStart }: LandingScreenProps) {
 				) : (
 					<>
 						<div className="space-y-3">
-							<h1 className="font-pixel text-2xl leading-relaxed">
-								{t("ui.practice.title")}
-							</h1>
+							<h1 className="text-3xl font-black">{t("ui.practice.title")}</h1>
 							<p className="text-sm text-muted-foreground">
 								{t("ui.practice.description")}
 							</p>
@@ -51,13 +49,13 @@ export function LandingScreen({ lastResult, onStart }: LandingScreenProps) {
 				)}
 				{scores.length > 0 && (
 					<div className="w-full space-y-2">
-						<p className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground text-center">
+						<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground text-center">
 							{t("ui.practice.bestScores")}
 						</p>
 						<div className="rounded-lg border border-border overflow-hidden">
 							<table className="w-full text-sm border-collapse">
 								<thead>
-									<tr className="bg-muted/60 border-b border-border font-pixel text-[9px] uppercase text-muted-foreground">
+									<tr className="bg-muted/60 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 										<th className="text-left px-4 md:px-6 py-2.5 whitespace-nowrap">
 											{t("ui.practice.colRank")}
 										</th>
