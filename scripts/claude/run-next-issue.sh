@@ -2,14 +2,14 @@
 set -euo pipefail
 
 REPO="${REPO:-hgrafa/fretboard-designer}"
-READY_LABEL="${READY_LABEL:-claude:ready}"
-IN_PROGRESS_LABEL="${IN_PROGRESS_LABEL:-claude:in-progress}"
-REVIEW_LABEL="${REVIEW_LABEL:-claude:review}"
+READY_LABEL="${READY_LABEL:-automation:ready}"
+IN_PROGRESS_LABEL="${IN_PROGRESS_LABEL:-automation:in-progress}"
+REVIEW_LABEL="${REVIEW_LABEL:-automation:review}"
 
 CLAUDE_MAX_TURNS="${CLAUDE_MAX_TURNS:-40}"
 CLAUDE_PERMISSION_MODE="${CLAUDE_PERMISSION_MODE:-auto}"
 CLAUDE_COMMAND_NAME="${CLAUDE_COMMAND_NAME:-/work-issue}"
-REVISE_LABEL="${REVISE_LABEL:-claude:revise}"
+REVISE_LABEL="${REVISE_LABEL:-automation:revise}"
 QUEUE_PRIORITY="${QUEUE_PRIORITY:-revise-first}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -42,7 +42,7 @@ CLAUDE_REVIEWER="${CLAUDE_REVIEWER:-$(gh repo view "$REPO" --json owner --jq '.o
 
 # Ensure the review-loop label exists (idempotent).
 gh label create "$REVISE_LABEL" --repo "$REPO" --color FBCA04 \
-	--description "Reviewed, changes requested — Claude resume on the PR" >/dev/null 2>&1 || true
+	--description "Reviewed, changes requested - automation should resume on the PR" >/dev/null 2>&1 || true
 
 # Important:
 # If ANTHROPIC_API_KEY is present, Claude Code may use API billing instead of
@@ -339,7 +339,7 @@ dispatch_revise() {
 	run gh pr edit "$PR" --repo "$REPO" \
 		--remove-label "$REVISE_LABEL" --add-label "$IN_PROGRESS_LABEL" || true
 
-	# Mirror claude:in-progress to the linked issue so the issue reflects active work.
+	# Mirror automation:in-progress to the linked issue so the issue reflects active work.
 	local LINKED_ISSUE
 	LINKED_ISSUE="$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences \
 		--jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)"

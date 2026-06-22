@@ -26,7 +26,7 @@
 - Create: `.claude/skills/new-issue/SKILL.md`
 
 **Interfaces:**
-- Produces: a new GitHub issue with `type:*`, `size:*`, optionally `claude:ready` labels applied; title in `[PREFIX] title` format.
+- Produces: a new GitHub issue with `type:*`, `size:*`, optionally `automation:ready` labels applied; title in `[PREFIX] title` format.
 
 - [ ] **Step 1: Create the skill directory and file**
 
@@ -72,7 +72,7 @@ If the description clearly matches one category, apply it with no question. If g
 
 ### Queue readiness (default to omitted — never ask)
 
-Add `claude:ready` only if the description is specific and actionable with no open product questions (e.g. "Fix the audio slider snapping to wrong values" is actionable; "Improve UX somehow" is not). Omit silently otherwise.
+Add `automation:ready` only if the description is specific and actionable with no open product questions (e.g. "Fix the audio slider snapping to wrong values" is actionable; "Improve UX somehow" is not). Omit silently otherwise.
 
 ## Title format
 
@@ -99,14 +99,14 @@ gh issue create \
   --body "$ARGUMENTS"
 ```
 
-Adjust `--title` and `--label` to the classified values. Include `claude:ready` in `--label` if applicable.
+Adjust `--title` and `--label` to the classified values. Include `automation:ready` in `--label` if applicable.
 
 ## Output
 
-Print the created issue URL on a single line. If `claude:ready` was added:
+Print the created issue URL on a single line. If `automation:ready` was added:
 
 ```
-Issue #N created → https://github.com/... (queued as claude:ready)
+Issue #N created → https://github.com/... (queued as automation:ready)
 ```
 
 Otherwise:
@@ -148,7 +148,7 @@ git commit -m "feat: add /new-issue skill with automatic type/size classifier"
 ```
 
 **Manual E2E (run after merge to main):**
-- Run `/new-issue "Fix the audio slider not snapping to correct values"` → expect `[FIX]` title, `type:bug`, `size:m`, `claude:ready` added (specific+actionable), no questions asked.
+- Run `/new-issue "Fix the audio slider not snapping to correct values"` → expect `[FIX]` title, `type:bug`, `size:m`, `automation:ready` added (specific+actionable), no questions asked.
 - Run `/new-issue "Something"` → expect Claude asks "Is this a feature, bug, docs change, or chore?" once, then creates the issue.
 
 ---
@@ -226,7 +226,7 @@ Score each non-noise comment from the repo owner or collaborators:
 |---------------------------|-----------|----------------|
 | "not happy", "still not right", "I don't like", "could you", "please change", "not what I wanted", image URL attached alongside dissatisfaction language | **High** | Dissatisfaction → see Dissatisfaction path |
 | "looks good", "approved", "lgtm", "perfect", "exactly", "great", "ship it" | **High** | Satisfied → no action |
-| "what about", "how should", "should we", direct question at Claude about direction | **High** | Blocker → add `claude:blocked` |
+| "what about", "how should", "should we", direct question at the automation agent about direction | **High** | Blocker → add `automation:blocked` |
 | Everything else | **Low** | Ask path |
 
 ## Dissatisfaction path (high confidence)
@@ -235,17 +235,17 @@ If a linked open PR exists for this issue:
 
 ```bash
 gh pr edit <PR_NUMBER> --repo "$REPO" \
-  --add-label "claude:revise" \
-  --remove-label "claude:review" || true
+  --add-label "automation:revise" \
+  --remove-label "automation:review" || true
 ```
 
 If no linked PR (or the dissatisfaction spawns entirely new work):
 
 ```bash
 gh issue edit <ISSUE_NUMBER> --repo "$REPO" \
-  --add-label "claude:ready" \
-  --remove-label "claude:review" \
-  --remove-label "claude:in-progress" || true
+  --add-label "automation:ready" \
+  --remove-label "automation:review" \
+  --remove-label "automation:in-progress" || true
 ```
 
 After either, post a triage comment on the issue:
@@ -254,21 +254,21 @@ After either, post a triage comment on the issue:
 gh issue comment <ISSUE_NUMBER> --repo "$REPO" --body "## /review-issues triage
 
 Detected: user dissatisfaction with current result.
-Action: added \`claude:revise\` to PR #<PR_NUMBER>."
-# or: "Action: re-queued issue as \`claude:ready\`."
+Action: added \`automation:revise\` to PR #<PR_NUMBER>."
+# or: "Action: re-queued issue as \`automation:ready\`."
 ```
 
 ## Blocker path (high confidence)
 
 ```bash
 gh issue edit <ISSUE_NUMBER> --repo "$REPO" \
-  --add-label "claude:blocked" \
-  --remove-label "claude:in-progress" || true
+  --add-label "automation:blocked" \
+  --remove-label "automation:in-progress" || true
 gh issue comment <ISSUE_NUMBER> --repo "$REPO" --body "## /review-issues triage
 
 Detected: open question blocking progress.
 Quote: \"<verbatim question from comment>\"
-Action: added \`claude:blocked\`. Human follow-up needed."
+Action: added \`automation:blocked\`. Human follow-up needed."
 ```
 
 ## Ask path (low confidence)
@@ -278,7 +278,7 @@ Collect **all** low-confidence items first — do not interleave questions with 
 Then for each ambiguous item, ask **one question** and wait for the answer before acting. Never combine two ambiguous items into one question.
 
 Example question:
-> "Issue #13 has this comment: \"We might want to think about accessibility here.\" Should I: (a) re-queue as claude:ready, (b) ignore it for now, or (c) mark as blocked?"
+> "Issue #13 has this comment: \"We might want to think about accessibility here.\" Should I: (a) re-queue as automation:ready, (b) ignore it for now, or (c) mark as blocked?"
 
 ## Final digest
 
@@ -286,9 +286,9 @@ After processing all issues, print:
 
 ```
 Reviewed N issues:
-  #9  — added claude:revise to PR #10 (dissatisfaction detected)
+  #9  — added automation:revise to PR #10 (dissatisfaction detected)
   #11 — no action (satisfied)
-  #13 — asked about intent → re-queued as claude:ready
+  #13 — asked about intent → re-queued as automation:ready
   #14 — no scoreable user comments, skipped
 ```
 ```
@@ -324,7 +324,7 @@ git commit -m "feat: add /review-issues skill with confidence-scored comment tri
 ```
 
 **Manual E2E (run after merge to main):**
-- On issue #9 (which has "not happy" and "Still not enough" comments): run `/review-issues 9` → expect `claude:revise` added to linked PR #10, triage comment posted, digest printed.
+- On issue #9 (which has "not happy" and "Still not enough" comments): run `/review-issues 9` → expect `automation:revise` added to linked PR #10, triage comment posted, digest printed.
 - On an issue with only checkpoint comments: run `/review-issues N` → expect "no scoreable user comments, skipped".
 
 ---
@@ -338,20 +338,20 @@ git commit -m "feat: add /review-issues skill with confidence-scored comment tri
 
 **Interfaces:**
 - Consumes: `CLAUDE_ISSUE_NUMBER` (work-issue), `$ARGUMENTS` as PR number (address-review), `$PR` (runner dispatch_revise).
-- Produces: `claude:review` or `claude:in-progress` mirrored to the linked issue.
+- Produces: `automation:review` or `automation:in-progress` mirrored to the linked issue.
 
 - [ ] **Step 1: Add mirroring to `work-issue` Handoff**
 
-In `.claude/skills/work-issue/SKILL.md`, find the `## Pull request` → `After opening PR` section. After step 2 (the label swap block that removes `claude:in-progress` and adds `claude:review`), add:
+In `.claude/skills/work-issue/SKILL.md`, find the `## Pull request` → `After opening PR` section. After step 2 (the label swap block that removes `automation:in-progress` and adds `automation:review`), add:
 
 ```markdown
-3. Mirror `claude:review` to the issue (so the issue reflects current status without drilling into the PR):
+3. Mirror `automation:review` to the issue (so the issue reflects current status without drilling into the PR):
 
    ```bash
    gh issue edit "$CLAUDE_ISSUE_NUMBER" \
      --repo "$CLAUDE_REPO" \
-     --add-label "claude:review" \
-     --remove-label "claude:in-progress" || true
+     --add-label "automation:review" \
+     --remove-label "automation:in-progress" || true
    ```
 ```
 
@@ -359,10 +359,10 @@ The existing step 3 ("Ensure `CLAUDE_REVIEWER` is requested...") becomes step 4,
 
 - [ ] **Step 2: Add mirroring to `address-review` Handoff**
 
-In `.claude/skills/address-review/SKILL.md`, find the `## Handoff` section. After step 4 (the label swap: remove `claude:in-progress`, add `claude:review`), add a new step 5:
+In `.claude/skills/address-review/SKILL.md`, find the `## Handoff` section. After step 4 (the label swap: remove `automation:in-progress`, add `automation:review`), add a new step 5:
 
 ```markdown
-5. Mirror `claude:review` to the linked issue:
+5. Mirror `automation:review` to the linked issue:
 
    ```bash
    # Resolve the linked issue number from PR closing references
@@ -378,8 +378,8 @@ In `.claude/skills/address-review/SKILL.md`, find the `## Handoff` section. Afte
 
    if [[ -n "$LINKED_ISSUE" ]]; then
      gh issue edit "$LINKED_ISSUE" --repo "$CLAUDE_REPO" \
-       --add-label "claude:review" \
-       --remove-label "claude:in-progress" || true
+       --add-label "automation:review" \
+       --remove-label "automation:in-progress" || true
    fi
    ```
 
@@ -390,7 +390,7 @@ The existing step 5 (Re-request review) stays as step 6.
 
 - [ ] **Step 3: Add mirroring to runner `dispatch_new` (stacked case)**
 
-In `scripts/claude/run-next-issue.sh`, inside `dispatch_new()`, after the line that sets `claude:in-progress` on the issue (~line 251):
+In `scripts/claude/run-next-issue.sh`, inside `dispatch_new()`, after the line that sets `automation:in-progress` on the issue (~line 251):
 
 ```bash
 echo "Updating issue labels..."
@@ -421,7 +421,7 @@ run gh pr edit "$PR" --repo "$REPO" \
 Add:
 
 ```bash
-# Mirror claude:in-progress to the linked issue so the issue reflects active work.
+# Mirror automation:in-progress to the linked issue so the issue reflects active work.
 local LINKED_ISSUE
 LINKED_ISSUE="$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences \
     --jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)"
@@ -448,7 +448,7 @@ Expected: `Syntax OK`
 DRY_RUN=1 bash scripts/claude/run-next-issue.sh 2>&1 | tail -5
 ```
 
-Expected: `Nothing to do (no claude:revise PRs, no claude:ready issues).` (or a dry-run dispatch line if a queue item exists).
+Expected: `Nothing to do (no automation:revise PRs, no automation:ready issues).` (or a dry-run dispatch line if a queue item exists).
 
 - [ ] **Step 7: Commit all mirroring changes together**
 
@@ -459,6 +459,6 @@ git commit -m "feat: mirror PR status labels to linked issue for live status das
 ```
 
 **Manual E2E (run after merge to main):**
-- Work an issue via the runner → after PR opens and `claude:review` is set on PR, confirm the issue also shows `claude:review`.
-- Trigger `dispatch_revise` via runner → confirm the linked issue gets `claude:in-progress`.
-- After `address-review` completes and flips PR back to `claude:review`, confirm issue also updates.
+- Work an issue via the runner → after PR opens and `automation:review` is set on PR, confirm the issue also shows `automation:review`.
+- Trigger `dispatch_revise` via runner → confirm the linked issue gets `automation:in-progress`.
+- After `address-review` completes and flips PR back to `automation:review`, confirm issue also updates.

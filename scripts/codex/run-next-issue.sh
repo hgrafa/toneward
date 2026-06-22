@@ -2,12 +2,12 @@
 set -euo pipefail
 
 REPO="${REPO:-$(git remote get-url origin | sed 's/.*github.com[:/]\(.*\)\.git/\1/')}"
-READY_LABEL="${READY_LABEL:-codex:ready}"
-IN_PROGRESS_LABEL="${IN_PROGRESS_LABEL:-codex:in-progress}"
-REVIEW_LABEL="${REVIEW_LABEL:-codex:review}"
-REVISE_LABEL="${REVISE_LABEL:-codex:revise}"
-BLOCKED_LABEL="${BLOCKED_LABEL:-codex:blocked}"
-COMPLETED_LABEL="${COMPLETED_LABEL:-codex:completed}"
+READY_LABEL="${READY_LABEL:-automation:ready}"
+IN_PROGRESS_LABEL="${IN_PROGRESS_LABEL:-automation:in-progress}"
+REVIEW_LABEL="${REVIEW_LABEL:-automation:review}"
+REVISE_LABEL="${REVISE_LABEL:-automation:revise}"
+BLOCKED_LABEL="${BLOCKED_LABEL:-automation:blocked}"
+COMPLETED_LABEL="${COMPLETED_LABEL:-automation:completed}"
 QUEUE_PRIORITY="${QUEUE_PRIORITY:-revise-first}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -45,12 +45,12 @@ ensure_label() {
 }
 
 ensure_labels() {
-	ensure_label "$READY_LABEL" "0E8A16" "Ready for Codex to pick up"
-	ensure_label "$IN_PROGRESS_LABEL" "FBCA04" "Codex work in progress"
-	ensure_label "$REVIEW_LABEL" "5319E7" "Codex PR opened, waiting for review"
-	ensure_label "$REVISE_LABEL" "D93F0B" "Reviewed, changes requested - Codex resume on the PR"
-	ensure_label "$BLOCKED_LABEL" "B60205" "Codex blocked, human follow-up needed"
-	ensure_label "$COMPLETED_LABEL" "0E8A16" "Codex work completed"
+	ensure_label "$READY_LABEL" "0E8A16" "Ready for an automation runner to pick up"
+	ensure_label "$IN_PROGRESS_LABEL" "FBCA04" "Automation work in progress"
+	ensure_label "$REVIEW_LABEL" "5319E7" "Automation PR opened, waiting for review"
+	ensure_label "$REVISE_LABEL" "D93F0B" "Reviewed, changes requested - automation should resume on the PR"
+	ensure_label "$BLOCKED_LABEL" "B60205" "Automation blocked, human follow-up needed"
+	ensure_label "$COMPLETED_LABEL" "0E8A16" "Automation work completed"
 }
 
 CODEX_REVIEWER="${CODEX_REVIEWER:-$(gh repo view "$REPO" --json owner --jq '.owner.login' 2>/dev/null || true)}"

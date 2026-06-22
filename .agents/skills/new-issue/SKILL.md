@@ -46,7 +46,7 @@ Default silently. Never ask.
 
 ### Queue Readiness
 
-Add `codex:ready` only if the description is specific and actionable with no open product questions. Omit it silently otherwise.
+Add `automation:ready` only if the description is specific and actionable with no open product questions. Omit it silently otherwise.
 
 ## Title Format
 
@@ -67,7 +67,7 @@ Derive the title from the description. Strip filler words; keep it imperative.
 gh issue create \
   --repo "$REPO" \
   --title "[FEAT] Example title" \
-  --label "type:feature,size:m,codex:ready" \
+  --label "type:feature,size:m,automation:ready" \
   --body "..."
 ```
 
@@ -75,7 +75,7 @@ Adjust `--title`, `--label`, and `--body` to the classified values.
 
 ## Output
 
-Print the created issue URL on a single line. If `codex:ready` was added, include `(queued as codex:ready)`.
+Print the created issue URL on a single line. If `automation:ready` was added, include `(queued as automation:ready)`.
 
 If Codex posts a comment to the new issue, end it with:
 

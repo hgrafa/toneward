@@ -67,17 +67,17 @@ If a linked open PR exists:
 
 ```bash
 gh pr edit "$PR_NUMBER" --repo "$REPO" \
-  --add-label "codex:revise" \
-  --remove-label "codex:review" || true
+  --add-label "automation:revise" \
+  --remove-label "automation:review" || true
 ```
 
 If no linked PR exists, or the dissatisfaction spawns new issue-level work:
 
 ```bash
 gh issue edit "$ISSUE_NUMBER" --repo "$REPO" \
-  --add-label "codex:ready" \
-  --remove-label "codex:review" \
-  --remove-label "codex:in-progress" || true
+  --add-label "automation:ready" \
+  --remove-label "automation:review" \
+  --remove-label "automation:in-progress" || true
 ```
 
 Post a triage comment:
@@ -86,7 +86,7 @@ Post a triage comment:
 ## $review-issues triage
 
 Detected: user dissatisfaction with current result.
-Action: added `codex:revise` to PR #<PR_NUMBER>.
+Action: added `automation:revise` to PR #<PR_NUMBER>.
 
 --Codex
 ```
@@ -97,7 +97,7 @@ Or:
 ## $review-issues triage
 
 Detected: user dissatisfaction with current result.
-Action: re-queued issue as `codex:ready`.
+Action: re-queued issue as `automation:ready`.
 
 --Codex
 ```
@@ -106,8 +106,8 @@ Action: re-queued issue as `codex:ready`.
 
 ```bash
 gh issue edit "$ISSUE_NUMBER" --repo "$REPO" \
-  --add-label "codex:blocked" \
-  --remove-label "codex:in-progress" || true
+  --add-label "automation:blocked" \
+  --remove-label "automation:in-progress" || true
 ```
 
 Post a blocker comment:
@@ -117,7 +117,7 @@ Post a blocker comment:
 
 Detected: open question blocking progress.
 Quote: "<verbatim question from comment>"
-Action: added `codex:blocked`. Human follow-up needed.
+Action: added `automation:blocked`. Human follow-up needed.
 
 --Codex
 ```
@@ -134,8 +134,8 @@ After processing all issues, print:
 
 ```text
 Reviewed N issues:
-  #9  - added codex:revise to PR #10 (dissatisfaction detected)
+  #9  - added automation:revise to PR #10 (dissatisfaction detected)
   #11 - no action (satisfied)
-  #13 - asked about intent -> re-queued as codex:ready
+  #13 - asked about intent -> re-queued as automation:ready
   #14 - no scoreable user comments, skipped
 ```

@@ -73,7 +73,7 @@ Autonomous Codex queue runner:
 scripts/codex/run-next-issue.sh
 ```
 
-It uses `codex:*` labels by default (`codex:ready`, `codex:in-progress`, `codex:review`, `codex:revise`, `codex:blocked`, `codex:completed`) and creates worktrees under `.agents/worktrees/`.
+It uses agent-neutral `automation:*` labels by default (`automation:ready`, `automation:in-progress`, `automation:review`, `automation:revise`, `automation:blocked`, `automation:completed`) and creates worktrees under `.agents/worktrees/`.
 
 Useful Codex setup checks:
 

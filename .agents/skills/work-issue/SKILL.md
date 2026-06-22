@@ -32,8 +32,8 @@ Before implementation, label the issue WIP so parallel sessions do not pick it u
 
 ```bash
 gh issue edit "$ISSUE_NUMBER" --repo "$REPO" \
-  --add-label "codex:in-progress" \
-  --remove-label "codex:ready" 2>/dev/null || true
+  --add-label "automation:in-progress" \
+  --remove-label "automation:ready" 2>/dev/null || true
 ```
 
 ### Step 2 - Read Context
@@ -291,14 +291,14 @@ After opening PR:
 
 1. Comment on the issue with the PR link and end the comment with `--Codex`.
 2. Add or update PR labels:
-   - remove `codex:in-progress`
-   - add `codex:review`
-3. Mirror `codex:review` to the issue:
+   - remove `automation:in-progress`
+   - add `automation:review`
+3. Mirror `automation:review` to the issue:
 
    ```bash
    gh issue edit "$ISSUE_NUMBER" --repo "$REPO" \
-     --add-label "codex:review" \
-     --remove-label "codex:in-progress" || true
+     --add-label "automation:review" \
+     --remove-label "automation:in-progress" || true
    ```
 
 4. Ensure `CODEX_REVIEWER` is requested as a reviewer when set.

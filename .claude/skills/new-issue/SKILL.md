@@ -33,7 +33,7 @@ If the description clearly matches one category, apply it with no question. If g
 
 ### Queue readiness (default to omitted — never ask)
 
-Add `claude:ready` only if the description is specific and actionable with no open product questions (e.g. "Fix the audio slider snapping to wrong values" is actionable; "Improve UX somehow" is not). Omit silently otherwise.
+Add `automation:ready` only if the description is specific and actionable with no open product questions (e.g. "Fix the audio slider snapping to wrong values" is actionable; "Improve UX somehow" is not). Omit silently otherwise.
 
 ## Title format
 
@@ -60,14 +60,14 @@ gh issue create \
   --body "$ARGUMENTS"
 ```
 
-Adjust `--title` and `--label` to the classified values. Include `claude:ready` in `--label` if applicable.
+Adjust `--title` and `--label` to the classified values. Include `automation:ready` in `--label` if applicable.
 
 ## Output
 
-Print the created issue URL on a single line. If `claude:ready` was added:
+Print the created issue URL on a single line. If `automation:ready` was added:
 
 ```
-Issue #N created → https://github.com/... (queued as claude:ready)
+Issue #N created → https://github.com/... (queued as automation:ready)
 ```
 
 Otherwise:
