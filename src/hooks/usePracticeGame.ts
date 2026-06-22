@@ -40,6 +40,10 @@ export interface PracticeState {
 	gameStartedAt: number;
 	endedAt: number;
 	lastResult: LastResult | null;
+	// Bumped after a finished score is persisted so the landing/leaderboard
+	// re-renders and re-reads localStorage (otherwise the rank is stale until
+	// a page reload).
+	scoresVersion: number;
 }
 
 type Action =
@@ -60,7 +64,8 @@ type Action =
 	| { type: "PAUSE"; payload: number }
 	| { type: "RESUME"; payload: number }
 	| { type: "QUIT" }
-	| { type: "GAME_OVER"; payload: number };
+	| { type: "GAME_OVER"; payload: number }
+	| { type: "SCORE_SAVED" };
 
 const INITIAL_STATE: PracticeState = {
 	phase: "idle",
@@ -76,6 +81,7 @@ const INITIAL_STATE: PracticeState = {
 	gameStartedAt: 0,
 	endedAt: 0,
 	lastResult: null,
+	scoresVersion: 0,
 };
 
 function pickRandomType(score: number): ChallengeType {
@@ -154,6 +160,9 @@ function reducer(state: PracticeState, action: Action): PracticeState {
 			// previously finished match so the landing still shows it.
 			return { ...INITIAL_STATE, lastResult: state.lastResult };
 		}
+		case "SCORE_SAVED": {
+			return { ...state, scoresVersion: state.scoresVersion + 1 };
+		}
 		case "GAME_OVER": {
 			const endedAt = action.payload;
 			return {
@@ -229,6 +238,9 @@ export function usePracticeGame(tuning: Tuning) {
 				totalTimeMs: state.endedAt - state.gameStartedAt,
 				date: state.endedAt,
 			});
+			// Force a re-render so the landing/leaderboard re-reads the just-saved
+			// score (localStorage writes don't trigger React updates on their own).
+			dispatch({ type: "SCORE_SAVED" });
 		}
 	}, [state.endedAt, state.gameStartedAt, state.phase, state.score]);
 
