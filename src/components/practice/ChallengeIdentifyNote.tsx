@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { IdentifyNoteChallenge } from "@/core/practice";
 import { playCorrect, playWrong } from "@/lib/practiceAudio";
 import type { NoteName } from "@/types/music";
+import { PixelBurst } from "./PixelBurst";
 
 interface Props {
 	challenge: IdentifyNoteChallenge;
@@ -13,22 +14,28 @@ interface Props {
 export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 	const { t } = useTranslation();
 	const [selected, setSelected] = useState<NoteName | null>(null);
+	const [showBurst, setShowBurst] = useState(false);
 
 	function pick(opt: NoteName) {
 		if (selected) return;
 		const isCorrect = opt === challenge.answer;
-		if (isCorrect) playCorrect();
-		else playWrong();
+		if (isCorrect) {
+			playCorrect();
+			setShowBurst(true);
+		} else {
+			playWrong();
+		}
 		setSelected(opt);
 		setTimeout(() => {
 			setSelected(null);
+			setShowBurst(false);
 			onAnswer(opt);
 		}, 700);
 	}
 
 	function buttonClass(opt: NoteName): string {
 		const base =
-			"aspect-square h-auto text-2xl font-black transition-all duration-200";
+			"pixel-btn aspect-square h-auto text-2xl font-black transition-all duration-200";
 		if (!selected) return base;
 		if (opt === challenge.answer)
 			return `${base} !bg-green-500 !text-white !border-green-500 scale-[1.04] shadow-lg shadow-green-500/25`;
@@ -44,16 +51,22 @@ export function ChallengeIdentifyNote({ challenge, onAnswer }: Props) {
 
 	return (
 		<div className="flex flex-col items-center gap-8">
-			<div className="text-center space-y-3">
+			<div
+				className="text-center space-y-3 anim-prompt-in"
+				key={`${challenge.root}-${challenge.interval}`}
+			>
 				<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
 					{t("ui.practice.whatNote", {
 						interval: t(`ui.intervals.${challenge.interval}`),
 						root: challenge.root,
 					})}
 				</p>
-				<span className="block text-6xl font-black tracking-tight mt-2">
-					{challenge.root}
-				</span>
+				<div className="relative flex items-center justify-center">
+					{showBurst && <PixelBurst />}
+					<span className="block text-6xl font-black tracking-tight mt-2">
+						{challenge.root}
+					</span>
+				</div>
 			</div>
 			<div className="grid grid-cols-3 gap-3 w-full">
 				{challenge.options.map((opt) => (
