@@ -122,3 +122,173 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+/* ---- Practice game: pixel chrome + minimal animations ---- */
+@font-face {
+	font-family: "Press Start 2P";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("/fonts/press-start-2p.woff2") format("woff2");
+}
+
+.font-pixel {
+	font-family: "Press Start 2P", ui-monospace, monospace;
+	letter-spacing: 0.02em;
+}
+
+/* Raised retro button: square, hard offset shadow, presses down on click. */
+.pixel-btn {
+	border-radius: 0 !important;
+	box-shadow: 3px 3px 0 0 var(--border);
+	transition:
+		transform 0.05s ease,
+		box-shadow 0.05s ease;
+}
+.pixel-btn:active:not(:disabled) {
+	transform: translate(1px, 1px);
+	box-shadow: 1px 1px 0 0 var(--border);
+}
+
+@keyframes scorePop {
+	0% {
+		transform: scale(1);
+	}
+	45% {
+		transform: scale(1.18);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+@keyframes cardShake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	20% {
+		transform: translateX(-4px);
+	}
+	40% {
+		transform: translateX(4px);
+	}
+	60% {
+		transform: translateX(-3px);
+	}
+	80% {
+		transform: translateX(2px);
+	}
+}
+@keyframes heartLose {
+	0% {
+		transform: scale(1.25);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+@keyframes promptIn {
+	0% {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+@keyframes comboFlash {
+	0% {
+		transform: scale(1);
+	}
+	40% {
+		transform: scale(1.4);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+@keyframes burstOut {
+	0% {
+		opacity: 1;
+		transform: translate(0, 0) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(var(--tx), var(--ty)) scale(0.4);
+	}
+}
+/* Correct-answer feedback: crisp green/white blink ~3 times, settling on green.
+   The flat paired stops make each flash snap rather than fade. Background is
+   driven entirely by this animation (no !important Tailwind bg on the blinking
+   button) because !important author rules would otherwise override keyframes. */
+@keyframes correctBlink {
+	0%,
+	15% {
+		background-color: #22c55e;
+	}
+	16%,
+	32% {
+		background-color: #ffffff;
+	}
+	33%,
+	49% {
+		background-color: #22c55e;
+	}
+	50%,
+	66% {
+		background-color: #ffffff;
+	}
+	67%,
+	83% {
+		background-color: #22c55e;
+	}
+	84%,
+	99% {
+		background-color: #ffffff;
+	}
+	100% {
+		background-color: #22c55e;
+	}
+}
+
+.anim-score-pop {
+	animation: scorePop 0.25s ease;
+}
+.anim-card-shake {
+	animation: cardShake 0.3s ease;
+}
+.anim-heart-lose {
+	animation: heartLose 0.35s ease;
+}
+.anim-prompt-in {
+	animation: promptIn 0.15s ease both;
+}
+.anim-combo-flash {
+	animation: comboFlash 0.3s ease;
+}
+.anim-burst {
+	animation: burstOut 0.35s ease-out forwards;
+}
+.anim-correct-blink {
+	animation: correctBlink 0.7s linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.anim-score-pop,
+	.anim-card-shake,
+	.anim-heart-lose,
+	.anim-prompt-in,
+	.anim-combo-flash,
+	.anim-burst {
+		animation: none;
+	}
+	/* No blink under reduced motion — fall back to a steady green reveal. */
+	.anim-correct-blink {
+		animation: none;
+		background-color: #22c55e;
+	}
+	.pixel-btn {
+		transition: none;
+	}
+}

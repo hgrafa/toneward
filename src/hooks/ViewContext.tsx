@@ -11,10 +11,13 @@ import type { AppView } from "@/types/showroom";
 const VIEW_KEY = "fretboard.view";
 const SIDEBAR_KEY = "fretboard.sidebarCollapsed";
 
+const VALID_VIEWS: AppView[] = ["fretboard", "showroom", "practice"];
+
 function loadView(): AppView {
 	try {
-		return localStorage.getItem(VIEW_KEY) === "showroom"
-			? "showroom"
+		const saved = localStorage.getItem(VIEW_KEY);
+		return VALID_VIEWS.includes(saved as AppView)
+			? (saved as AppView)
 			: "fretboard";
 	} catch {
 		/* storage unavailable */

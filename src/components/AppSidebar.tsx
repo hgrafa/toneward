@@ -1,4 +1,10 @@
-import { Guitar, Music4, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+	Guitar,
+	Music4,
+	PanelLeftClose,
+	PanelLeftOpen,
+	Target,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
 	Select,
@@ -41,6 +47,7 @@ export function AppSidebar() {
 	const NAV: { view: AppView; label: string; icon: typeof Guitar }[] = [
 		{ view: "fretboard", label: t("ui.sidebar.fretboard"), icon: Guitar },
 		{ view: "showroom", label: t("ui.sidebar.showroom"), icon: Music4 },
+		{ view: "practice", label: t("ui.sidebar.practice"), icon: Target },
 	];
 
 	return (

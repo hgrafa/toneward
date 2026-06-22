@@ -1,4 +1,4 @@
-export type AppView = "fretboard" | "showroom";
+export type AppView = "fretboard" | "showroom" | "practice";
 
 export type AudioSource =
 	| { kind: "youtube"; videoId: string; url: string; title: string }

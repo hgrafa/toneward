@@ -79,6 +79,8 @@ export interface FretboardDiagramProps {
 	onHoverPosition?: (
 		data: { x: number; y: number; pos: FretPosition } | null,
 	) => void;
+	onClickPosition?: (pos: FretPosition) => void;
+	markedPositions?: Set<string>; // keys: `${string}-${fret}`
 }
 
 export function FretboardDiagram({
@@ -91,6 +93,8 @@ export function FretboardDiagram({
 	highlightRoot,
 	rootPitchClass,
 	onHoverPosition,
+	onClickPosition,
+	markedPositions,
 }: FretboardDiagramProps) {
 	const fretCount = maxFret - minFret;
 	const showNut = minFret === 0;
@@ -240,7 +244,11 @@ export function FretboardDiagram({
 				const cy = stringY(pos.string);
 				const root = isRoot(pos);
 				const label = dotLabel(pos);
-				const interactive = Boolean(onHoverPosition);
+				const posKey = `${pos.string}-${pos.fret}`;
+				const isMarked = markedPositions?.has(posKey) ?? false;
+				const isGhost = markedPositions !== undefined && !root && !isMarked;
+				const interactive =
+					Boolean(onHoverPosition) || Boolean(onClickPosition);
 
 				return (
 					<g
@@ -254,6 +262,7 @@ export function FretboardDiagram({
 						onMouseLeave={
 							onHoverPosition ? () => onHoverPosition(null) : undefined
 						}
+						onClick={onClickPosition ? () => onClickPosition(pos) : undefined}
 					>
 						<circle
 							cx={cx}
@@ -262,11 +271,15 @@ export function FretboardDiagram({
 							className={
 								root
 									? "fill-rose-500 stroke-rose-300"
-									: "fill-foreground stroke-background"
+									: isMarked
+										? "fill-primary stroke-primary/50"
+										: isGhost
+											? "fill-muted-foreground/25 stroke-transparent"
+											: "fill-foreground stroke-background"
 							}
 							strokeWidth={root ? 2 : 1}
 						/>
-						{label && (
+						{label && !isGhost && (
 							<text
 								x={cx}
 								y={cy}

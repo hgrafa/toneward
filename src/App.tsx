@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/AppSidebar";
 import { FretboardView } from "@/components/FretboardView";
+import { PracticeView } from "@/components/practice/PracticeView";
 import { ShowroomView } from "@/components/showroom/ShowroomView";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
@@ -30,7 +31,9 @@ function AppShell() {
 		<div className="flex h-screen bg-background text-foreground">
 			<AppSidebar />
 			<main className="flex-1 overflow-y-auto">
-				{view === "fretboard" ? <FretboardView /> : <ShowroomView />}
+				{view === "fretboard" && <FretboardView />}
+				{view === "showroom" && <ShowroomView />}
+				{view === "practice" && <PracticeView />}
 			</main>
 		</div>
 	);
