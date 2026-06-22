@@ -1,4 +1,4 @@
-import { LogOut, Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PixelHeart } from "./PixelHeart";
@@ -61,18 +61,19 @@ export function GameHeader({
 
 	return (
 		<div className="flex flex-col gap-3 px-6 py-4 border-b border-border bg-card">
-			<div className="flex items-center justify-between">
-				<div className="flex gap-2 items-center">
-					{[0, 1, 2].map((i) => (
-						<PixelHeart
-							key={i}
-							filled={i < lives}
-							pixelSize={5}
-							losing={lostIdx === i}
-						/>
-					))}
-				</div>
-				<div className="flex items-center gap-4">
+			<div className="grid grid-cols-3 items-center">
+				{/* Left: lives + streak */}
+				<div className="flex items-center gap-2 justify-self-start">
+					<div className="flex gap-2 items-center">
+						{[0, 1, 2].map((i) => (
+							<PixelHeart
+								key={i}
+								filled={i < lives}
+								pixelSize={5}
+								losing={lostIdx === i}
+							/>
+						))}
+					</div>
 					{streak >= 2 && (
 						<span
 							key={comboKey}
@@ -82,6 +83,21 @@ export function GameHeader({
 							×{streak}
 						</span>
 					)}
+				</div>
+				{/* Middle: score */}
+				<div className="justify-self-center flex flex-col items-center justify-center gap-0.5 rounded-md border-2 border-border bg-muted/40 px-5 py-1.5">
+					<span className="font-pixel text-[9px] uppercase text-muted-foreground">
+						{t("ui.practice.score")}
+					</span>
+					<span
+						key={scoreKey}
+						className="font-pixel text-3xl leading-none tabular-nums anim-score-pop inline-block"
+					>
+						{score}
+					</span>
+				</div>
+				{/* Right: sound + close */}
+				<div className="flex items-center gap-1 justify-self-end">
 					<button
 						type="button"
 						onClick={onToggleMute}
@@ -96,19 +112,8 @@ export function GameHeader({
 						title={t("ui.practice.quit")}
 						className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
 					>
-						<LogOut size={16} />
+						<X size={18} />
 					</button>
-					<div className="flex items-center gap-2">
-						<span className="font-pixel text-[10px] uppercase text-muted-foreground">
-							{t("ui.practice.score")}
-						</span>
-						<span
-							key={scoreKey}
-							className="font-pixel text-xl tabular-nums anim-score-pop inline-block"
-						>
-							{score}
-						</span>
-					</div>
 				</div>
 			</div>
 			<div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
