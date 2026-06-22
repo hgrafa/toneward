@@ -1,4 +1,4 @@
-import { Volume2, VolumeX } from "lucide-react";
+import { LogOut, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PixelHeart } from "./PixelHeart";
@@ -11,6 +11,7 @@ interface GameHeaderProps {
 	timerStartedAt: number;
 	muted: boolean;
 	onToggleMute: () => void;
+	onExit: () => void;
 }
 
 export function GameHeader({
@@ -21,6 +22,7 @@ export function GameHeader({
 	timerStartedAt,
 	muted,
 	onToggleMute,
+	onExit,
 }: GameHeaderProps) {
 	const { t } = useTranslation();
 
@@ -87,6 +89,14 @@ export function GameHeader({
 						className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
 					>
 						{muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+					</button>
+					<button
+						type="button"
+						onClick={onExit}
+						title={t("ui.practice.quit")}
+						className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
+					>
+						<LogOut size={16} />
 					</button>
 					<div className="flex items-center gap-2">
 						<span className="font-pixel text-[10px] uppercase text-muted-foreground">

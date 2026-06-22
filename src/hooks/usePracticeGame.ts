@@ -35,6 +35,7 @@ export interface PracticeState {
 	maxStreak: number;
 	timerStartedAt: number;
 	currentTimerMs: number;
+	paused: boolean;
 	markedPositions: Set<string>;
 	gameStartedAt: number;
 	endedAt: number;
@@ -56,6 +57,9 @@ type Action =
 			};
 	  }
 	| { type: "TOGGLE_POSITION"; payload: string }
+	| { type: "PAUSE"; payload: number }
+	| { type: "RESUME"; payload: number }
+	| { type: "QUIT" }
 	| { type: "GAME_OVER"; payload: number };
 
 const INITIAL_STATE: PracticeState = {
@@ -67,6 +71,7 @@ const INITIAL_STATE: PracticeState = {
 	maxStreak: 0,
 	timerStartedAt: 0,
 	currentTimerMs: 0,
+	paused: false,
 	markedPositions: new Set(),
 	gameStartedAt: 0,
 	endedAt: 0,
@@ -133,6 +138,22 @@ function reducer(state: PracticeState, action: Action): PracticeState {
 			}
 			return { ...state, markedPositions: next };
 		}
+		case "PAUSE": {
+			// Freeze the countdown, keeping the time left for resume.
+			const remaining = Math.max(
+				0,
+				state.currentTimerMs - (action.payload - state.timerStartedAt),
+			);
+			return { ...state, paused: true, currentTimerMs: remaining };
+		}
+		case "RESUME": {
+			return { ...state, paused: false, timerStartedAt: action.payload };
+		}
+		case "QUIT": {
+			// Abandon the round: back to the landing, no score saved. Keep the
+			// previously finished match so the landing still shows it.
+			return { ...INITIAL_STATE, lastResult: state.lastResult };
+		}
 		case "GAME_OVER": {
 			const endedAt = action.payload;
 			return {
@@ -165,7 +186,7 @@ export function usePracticeGame(tuning: Tuning) {
 	// next challenge with the streak reset — a timeout is forgiving, not instant
 	// death. Game over only when the last heart is spent.
 	useEffect(() => {
-		if (state.phase !== "playing") return;
+		if (state.phase !== "playing" || state.paused) return;
 		const id = setTimeout(() => {
 			const s = stateRef.current;
 			const nextLives = s.lives - 1;
@@ -191,7 +212,7 @@ export function usePracticeGame(tuning: Tuning) {
 			});
 		}, state.currentTimerMs);
 		return () => clearTimeout(id);
-	}, [state.phase, state.currentTimerMs]);
+	}, [state.phase, state.currentTimerMs, state.paused]);
 
 	// End round when lives reach 0
 	useEffect(() => {
@@ -262,6 +283,18 @@ export function usePracticeGame(tuning: Tuning) {
 		return isCorrect;
 	}
 
+	function pause() {
+		dispatch({ type: "PAUSE", payload: Date.now() });
+	}
+
+	function resume() {
+		dispatch({ type: "RESUME", payload: Date.now() });
+	}
+
+	function quit() {
+		dispatch({ type: "QUIT" });
+	}
+
 	const totalTimeMs =
 		state.endedAt > 0 ? state.endedAt - state.gameStartedAt : 0;
 
@@ -272,5 +305,8 @@ export function usePracticeGame(tuning: Tuning) {
 		answer,
 		togglePosition,
 		submitFretboard,
+		pause,
+		resume,
+		quit,
 	};
 }

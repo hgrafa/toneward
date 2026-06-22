@@ -115,6 +115,11 @@ const ptBR: TranslationSchema = {
 			lastMatchScore: "{{score}} pts em {{time}}",
 			streak: "Sequência",
 			bestStreak: "Melhor sequência",
+			quit: "Sair da partida",
+			quitTitle: "Sair desta partida?",
+			quitBody: "Seu progresso atual será perdido e não será salvo no ranking.",
+			quitCancel: "Continuar jogando",
+			quitConfirm: "Sair",
 		},
 	},
 	errors: {

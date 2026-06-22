@@ -111,6 +111,12 @@ const en = {
 			lastMatchScore: "{{score}} pts in {{time}}",
 			streak: "Streak",
 			bestStreak: "Best streak",
+			quit: "Quit round",
+			quitTitle: "Quit this round?",
+			quitBody:
+				"Your current progress will be lost and won't be saved to the leaderboard.",
+			quitCancel: "Keep playing",
+			quitConfirm: "Quit",
 		},
 	},
 	errors: {
