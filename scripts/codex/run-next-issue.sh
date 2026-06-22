@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${REPO:-hgrafa/fretboard-designer}"
+REPO="${REPO:-$(git remote get-url origin | sed 's/.*github.com[:/]\(.*\)\.git/\1/')}"
 READY_LABEL="${READY_LABEL:-automation:ready}"
 IN_PROGRESS_LABEL="${IN_PROGRESS_LABEL:-automation:in-progress}"
 REVIEW_LABEL="${REVIEW_LABEL:-automation:review}"
-
-CLAUDE_MAX_TURNS="${CLAUDE_MAX_TURNS:-40}"
-CLAUDE_PERMISSION_MODE="${CLAUDE_PERMISSION_MODE:-auto}"
-CLAUDE_COMMAND_NAME="${CLAUDE_COMMAND_NAME:-/work-issue}"
 REVISE_LABEL="${REVISE_LABEL:-automation:revise}"
+BLOCKED_LABEL="${BLOCKED_LABEL:-automation:blocked}"
+COMPLETED_LABEL="${COMPLETED_LABEL:-automation:completed}"
 QUEUE_PRIORITY="${QUEUE_PRIORITY:-revise-first}"
 DRY_RUN="${DRY_RUN:-0}"
+
+CODEX_SANDBOX="${CODEX_SANDBOX:-workspace-write}"
+CODEX_APPROVAL_POLICY="${CODEX_APPROVAL_POLICY:-never}"
+CODEX_COMMAND_NAME="${CODEX_COMMAND_NAME:-work-issue}"
 
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 cd "$ROOT_DIR"
@@ -25,10 +27,10 @@ require_cmd() {
 
 require_cmd gh
 require_cmd git
+require_cmd jq
 require_cmd pnpm
-require_cmd claude
+require_cmd codex
 
-# Run a mutating command, or just print it under DRY_RUN.
 run() {
 	if [[ "$DRY_RUN" == "1" ]]; then
 		echo "[dry-run] $*"
@@ -37,37 +39,41 @@ run() {
 	fi
 }
 
-# Reviewer defaults to the repo owner login unless overridden.
-CLAUDE_REVIEWER="${CLAUDE_REVIEWER:-$(gh repo view "$REPO" --json owner --jq '.owner.login' 2>/dev/null || true)}"
+ensure_label() {
+	local label="$1" color="$2" description="$3"
+	gh label create "$label" --repo "$REPO" --color "$color" --description "$description" >/dev/null 2>&1 || true
+}
 
-# Ensure the review-loop label exists (idempotent).
-gh label create "$REVISE_LABEL" --repo "$REPO" --color FBCA04 \
-	--description "Reviewed, changes requested - automation should resume on the PR" >/dev/null 2>&1 || true
+ensure_labels() {
+	ensure_label "$READY_LABEL" "0E8A16" "Ready for an automation runner to pick up"
+	ensure_label "$IN_PROGRESS_LABEL" "FBCA04" "Automation work in progress"
+	ensure_label "$REVIEW_LABEL" "5319E7" "Automation PR opened, waiting for review"
+	ensure_label "$REVISE_LABEL" "D93F0B" "Reviewed, changes requested - automation should resume on the PR"
+	ensure_label "$BLOCKED_LABEL" "B60205" "Automation blocked, human follow-up needed"
+	ensure_label "$COMPLETED_LABEL" "0E8A16" "Automation work completed"
+}
 
-# Important:
-# If ANTHROPIC_API_KEY is present, Claude Code may use API billing instead of
-# subscription/OAuth auth. This runner is intended for Claude Code subscription usage.
-unset ANTHROPIC_API_KEY || true
+CODEX_REVIEWER="${CODEX_REVIEWER:-$(gh repo view "$REPO" --json owner --jq '.owner.login' 2>/dev/null || true)}"
 
 echo "Repository: $REPO"
-echo "Claude permission mode: $CLAUDE_PERMISSION_MODE"
-echo "Claude max turns: $CLAUDE_MAX_TURNS"
+echo "Codex sandbox: $CODEX_SANDBOX"
+echo "Codex approval policy: $CODEX_APPROVAL_POLICY"
 echo
 
 echo "Checking GitHub auth..."
 gh auth status >/dev/null
 
-echo "Checking Claude auth..."
-claude auth status --text
+echo "Checking Codex availability..."
+codex --version >/dev/null
 echo
 
-# Echoes "<base_ref>\t<base_pr>" for an issue. Deterministic, never guessed.
+ensure_labels
+
 compute_base_ref() {
 	local issue="$1" body dep_n base_pr base_ref
 
 	body="$(gh issue view "$issue" --repo "$REPO" --json body --jq '.body' 2>/dev/null || true)"
 
-	# 1. Explicit "Depends on #N" with an open PR.
 	dep_n="$(printf '%s' "$body" | grep -oiE 'depends on #[0-9]+' | grep -oE '[0-9]+' | head -1 || true)"
 	if [[ -n "$dep_n" ]]; then
 		base_ref="$(gh pr view "$dep_n" --repo "$REPO" --json headRefName,state \
@@ -78,7 +84,6 @@ compute_base_ref() {
 		fi
 	fi
 
-	# 2. An open PR that already references this issue (a prior slice).
 	base_pr="$(gh pr list --repo "$REPO" --state open --search "#$issue in:body" \
 		--json number,updatedAt --jq 'sort_by(.updatedAt) | last | .number // empty' 2>/dev/null || true)"
 	if [[ -n "$base_pr" ]]; then
@@ -89,49 +94,52 @@ compute_base_ref() {
 		fi
 	fi
 
-	# 3. Default: main.
 	printf '%s\t%s\n' "main" ""
+}
+
+codex_exec() {
+	local workdir="$1" prompt="$2"
+	local args=(--ask-for-approval "$CODEX_APPROVAL_POLICY" --cd "$workdir")
+	if [[ -n "${CODEX_MODEL:-}" ]]; then
+		args+=("--model" "$CODEX_MODEL")
+	fi
+
+	run codex "${args[@]}" exec --sandbox "$CODEX_SANDBOX" "$prompt"
 }
 
 post_runner_checkpoint() {
 	local exit_code="$?"
-
-	# Works for an issue OR a PR — whichever is set.
-	local target="${CLAUDE_PR_NUMBER:-${CLAUDE_ISSUE_NUMBER:-}}"
+	local target="${CODEX_PR_NUMBER:-${CODEX_ISSUE_NUMBER:-}}"
 	if [[ -z "$target" ]]; then
 		exit "$exit_code"
 	fi
 
-	local header resume_arg
-	if [[ -n "${CLAUDE_PR_NUMBER:-}" ]]; then
+	local header resume_prompt workdir
+	workdir="${CODEX_WORKDIR:-$ROOT_DIR}"
+	if [[ -n "${CODEX_PR_NUMBER:-}" ]]; then
 		header="PR: #$target"
-		resume_arg="/address-review $target"
+		resume_prompt="Use \$address-review to continue PR #$target."
 	else
 		header="Issue: #$target"
-		resume_arg="$CLAUDE_COMMAND_NAME $target"
+		resume_prompt="Use \$$CODEX_COMMAND_NAME to continue issue #$target."
 	fi
 
-	# Allow disabling exit checkpoint if needed.
-	if [[ "${CLAUDE_SKIP_EXIT_CHECKPOINT:-false}" == "true" ]]; then
+	if [[ "${CODEX_SKIP_EXIT_CHECKPOINT:-false}" == "true" || "$DRY_RUN" == "1" ]]; then
 		exit "$exit_code"
 	fi
 
-	local current_branch
-	current_branch="$(git branch --show-current 2>/dev/null || true)"
+	local current_branch status last_commit checkpoint_status
+	current_branch="$(git -C "$workdir" branch --show-current 2>/dev/null || true)"
+	status="$(git -C "$workdir" status --short 2>/dev/null || true)"
+	last_commit="$(git -C "$workdir" log -1 --oneline 2>/dev/null || true)"
 
-	local status
-	status="$(git status --short 2>/dev/null || true)"
-
-	local last_commit
-	last_commit="$(git log -1 --oneline 2>/dev/null || true)"
-
-	local checkpoint_status="session-ended"
+	checkpoint_status="session-ended"
 	if [[ "$exit_code" -ne 0 ]]; then
 		checkpoint_status="runner-failed"
 	fi
 
 	local body
-	body="## Claude runner checkpoint
+	body="## Codex runner checkpoint
 
 $header
 Branch: \`$current_branch\`
@@ -140,8 +148,8 @@ Runner exit code: \`$exit_code\`
 
 ### Mode
 - Autonomous mode: yes
-- Permission mode expected: \`$CLAUDE_PERMISSION_MODE\`
-- Max turns: \`$CLAUDE_MAX_TURNS\`
+- Sandbox: \`$CODEX_SANDBOX\`
+- Approval policy: \`$CODEX_APPROVAL_POLICY\`
 
 ### Last commit
 
@@ -158,12 +166,13 @@ $status
 ### Resume command
 
 \`\`\`bash
-git switch $current_branch
-claude -p --permission-mode $CLAUDE_PERMISSION_MODE --max-turns $CLAUDE_MAX_TURNS \"$resume_arg\"
+codex --cd "$workdir" exec --sandbox "$CODEX_SANDBOX" '$resume_prompt'
 \`\`\`
+
+— Codex
 "
 
-	if [[ -n "${CLAUDE_PR_NUMBER:-}" ]]; then
+	if [[ -n "${CODEX_PR_NUMBER:-}" ]]; then
 		gh pr comment "$target" --repo "$REPO" --body "$body" >/dev/null 2>&1 || true
 	else
 		gh issue comment "$target" --repo "$REPO" --body "$body" >/dev/null 2>&1 || true
@@ -172,15 +181,31 @@ claude -p --permission-mode $CLAUDE_PERMISSION_MODE --max-turns $CLAUDE_MAX_TURN
 	exit "$exit_code"
 }
 
+prepare_worktree() {
+	local worktree="$1" branch="$2" base_ref="$3"
+
+	if git worktree list --porcelain | grep -Fqx "worktree $ROOT_DIR/$worktree"; then
+		printf '%s\n' "$ROOT_DIR/$worktree"
+		return 0
+	fi
+
+	mkdir -p "$(dirname "$worktree")"
+	git fetch origin "$base_ref"
+
+	if git show-ref --verify --quiet "refs/heads/$branch"; then
+		run git worktree add "$worktree" "$branch" >&2
+	else
+		run git worktree add "$worktree" -b "$branch" "origin/$base_ref" >&2
+	fi
+
+	printf '%s\n' "$ROOT_DIR/$worktree"
+}
+
 dispatch_new() {
 	local ISSUE_NUMBER="$1"
 
-	ISSUE_JSON="$(
-		gh issue view "$ISSUE_NUMBER" \
-			--repo "$REPO" \
-			--json number,title,labels,url,state
-	)"
-
+	local ISSUE_JSON TITLE ISSUE_URL LABELS BRANCH_PREFIX SLUG BRANCH BASE_REF BASE_PR WORKTREE WORKDIR
+	ISSUE_JSON="$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json number,title,labels,url,state)"
 	TITLE="$(echo "$ISSUE_JSON" | jq -r '.title')"
 	ISSUE_URL="$(echo "$ISSUE_JSON" | jq -r '.url')"
 
@@ -188,9 +213,7 @@ dispatch_new() {
 	echo "$ISSUE_URL"
 	echo
 
-	# Infer branch prefix from labels/title.
 	LABELS="$(echo "$ISSUE_JSON" | jq -r '.labels[].name' || true)"
-
 	BRANCH_PREFIX="feat"
 
 	if echo "$LABELS" | grep -qx "type:bug"; then
@@ -224,44 +247,38 @@ dispatch_new() {
 			| sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' \
 			| cut -c1-56
 	)"
-
 	if [[ -z "$SLUG" ]]; then
 		SLUG="work"
 	fi
 
 	BRANCH="${BRANCH_PREFIX}/issue-${ISSUE_NUMBER}-${SLUG}"
+	IFS=$'\t' read -r BASE_REF BASE_PR < <(compute_base_ref "$ISSUE_NUMBER")
+	WORKTREE=".agents/worktrees/issue-${ISSUE_NUMBER}-${SLUG}"
 
-	echo "Branch prefix: $BRANCH_PREFIX"
 	echo "Branch: $BRANCH"
+	echo "Base ref: $BASE_REF${BASE_PR:+ (stacked on #$BASE_PR)}"
+	echo "Worktree: $WORKTREE"
 	echo
 
-	local BASE_REF BASE_PR
-	IFS=$'\t' read -r BASE_REF BASE_PR < <(compute_base_ref "$ISSUE_NUMBER")
-	echo "Base ref: $BASE_REF${BASE_PR:+ (stacked on #$BASE_PR)}"
-
-	export CLAUDE_ISSUE_NUMBER="$ISSUE_NUMBER"
-	export CLAUDE_REPO="$REPO"
-	export CLAUDE_BRANCH="$BRANCH"
-	export CLAUDE_EXPECTED_PERMISSION_MODE="$CLAUDE_PERMISSION_MODE"
-	export CLAUDE_BASE_REF="$BASE_REF" CLAUDE_BASE_PR="$BASE_PR" CLAUDE_REVIEWER="$CLAUDE_REVIEWER"
-
+	export CODEX_ISSUE_NUMBER="$ISSUE_NUMBER"
+	export CODEX_REPO="$REPO"
+	export CODEX_BRANCH="$BRANCH"
+	export CODEX_BASE_REF="$BASE_REF"
+	export CODEX_BASE_PR="$BASE_PR"
+	export CODEX_REVIEWER
 	trap post_runner_checkpoint EXIT
 
 	echo "Updating issue labels..."
-	run gh issue edit "$ISSUE_NUMBER" \
-		--repo "$REPO" \
+	run gh issue edit "$ISSUE_NUMBER" --repo "$REPO" \
 		--remove-label "$READY_LABEL" \
 		--add-label "$IN_PROGRESS_LABEL" || true
 
-	# If stacking on an existing PR, mirror in-progress there too so the stack is visibly active.
 	if [[ -n "${BASE_PR:-}" ]]; then
 		run gh pr edit "$BASE_PR" --repo "$REPO" --add-label "$IN_PROGRESS_LABEL" || true
 	fi
 
 	echo "Posting start checkpoint..."
-	run gh issue comment "$ISSUE_NUMBER" \
-		--repo "$REPO" \
-		--body "## Claude checkpoint
+	run gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "## Codex checkpoint
 
 Issue: #$ISSUE_NUMBER
 Branch: \`$BRANCH\`
@@ -269,17 +286,12 @@ Status: in-progress
 
 ### Mode
 - Autonomous mode: yes
-- Permission mode expected: \`$CLAUDE_PERMISSION_MODE\`
-- Max turns: \`$CLAUDE_MAX_TURNS\`
-- Superpowers expected:
-  - brainstorming when product/design planning is needed
-  - writing-plans for medium/large work
-  - executing-plans during implementation
-  - subagent-driven-development when useful
+- Sandbox: \`$CODEX_SANDBOX\`
+- Approval policy: \`$CODEX_APPROVAL_POLICY\`
 
 ### Current understanding
 - Runner selected this issue from label \`$READY_LABEL\`.
-- Claude should read \`CLAUDE.md\`, issue comments, relevant folder docs, then work end-to-end.
+- Codex should read \`AGENTS.md\`, issue comments, relevant folder docs, then work end-to-end.
 
 ### Done
 - Issue selected.
@@ -291,7 +303,7 @@ Status: in-progress
 
 ### Decisions made
 - Branch name: \`$BRANCH\`
-- Work mode: autonomous Claude Code execution.
+- Work mode: autonomous Codex execution.
 
 ### Validation
 - [ ] \`pnpm lint\`
@@ -300,47 +312,42 @@ Status: in-progress
 
 ### Remaining work
 - Inspect issue and repo.
-- Use relevant Superpowers.
 - Implement.
 - Validate.
 - Open PR.
 
 ### Next step
-Start Claude Code with the work-issue skill."
-	echo
+Start Codex with the \$work-issue skill.
 
-	echo "Preparing git branch..."
-	git fetch origin "$BASE_REF"
-	run git switch -c "$BRANCH" "origin/$BASE_REF" 2>/dev/null \
-		|| { run git switch "$BRANCH" && run git reset --hard "origin/$BASE_REF"; }
+— Codex"
 
-	echo
-	echo "Starting Claude Code..."
-	echo
+	WORKDIR="$(prepare_worktree "$WORKTREE" "$BRANCH" "$BASE_REF")"
+	export CODEX_WORKDIR="$WORKDIR"
 
-	run claude -p \
-		--permission-mode "$CLAUDE_PERMISSION_MODE" \
-		--max-turns "$CLAUDE_MAX_TURNS" \
-		"$CLAUDE_COMMAND_NAME $ISSUE_NUMBER"
+	codex_exec "$WORKDIR" "Use \$$CODEX_COMMAND_NAME to work GitHub issue #$ISSUE_NUMBER end-to-end."
 }
 
 dispatch_revise() {
-	local PR="$1" BRANCH
+	local PR="$1" BRANCH SLUG WORKTREE WORKDIR LINKED_ISSUE
 	BRANCH="$(gh pr view "$PR" --repo "$REPO" --json headRefName --jq '.headRefName')"
-	echo "Selected revise PR #$PR on branch $BRANCH"
+	SLUG="$(echo "$BRANCH" | sed -E 's/[^a-zA-Z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-64)"
+	WORKTREE=".agents/worktrees/pr-${PR}-${SLUG:-review}"
 
-	export CLAUDE_PR_NUMBER="$PR" CLAUDE_REPO="$REPO" CLAUDE_REVIEWER="$CLAUDE_REVIEWER"
-	export CLAUDE_EXPECTED_PERMISSION_MODE="$CLAUDE_PERMISSION_MODE"
+	echo "Selected revise PR #$PR on branch $BRANCH"
+	echo "Worktree: $WORKTREE"
+
+	export CODEX_PR_NUMBER="$PR"
+	export CODEX_REPO="$REPO"
+	export CODEX_REVIEWER
 	trap post_runner_checkpoint EXIT
 
 	git fetch origin "$BRANCH"
-	run git switch "$BRANCH" 2>/dev/null || run git switch -c "$BRANCH" --track "origin/$BRANCH"
+	WORKDIR="$(prepare_worktree "$WORKTREE" "$BRANCH" "$BRANCH")"
+	export CODEX_WORKDIR="$WORKDIR"
 
 	run gh pr edit "$PR" --repo "$REPO" \
 		--remove-label "$REVISE_LABEL" --add-label "$IN_PROGRESS_LABEL" || true
 
-	# Mirror automation:in-progress to the linked issue so the issue reflects active work.
-	local LINKED_ISSUE
 	LINKED_ISSUE="$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences \
 		--jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)"
 	if [[ -z "$LINKED_ISSUE" ]]; then
@@ -351,14 +358,15 @@ dispatch_revise() {
 		run gh issue edit "$LINKED_ISSUE" --repo "$REPO" --add-label "$IN_PROGRESS_LABEL" || true
 	fi
 
-	run gh pr comment "$PR" --repo "$REPO" --body "## Claude runner checkpoint
+	run gh pr comment "$PR" --repo "$REPO" --body "## Codex runner checkpoint
 
 PR: #$PR
 Branch: \`$BRANCH\`
-Status: addressing-review" || true
+Status: addressing-review
 
-	run claude -p --permission-mode "$CLAUDE_PERMISSION_MODE" \
-		--max-turns "$CLAUDE_MAX_TURNS" "/address-review $PR"
+— Codex" || true
+
+	codex_exec "$WORKDIR" "Use \$address-review to address review feedback on PR #$PR."
 }
 
 REVISE_PR="$(gh pr list --repo "$REPO" --state open --label "$REVISE_LABEL" \

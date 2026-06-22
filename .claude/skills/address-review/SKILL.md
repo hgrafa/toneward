@@ -44,8 +44,8 @@ passed without running it.
 1. Commit: `fix: address review feedback on #$ARGUMENTS`, push to the SAME branch.
 2. Reply to each addressed review thread noting what changed.
 3. Post a final checkpoint comment on the PR summarizing changes per comment.
-4. Labels: remove `claude:in-progress`, add `claude:review`.
-5. Mirror `claude:review` to the linked issue:
+4. Labels: remove `automation:in-progress`, add `automation:review`.
+5. Mirror `automation:review` to the linked issue:
 
    ```bash
    # Resolve the linked issue number from PR closing references
@@ -61,8 +61,8 @@ passed without running it.
 
    if [[ -n "$LINKED_ISSUE" ]]; then
      gh issue edit "$LINKED_ISSUE" --repo "$CLAUDE_REPO" \
-       --add-label "claude:review" \
-       --remove-label "claude:in-progress" || true
+       --add-label "automation:review" \
+       --remove-label "automation:in-progress" || true
    fi
    ```
 
@@ -76,5 +76,5 @@ passed without running it.
 ## Blocker policy
 
 Only if continuing would be reckless (conflicting feedback, missing intent, destructive
-action). Add `claude:blocked`, remove `claude:in-progress`, document the exact blocker and
+action). Add `automation:blocked`, remove `automation:in-progress`, document the exact blocker and
 safe next options.

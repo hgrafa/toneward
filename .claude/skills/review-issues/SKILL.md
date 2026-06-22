@@ -53,7 +53,7 @@ Score each non-noise comment from the repo owner or collaborators:
 |---------------------------|-----------|----------------|
 | "not happy", "still not right", "I don't like", "could you", "please change", "not what I wanted", image URL attached alongside dissatisfaction language | **High** | Dissatisfaction → see Dissatisfaction path |
 | "looks good", "approved", "lgtm", "perfect", "exactly", "great", "ship it" | **High** | Satisfied → no action |
-| "what about", "how should", "should we", direct question at Claude about direction | **High** | Blocker → add `claude:blocked` |
+| "what about", "how should", "should we", direct question at the automation agent about direction | **High** | Blocker → add `automation:blocked` |
 | Everything else | **Low** | Ask path |
 
 ## Dissatisfaction path (high confidence)
@@ -62,17 +62,17 @@ If a linked open PR exists for this issue:
 
 ```bash
 gh pr edit <PR_NUMBER> --repo "$REPO" \
-  --add-label "claude:revise" \
-  --remove-label "claude:review" || true
+  --add-label "automation:revise" \
+  --remove-label "automation:review" || true
 ```
 
 If no linked PR (or the dissatisfaction spawns entirely new work):
 
 ```bash
 gh issue edit <ISSUE_NUMBER> --repo "$REPO" \
-  --add-label "claude:ready" \
-  --remove-label "claude:review" \
-  --remove-label "claude:in-progress" || true
+  --add-label "automation:ready" \
+  --remove-label "automation:review" \
+  --remove-label "automation:in-progress" || true
 ```
 
 After either, post a triage comment on the issue:
@@ -81,21 +81,21 @@ After either, post a triage comment on the issue:
 gh issue comment <ISSUE_NUMBER> --repo "$REPO" --body "## /review-issues triage
 
 Detected: user dissatisfaction with current result.
-Action: added \`claude:revise\` to PR #<PR_NUMBER>."
-# or: "Action: re-queued issue as \`claude:ready\`."
+Action: added \`automation:revise\` to PR #<PR_NUMBER>."
+# or: "Action: re-queued issue as \`automation:ready\`."
 ```
 
 ## Blocker path (high confidence)
 
 ```bash
 gh issue edit <ISSUE_NUMBER> --repo "$REPO" \
-  --add-label "claude:blocked" \
-  --remove-label "claude:in-progress" || true
+  --add-label "automation:blocked" \
+  --remove-label "automation:in-progress" || true
 gh issue comment <ISSUE_NUMBER> --repo "$REPO" --body "## /review-issues triage
 
 Detected: open question blocking progress.
 Quote: \"<verbatim question from comment>\"
-Action: added \`claude:blocked\`. Human follow-up needed."
+Action: added \`automation:blocked\`. Human follow-up needed."
 ```
 
 ## Ask path (low confidence)
@@ -105,7 +105,7 @@ Collect **all** low-confidence items first — do not interleave questions with 
 Then for each ambiguous item, ask **one question** and wait for the answer before acting. Never combine two ambiguous items into one question.
 
 Example question:
-> "Issue #13 has this comment: \"We might want to think about accessibility here.\" Should I: (a) re-queue as claude:ready, (b) ignore it for now, or (c) mark as blocked?"
+> "Issue #13 has this comment: \"We might want to think about accessibility here.\" Should I: (a) re-queue as automation:ready, (b) ignore it for now, or (c) mark as blocked?"
 
 ## Final digest
 
@@ -113,8 +113,8 @@ After processing all issues, print:
 
 ```
 Reviewed N issues:
-  #9  — added claude:revise to PR #10 (dissatisfaction detected)
+  #9  — added automation:revise to PR #10 (dissatisfaction detected)
   #11 — no action (satisfied)
-  #13 — asked about intent → re-queued as claude:ready
+  #13 — asked about intent → re-queued as automation:ready
   #14 — no scoreable user comments, skipped
 ```

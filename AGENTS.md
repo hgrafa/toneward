@@ -1,0 +1,75 @@
+# Toneward
+
+Guitar fretboard visualization tool. Write notes or intervals in a text syntax, see them rendered on an interactive fretboard diagram.
+
+## Stack
+
+- **Runtime**: Vite + React 19 + TypeScript
+- **Styling**: Tailwind CSS v4 + shadcn/ui
+- **Icons**: lucide-react + @phosphor-icons/react (only these two)
+- **Linter/Formatter**: Biome.js (no ESLint, no Prettier)
+- **Export**: html-to-image (PNG/SVG export)
+- **Package manager**: pnpm
+
+## Project Structure
+
+```
+src/
+  core/         # Pure music theory logic (no React, no DOM)
+  components/   # React UI components (Fretboard SVG, Editor, Toolbar)
+  hooks/        # Custom React hooks
+  types/        # Shared TypeScript types
+  lib/          # Utilities (shadcn utils)
+```
+
+## Conventions
+
+- Import alias: `@/` maps to `src/`
+- Double quotes, tabs, semicolons; Biome handles formatting (run `pnpm lint:fix`)
+- Functional components only, no class components
+- Core logic is pure TypeScript - no React dependencies in `core/`
+- Multiple instruments and custom tunings supported (presets: Guitar 6, Bass 4, Bass 5; plus per-string custom tuning, 1-12 strings)
+- A tuning is `NoteName[]` ordered low->high; string count derives from tuning length
+- Pitch class is the source of truth for all music math; **spelling** (letter+accidental) and **octave** are additive layers - never normalize spelling away to sharps in core math
+- The fretboard SVG lives in ONE primitive, `components/FretboardDiagram.tsx`; never duplicate it
+- App state is four focused contexts (Input / Display / Instrument / Derived) composed by `FretboardProvider`; subscribe to the narrowest hook you need
+- Octaves are **derived** from the low->high tuning (`core/pitch.ts`), never stored
+- Use shadcn/ui primitives for all UI controls
+- SVG rendered as React components (not canvas, not d3)
+
+## Codex GitHub Comment Attribution
+
+Any comment Codex posts to a GitHub issue or PR must end with this attribution footer:
+
+```
+— Codex
+```
+
+This applies to checkpoint comments, triage comments, review replies, PR summaries, and any other comment posted via `gh issue comment`, `gh pr comment`, MCP tools, or the GitHub API. Never omit this footer.
+
+## Codex Workflows
+
+- Repo-scoped Codex skills live in `.agents/skills/`.
+- Use `$work-issue` to work a GitHub issue end-to-end.
+- Use `$address-review` to address PR review feedback.
+- Use `$new-issue`, `$review-issues`, `$commit`, `$pr`, and `$code-review` for the matching reusable workflows.
+- Project Codex hooks live in `.codex/hooks.json` and `.codex/hooks/`. Review and trust them with `/hooks` when Codex prompts.
+- The Codex autonomous issue runner is `scripts/codex/run-next-issue.sh`.
+
+## Git conventions
+
+- Branch names are **prefixed by change type**: `feat/...`, `fix/...`, or `refactor/...`
+  (kebab-case after the slash, e.g. `feat/multi-output-audio`, `fix/octave-derivation`).
+- Use the prefix that matches the work: `feat/` new functionality, `fix/` bug fixes,
+  `refactor/` behavior-preserving changes. Other conventional types (`docs/`, `chore/`,
+  `test/`) are fine when they fit better.
+- Feature work happens in an isolated git worktree and ships as a PR against `main`.
+
+## Commands
+
+- `pnpm dev` - dev server
+- `pnpm build` - type-check + build
+- `pnpm lint` - biome check
+- `pnpm lint:fix` - biome check --fix
+- `pnpm format` - biome format --write
+- `pnpm test` - Vitest suite

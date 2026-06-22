@@ -20,11 +20,11 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          WIP_LABELS=("claude:ready" "claude:in-progress" "claude:review" "claude:revise" "claude:blocked")
+          WIP_LABELS=("automation:ready" "automation:in-progress" "automation:review" "automation:revise" "automation:blocked")
           for label in "${WIP_LABELS[@]}"; do
             gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "$label" 2>/dev/null || true
           done
-          gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "claude:completed" 2>/dev/null || true
+          gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "automation:completed" 2>/dev/null || true
 
       - name: Find and update linked issues
         env:
@@ -32,7 +32,7 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
           REPO: ${{ github.repository }}
         run: |
-          WIP_LABELS=("claude:ready" "claude:in-progress" "claude:review" "claude:revise" "claude:blocked")
+          WIP_LABELS=("automation:ready" "automation:in-progress" "automation:review" "automation:revise" "automation:blocked")
 
           # Extract issue numbers from closing keywords in PR body
           ISSUE_NUMBERS=$(echo "$PR_BODY" | grep -oiE '(closes|fixes|resolves)[[:space:]]+#[0-9]+' | grep -oE '[0-9]+' || true)
@@ -41,5 +41,5 @@ jobs:
             for label in "${WIP_LABELS[@]}"; do
               gh issue edit "$issue" --repo "$REPO" --remove-label "$label" 2>/dev/null || true
             done
-            gh issue edit "$issue" --repo "$REPO" --add-label "claude:completed" 2>/dev/null || true
+            gh issue edit "$issue" --repo "$REPO" --add-label "automation:completed" 2>/dev/null || true
           done

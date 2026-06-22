@@ -7,7 +7,14 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["src/**", "*.json", "*.ts", "!dist/", "!.claude/"]
+		"includes": [
+			"src/**",
+			"*.json",
+			"*.ts",
+			"!dist/",
+			"!.claude/",
+			"!.agents/worktrees/"
+		]
 	},
 	"formatter": {
 		"enabled": true,

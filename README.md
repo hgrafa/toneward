@@ -51,19 +51,35 @@ pnpm dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-## 🤖 Claude Code skills
+## 🤖 Agent workflows
 
-This project uses [Claude Code](https://claude.ai/code) with custom skills for autonomous development.
+This project supports both Claude Code and Codex workflows.
 
-| Skill | Usage | What it does |
-|---|---|---|
-| `/work-issue <url>` | `claude "/work-issue https://github.com/.../issues/42"` | Works a GitHub issue end-to-end: claims it, creates a worktree, implements, validates, and opens a PR |
-| `/pr` | `claude "/pr"` | Creates or updates a pull request for the current branch |
-| `/commit` | `claude "/commit"` | Stages changes and writes a conventional commit message |
-| `/review-issues` | `claude "/review-issues"` | Triages open issue comments and acts on clear feedback autonomously |
-| `/address-review` | `claude "/address-review"` | Reads PR review comments, applies fixes, and re-requests review |
-| `/new-issue` | `claude "/new-issue"` | Creates a GitHub issue with automatic type/size classification |
-| `/code-review` | `claude "/code-review"` | Reviews the current diff for bugs, security, and code quality |
+Codex reads durable repo guidance from `AGENTS.md` and repo-scoped skills from `.agents/skills/`. GitHub comments posted by Codex must end with `— Codex`.
+
+| Workflow | Claude usage | Codex usage | What it does |
+|---|---|---|---|
+| Work issue | `claude "/work-issue https://github.com/.../issues/42"` | `codex exec --sandbox workspace-write 'Use $work-issue to work issue #42'` | Works a GitHub issue end-to-end: claims it, creates a worktree, implements, validates, and opens a PR |
+| PR | `claude "/pr"` | `codex exec --sandbox workspace-write 'Use $pr'` | Creates or updates a pull request for the current branch |
+| Commit | `claude "/commit"` | `codex exec --sandbox workspace-write 'Use $commit'` | Stages changes and writes a conventional commit message |
+| Review issues | `claude "/review-issues"` | `codex exec --sandbox workspace-write 'Use $review-issues'` | Triages open issue comments and acts on clear feedback autonomously |
+| Address review | `claude "/address-review 10"` | `codex exec --sandbox workspace-write 'Use $address-review for PR #10'` | Reads PR review comments, applies fixes, and re-requests review |
+| New issue | `claude "/new-issue Add dark mode"` | `codex exec --sandbox workspace-write 'Use $new-issue to file: Add dark mode'` | Creates a GitHub issue with automatic type/size classification |
+| Code review | `claude "/code-review"` | `codex exec 'Use $code-review to review the current diff'` | Reviews the current diff for bugs, security, and code quality |
+
+Autonomous Codex queue runner:
+
+```bash
+scripts/codex/run-next-issue.sh
+```
+
+It uses agent-neutral `automation:*` labels by default (`automation:ready`, `automation:in-progress`, `automation:review`, `automation:revise`, `automation:blocked`, `automation:completed`) and creates worktrees under `.agents/worktrees/`.
+
+Useful Codex setup checks:
+
+- Run `/skills` and confirm the repo skills appear.
+- Run `/hooks` and trust the project hooks if prompted.
+- Run `/mcp` to confirm external tools. GitHub access is useful for issue/PR workflows, Context7 is useful for current library docs, and Playwright or Chrome DevTools MCP is useful for browser/UI inspection.
 
 ## 📖 Input syntax
 

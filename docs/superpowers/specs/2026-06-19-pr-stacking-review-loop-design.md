@@ -13,14 +13,14 @@ only understands **new work**:
    agent. This already caused a real miss: issue #11 documented stale `SPEEDS` values
    because PR #10 (the change) was not on `main`.
 2. After a human review there is no way to hand the work back to Claude — the runner
-   only queries `claude:ready` **issues**, never **PRs**, and review feedback lives on
+   only queries `automation:ready` **issues**, never **PRs**, and review feedback lives on
    the PR.
 3. There is no concept of grouping multiple PRs that serve one issue, nor of stacking
    a dependent PR on top of the branch it depends on.
 
 ## Goals
 
-- A human review loop: after review, Claude resumes on the **same PR** and addresses
+- A human review loop: after review, the automation agent resumes on the **same PR** and addresses
   the feedback, looping until the human merges.
 - Deterministic **stacked PRs**: a dependent PR branches off the branch it depends on
   (not `main`) and targets it as base, so it shows only its own diff.
@@ -31,30 +31,30 @@ only understands **new work**:
 
 - Continuous `while`-loop / cron wrapper for draining the queue. Orthogonal; easy to
   add later as `scripts/claude/run-loop.sh`.
-- Auto-adding `claude:revise` from a GitHub "changes requested" review event. The label
+- Auto-adding `automation:revise` from a GitHub "changes requested" review event. The label
   is added manually by the reviewer for now. A future GitHub Action could automate it.
 - Migrating the runner to GitHub Actions / event-driven dispatch.
 
 ## Label state machine
 
-One new label: **`claude:revise`** — "Reviewed, changes requested — Claude, resume on
+One new label: **`automation:revise`** — "Reviewed, changes requested — Claude, resume on
 this PR." It lives on the **PR**.
 
 Lifecycle labels start on the **issue** during initial work, then the **PR** carries the
 review-loop labels once it exists.
 
 ```
-issue:  claude:ready ──▶ claude:in-progress ──(PR opened)──▶ claude:review
+issue:  automation:ready ──▶ automation:in-progress ──(PR opened)──▶ automation:review
                                                                   │
-PR:                              claude:review + owner requested as reviewer
+PR:                              automation:review + owner requested as reviewer
                                                                   │
                         ┌──── owner approves ───▶ owner merges ─▶ closes issue ✓
-                        └──── owner adds claude:revise (+ review comments)
+                        └──── owner adds automation:revise (+ review comments)
                                                                   │
-PR:  claude:revise ──(runner)──▶ claude:in-progress ──(fixes pushed)──▶ claude:review ──▶ (loop)
+PR:  automation:revise ──(runner)──▶ automation:in-progress ──(fixes pushed)──▶ automation:review ──▶ (loop)
 ```
 
-The reviewer only ever does two things: **merge** (approve) or **add `claude:revise`**
+The reviewer only ever does two things: **merge** (approve) or **add `automation:revise`**
 (with review comments).
 
 ## Components
@@ -63,13 +63,13 @@ The reviewer only ever does two things: **merge** (approve) or **add `claude:rev
 
 On each invocation, in priority order:
 
-1. **Revise queue (priority).** Pick the oldest open PR labelled `claude:revise`:
+1. **Revise queue (priority).** Pick the oldest open PR labelled `automation:revise`:
    ```bash
    gh pr list --repo "$REPO" --state open --label "$REVISE_LABEL" \
      --json number,updatedAt --jq 'sort_by(.updatedAt) | .[0].number // empty'
    ```
    If found → `dispatch_revise(PR)`.
-2. **New queue (fallback).** Existing oldest `claude:ready` issue selection → `dispatch_new(ISSUE)`.
+2. **New queue (fallback).** Existing oldest `automation:ready` issue selection → `dispatch_new(ISSUE)`.
 3. Neither → print "Nothing to do." and `exit 0`.
 
 Priority order is env-configurable via `QUEUE_PRIORITY` (default `revise-first`).
@@ -77,7 +77,7 @@ Priority order is env-configurable via `QUEUE_PRIORITY` (default `revise-first`)
 `dispatch_revise(PR)`:
 - Resolve the PR head branch: `gh pr view "$PR" --json headRefName`.
 - `git fetch origin` then `git switch` to that branch (create tracking branch if needed).
-- Flip PR label `claude:revise` → `claude:in-progress`.
+- Flip PR label `automation:revise` → `automation:in-progress`.
 - Post a start checkpoint **comment on the PR**.
 - `export CLAUDE_PR_NUMBER="$PR"` and launch:
   ```bash
@@ -145,15 +145,15 @@ Flow:
 6. Commit `fix: address review feedback on #PR`, push to the **same** branch.
 7. Reply to the addressed review threads and post a final checkpoint summarizing what
    changed per comment.
-8. Flip PR label `claude:in-progress` → `claude:review`; re-request review from
+8. Flip PR label `automation:in-progress` → `automation:review`; re-request review from
    `CLAUDE_REVIEWER`.
-9. If genuinely blocked, follow the existing blocker policy (label `claude:blocked`,
+9. If genuinely blocked, follow the existing blocker policy (label `automation:blocked`,
    documented blocker).
 
 ### 5. Configuration (env, with defaults)
 
 Added to the runner:
-- `REVISE_LABEL=claude:revise`
+- `REVISE_LABEL=automation:revise`
 - `QUEUE_PRIORITY=revise-first`
 - `CLAUDE_REVIEWER` — default = repo owner login (`gh repo view --json owner --jq .owner.login`).
 
@@ -169,7 +169,7 @@ existing `CLAUDE_ISSUE_NUMBER` / new `CLAUDE_PR_NUMBER`.
 - **One-time label setup**: the runner ensures the label exists, idempotently:
   ```bash
   gh label create "$REVISE_LABEL" --color FBCA04 \
-    --description "Reviewed, changes requested — Claude resume on the PR" 2>/dev/null || true
+    --description "Reviewed, changes requested - automation should resume on the PR" 2>/dev/null || true
   ```
 
 ## Error handling
@@ -180,7 +180,7 @@ existing `CLAUDE_ISSUE_NUMBER` / new `CLAUDE_PR_NUMBER`.
 - Stack base branch advanced → the agent rebases the stacked branch, or flags a blocker
   if it cannot cleanly.
 - `CLAUDE_REVIEWER` unresolvable → skip the reviewer request, warn (non-fatal).
-- `claude:revise` label missing → created idempotently at runner start.
+- `automation:revise` label missing → created idempotently at runner start.
 
 ## Testing
 
@@ -189,8 +189,8 @@ existing `CLAUDE_ISSUE_NUMBER` / new `CLAUDE_PR_NUMBER`.
   the command it *would* run; performs no label flips, comments, branch switches, or
   `claude` launch. Makes queue/stacking logic testable without a nested agent.
 - Skills are prompt files (no unit tests). Document the manual end-to-end revise-loop
-  test: open a throwaway PR, add `claude:revise` + a review comment, run the runner, and
-  confirm the fix is pushed to the same branch and the label returns to `claude:review`.
+  test: open a throwaway PR, add `automation:revise` + a review comment, run the runner, and
+  confirm the fix is pushed to the same branch and the label returns to `automation:review`.
 
 ## Rollout notes
 

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extend the autonomous issue runner into a two-queue dispatcher that supports a human review→continue loop (`claude:revise` + a new `/address-review` skill) and deterministic stacked PRs grouped under one issue.
+**Goal:** Extend the autonomous issue runner into a two-queue dispatcher that supports a human review→continue loop (`automation:revise` + a new `/address-review` skill) and deterministic stacked PRs grouped under one issue.
 
-**Architecture:** `scripts/claude/run-next-issue.sh` becomes a router: it first drains `claude:revise` PRs (checkout the PR branch → `/address-review`), else picks a `claude:ready` issue and computes a deterministic base ref (stacking) before launching `/work-issue`. Two skill prompt files carry the agent behavior. A `DRY_RUN=1` mode makes the routing/stacking logic testable without spawning a nested agent.
+**Architecture:** `scripts/claude/run-next-issue.sh` becomes a router: it first drains `automation:revise` PRs (checkout the PR branch → `/address-review`), else picks a `automation:ready` issue and computes a deterministic base ref (stacking) before launching `/work-issue`. Two skill prompt files carry the agent behavior. A `DRY_RUN=1` mode makes the routing/stacking logic testable without spawning a nested agent.
 
 **Tech Stack:** Bash, GitHub CLI (`gh`), git, Claude Code CLI, Vitest config (TypeScript).
 
@@ -74,7 +74,7 @@ git commit -m "test: exclude nested .claude worktrees from vitest runs"
 After the existing `CLAUDE_COMMAND_NAME` line near the top, add:
 
 ```bash
-REVISE_LABEL="${REVISE_LABEL:-claude:revise}"
+REVISE_LABEL="${REVISE_LABEL:-automation:revise}"
 QUEUE_PRIORITY="${QUEUE_PRIORITY:-revise-first}"
 DRY_RUN="${DRY_RUN:-0}"
 ```
@@ -98,7 +98,7 @@ CLAUDE_REVIEWER="${CLAUDE_REVIEWER:-$(gh repo view "$REPO" --json owner --jq '.o
 
 # Ensure the review-loop label exists (idempotent).
 gh label create "$REVISE_LABEL" --repo "$REPO" --color FBCA04 \
-	--description "Reviewed, changes requested — Claude resume on the PR" >/dev/null 2>&1 || true
+	--description "Reviewed, changes requested - automation should resume on the PR" >/dev/null 2>&1 || true
 ```
 
 - [ ] **Step 3: Syntax check**
@@ -206,7 +206,7 @@ Expected: `OK`
 
 - [ ] **Step 4: Dry-run, default base (no dep) → main**
 
-Pre: ensure a `claude:ready` issue with no `Depends on` exists (or reuse an existing test issue).
+Pre: ensure a `automation:ready` issue with no `Depends on` exists (or reuse an existing test issue).
 Run: `DRY_RUN=1 bash scripts/claude/run-next-issue.sh 2>&1 | grep -E 'Base ref|dry-run'`
 Expected: `Base ref: main` and `[dry-run] git switch -c ...`, `[dry-run] claude -p ... /work-issue N`. No real label/branch mutation.
 
@@ -300,7 +300,7 @@ Expected: `OK`
 
 - [ ] **Step 5: Dry-run, revise priority**
 
-Pre: label any open throwaway PR with `claude:revise`.
+Pre: label any open throwaway PR with `automation:revise`.
 Run: `DRY_RUN=1 bash scripts/claude/run-next-issue.sh 2>&1 | grep -E 'revise PR|dry-run'`
 Expected: `Selected revise PR #X` and `[dry-run] claude -p ... /address-review X`. Remove the label after.
 
@@ -367,7 +367,7 @@ passed without running it.
 1. Commit: `fix: address review feedback on #$ARGUMENTS`, push to the SAME branch.
 2. Reply to each addressed review thread noting what changed.
 3. Post a final checkpoint comment on the PR summarizing changes per comment.
-4. Labels: remove `claude:in-progress`, add `claude:review`.
+4. Labels: remove `automation:in-progress`, add `automation:review`.
 5. Re-request review:
 
    ```bash
@@ -377,7 +377,7 @@ passed without running it.
 ## Blocker policy
 
 Only if continuing would be reckless (conflicting feedback, missing intent, destructive
-action). Add `claude:blocked`, remove `claude:in-progress`, document the exact blocker and
+action). Add `automation:blocked`, remove `automation:in-progress`, document the exact blocker and
 safe next options.
 ```
 
@@ -434,7 +434,7 @@ otherwise create it:
 
 - [ ] **Step 2: Update the "After opening PR" labels step**
 
-Ensure the existing step still removes `claude:in-progress` / adds `claude:review`, and add:
+Ensure the existing step still removes `automation:in-progress` / adds `automation:review`, and add:
 "Request `CLAUDE_REVIEWER` as reviewer if not already requested by `gh pr create`."
 
 - [ ] **Step 3: Verify**
@@ -464,9 +464,9 @@ Expected: clean syntax; router selects revise-or-new correctly; all mutations sh
 - [ ] **Step 2: Document the manual revise-loop E2E**
 
 Confirm these steps are written in the spec's Testing section (they are). Run them once
-manually outside this plan when ready: throwaway PR → add `claude:revise` + a comment →
+manually outside this plan when ready: throwaway PR → add `automation:revise` + a comment →
 run the runner (real) → confirm a `fix:` commit on the same branch and the label back to
-`claude:review`.
+`automation:review`.
 
 - [ ] **Step 3: Final lint/build/test of the repo (unaffected by tooling, but confirm green)**
 
@@ -478,5 +478,5 @@ Expected: all green.
 ## Notes
 
 - The runner/skills only take effect on `main` once PR #7 (plus this work) merges.
-- `claude:revise` is added manually by the reviewer; auto-adding it from a "changes
+- `automation:revise` is added manually by the reviewer; auto-adding it from a "changes
   requested" review is a deliberate future follow-on (see spec non-goals).

@@ -19,8 +19,8 @@ Extract the issue number from `$ARGUMENTS` and label it WIP so parallel sessions
 ```bash
 ISSUE_NUMBER=$(echo "$ARGUMENTS" | grep -o '[0-9]*$')
 gh issue edit "$ISSUE_NUMBER" \
-  --add-label "claude:in-progress" \
-  --remove-label "claude:ready" 2>/dev/null || true
+  --add-label "automation:in-progress" \
+  --remove-label "automation:ready" 2>/dev/null || true
 ```
 
 ### Step 1 — Read context
@@ -346,15 +346,15 @@ After opening PR:
 1. Comment on the issue with the PR link.
 2. Add or update labels:
 
-   * remove `claude:in-progress`
-   * add `claude:review`
-3. Mirror `claude:review` to the issue (so the issue reflects current status without drilling into the PR):
+   * remove `automation:in-progress`
+   * add `automation:review`
+3. Mirror `automation:review` to the issue (so the issue reflects current status without drilling into the PR):
 
    ```bash
    gh issue edit "$CLAUDE_ISSUE_NUMBER" \
      --repo "$CLAUDE_REPO" \
-     --add-label "claude:review" \
-     --remove-label "claude:in-progress" || true
+     --add-label "automation:review" \
+     --remove-label "automation:in-progress" || true
    ```
 4. Ensure `CLAUDE_REVIEWER` is requested as a reviewer (if `gh pr create` didn't already).
 5. Leave a final checkpoint with exact resume instructions.

@@ -9,16 +9,16 @@ Area: autonomous issue-handoff tooling (`.claude/skills/`, `scripts/claude/`)
 Three gaps in the current autonomous workflow:
 
 1. **No structured intake for new issues.** Creating a GitHub issue requires manually choosing labels
-   (type, size, `claude:ready`). Classification is inconsistent and friction causes issues to be
+   (type, size, `automation:ready`). Classification is inconsistent and friction causes issues to be
    filed without labels, making them invisible to the runner.
 
 2. **Issue comments are invisible to the system.** When a user leaves feedback directly on an issue
    ("still not happy with this", "could you make it more like X"), the runner never sees it — it
-   only watches `claude:revise` on PRs and `claude:ready` on issues. This means valid rework
+   only watches `automation:revise` on PRs and `automation:ready` on issues. This means valid rework
    requests are silently dropped.
 
 3. **No status visibility at the issue level.** Once the runner opens a PR, the issue label stays
-   at `claude:review` forever (or whatever it was last set to). Checking the actual status requires
+   at `automation:review` forever (or whatever it was last set to). Checking the actual status requires
    navigating to the PR — the issue gives no live signal.
 
 ## Goals
@@ -54,10 +54,10 @@ Three gaps in the current autonomous workflow:
 |-----------|---------------|----------------------|
 | **Type** | "add", "build", "support", "allow" → `type:feature`; "broken", "wrong", "crash", "not working", "fix", "error" → `type:bug`; "document", "note", "update readme" → `type:docs`; "refactor", "rename", "cleanup", "chore" → `type:chore` | Ask |
 | **Size** | "small", "quick", "just", "one line", "minor" → `size:s`; "redesign", "refactor", "multiple", "overhaul", "new page" → `size:l`; else → `size:m` | `size:m` (no question) |
-| **Ready** | Description is specific and actionable with no open questions → add `claude:ready`. Vague/exploratory → omit. | Omit (no question) |
+| **Ready** | Description is specific and actionable with no open questions → add `automation:ready`. Vague/exploratory → omit. | Omit (no question) |
 
 **Confidence gate**: if type AND size are both clear, create immediately with no questions. Ask at
-most one question if type is ambiguous. Size defaults silently to `m`; `claude:ready` defaults
+most one question if type is ambiguous. Size defaults silently to `m`; `automation:ready` defaults
 silently to omitted.
 
 ### Issue title format
@@ -67,8 +67,8 @@ Prefix derived from type: `FEAT` / `FIX` / `DOCS` / `CHORE`.
 
 ### Output
 
-Prints the created issue URL. If `claude:ready` was added, notes it:
-> `Issue #N created → https://... (queued as claude:ready)`
+Prints the created issue URL. If `automation:ready` was added, notes it:
+> `Issue #N created → https://... (queued as automation:ready)`
 
 ---
 
@@ -97,9 +97,9 @@ session checkpoint`). These are machine-posted and carry no user intent.
 
 | Signal | Confidence | Inferred action |
 |--------|-----------|----------------|
-| Dissatisfaction: "not happy", "still not right", "I don't like", "could you", "please change", image attached showing desired outcome | High | If linked PR exists and feedback is about the PR's work → add `claude:revise` to PR, remove `claude:review` from PR. If no linked PR or feedback spawns new work → add `claude:ready` to issue, remove `claude:review`/`claude:in-progress` from issue. |
+| Dissatisfaction: "not happy", "still not right", "I don't like", "could you", "please change", image attached showing desired outcome | High | If linked PR exists and feedback is about the PR's work → add `automation:revise` to PR, remove `automation:review` from PR. If no linked PR or feedback spawns new work → add `automation:ready` to issue, remove `automation:review`/`automation:in-progress` from issue. |
 | Satisfaction: "looks good", "approved", "lgtm", "perfect", "exactly" | High | No action; mark as satisfied in digest. |
-| Question/blocker: "what about", "how should", "should we" — directed at Claude | High | Add `claude:blocked`; note in digest for human follow-up. |
+| Question/blocker: "what about", "how should", "should we" — directed at Claude | High | Add `automation:blocked`; note in digest for human follow-up. |
 | Informational / vague | Low | Ask user for intent (one question per item). |
 
 ### Autonomous path (high confidence)
@@ -107,7 +107,7 @@ session checkpoint`). These are machine-posted and carry no user intent.
 Apply label changes immediately via `gh issue edit` / `gh pr edit`. Post a brief comment on the
 issue:
 
-> `## /review-issues triage\nDetected: user dissatisfaction with current result.\nAction: added claude:revise to PR #N.`
+> `## /review-issues triage\nDetected: user dissatisfaction with current result.\nAction: added automation:revise to PR #N.`
 
 ### Ask path (low confidence)
 
@@ -120,9 +120,9 @@ After processing all issues, print:
 
 ```
 Reviewed N issues:
-  #9  — queued claude:revise on PR #10 (user dissatisfaction detected)
+  #9  — queued automation:revise on PR #10 (user dissatisfaction detected)
   #11 — no action (satisfied)
-  #13 — asked you about intent → [your answer] → added claude:ready
+  #13 — asked you about intent → [your answer] → added automation:ready
 ```
 
 ---
@@ -136,29 +136,29 @@ to match. Implemented as additions to existing skills and the runner — no new 
 
 | Label | Owner | Mirrored |
 |-------|-------|---------|
-| `claude:ready` | Issue only | No — queue signal, stays on issue |
-| `claude:in-progress` | Both | Runner sets on issue at dispatch; also set on PR |
-| `claude:review` | PR → Issue | Skills set on PR after PR open; also set on issue |
-| `claude:blocked` | PR → Issue | Skills/runner set on PR; also set on issue |
-| `claude:revise` | PR only | No — runner dispatch signal, meaningless on issue |
+| `automation:ready` | Issue only | No — queue signal, stays on issue |
+| `automation:in-progress` | Both | Runner sets on issue at dispatch; also set on PR |
+| `automation:review` | PR → Issue | Skills set on PR after PR open; also set on issue |
+| `automation:blocked` | PR → Issue | Skills/runner set on PR; also set on issue |
+| `automation:revise` | PR only | No — runner dispatch signal, meaningless on issue |
 
 ### Where mirroring is added
 
-**`work-issue` skill** (`## Handoff` section): after `gh pr edit --add-label claude:review` on the
-PR, add a second `gh issue edit $CLAUDE_ISSUE_NUMBER --add-label claude:review --remove-label
-claude:in-progress` call.
+**`work-issue` skill** (`## Handoff` section): after `gh pr edit --add-label automation:review` on the
+PR, add a second `gh issue edit $CLAUDE_ISSUE_NUMBER --add-label automation:review --remove-label
+automation:in-progress` call.
 
-**`address-review` skill** (`## Handoff` section): same — after setting `claude:review` on the PR,
+**`address-review` skill** (`## Handoff` section): same — after setting `automation:review` on the PR,
 mirror to the issue. Resolve issue number via `gh pr view $ARGUMENTS --json closingIssuesReferences`
 or `gh pr view $ARGUMENTS --json body` (parse `Closes #N`).
 
-**Runner `dispatch_new`** (`run-next-issue.sh`): already sets `claude:in-progress` on the issue.
-Also set `claude:in-progress` on the PR immediately when the branch is created (if a PR already
+**Runner `dispatch_new`** (`run-next-issue.sh`): already sets `automation:in-progress` on the issue.
+Also set `automation:in-progress` on the PR immediately when the branch is created (if a PR already
 exists for a stacked slice).
 
-**Runner `dispatch_revise`** (`run-next-issue.sh`): already sets `claude:in-progress` on the PR.
+**Runner `dispatch_revise`** (`run-next-issue.sh`): already sets `automation:in-progress` on the PR.
 Also resolve the linked issue (via `gh pr view "$PR" --json closingIssuesReferences`) and set
-`claude:in-progress` on it.
+`automation:in-progress` on it.
 
 ### Issue number resolution helper
 
@@ -189,6 +189,6 @@ Fallback: parse `Closes #N` / `Fixes #N` from the PR body with `grep -oiE '(clos
   - `/new-issue "Fix the audio slider not snapping"` → confirm `type:bug size:m` applied with no
     questions asked.
   - `/new-issue "Something"` → confirm Claude asks for type clarification.
-  - Leave a "not happy" comment on a test issue → run `/review-issues` → confirm `claude:ready`
-    or `claude:revise` is applied and a triage comment is posted.
-  - Open a PR that closes an issue → confirm issue gets `claude:review` after `work-issue` handoff.
+  - Leave a "not happy" comment on a test issue → run `/review-issues` → confirm `automation:ready`
+    or `automation:revise` is applied and a triage comment is posted.
+  - Open a PR that closes an issue → confirm issue gets `automation:review` after `work-issue` handoff.
