@@ -182,6 +182,7 @@ export function PracticeView() {
 			>
 				<GameHeader
 					score={state.score}
+					streak={state.streak}
 					lives={state.lives}
 					timerMs={state.currentTimerMs}
 					timerStartedAt={state.timerStartedAt}

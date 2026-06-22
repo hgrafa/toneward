@@ -113,6 +113,8 @@ const ptBR: TranslationSchema = {
 			unmute: "Ativar som",
 			lastMatch: "Última partida",
 			lastMatchScore: "{{score}} pts em {{time}}",
+			streak: "Sequência",
+			bestStreak: "Melhor sequência",
 		},
 	},
 	errors: {

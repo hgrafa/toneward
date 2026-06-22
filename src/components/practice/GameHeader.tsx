@@ -1,9 +1,11 @@
 import { Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PixelHeart } from "./PixelHeart";
 
 interface GameHeaderProps {
 	score: number;
+	streak: number;
 	lives: number;
 	timerMs: number;
 	timerStartedAt: number;
@@ -13,6 +15,7 @@ interface GameHeaderProps {
 
 export function GameHeader({
 	score,
+	streak,
 	lives,
 	timerMs,
 	timerStartedAt,
@@ -20,15 +23,63 @@ export function GameHeader({
 	onToggleMute,
 }: GameHeaderProps) {
 	const { t } = useTranslation();
+
+	// Pop the score whenever it changes.
+	const [scoreKey, setScoreKey] = useState(0);
+	const prevScore = useRef(score);
+	useEffect(() => {
+		if (score !== prevScore.current) {
+			prevScore.current = score;
+			setScoreKey((k) => k + 1);
+		}
+	}, [score]);
+
+	// Flash the combo badge at every multiple of 5.
+	const [comboKey, setComboKey] = useState(0);
+	const prevStreak = useRef(streak);
+	useEffect(() => {
+		if (streak > prevStreak.current && streak % 5 === 0) {
+			setComboKey((k) => k + 1);
+		}
+		prevStreak.current = streak;
+	}, [streak]);
+
+	// Mark the heart that was just emptied so it can animate.
+	const [lostIdx, setLostIdx] = useState<number | null>(null);
+	const prevLives = useRef(lives);
+	useEffect(() => {
+		if (lives < prevLives.current) {
+			setLostIdx(lives);
+			const id = setTimeout(() => setLostIdx(null), 400);
+			prevLives.current = lives;
+			return () => clearTimeout(id);
+		}
+		prevLives.current = lives;
+	}, [lives]);
+
 	return (
 		<div className="flex flex-col gap-3 px-6 py-4 border-b border-border bg-card">
 			<div className="flex items-center justify-between">
 				<div className="flex gap-2 items-center">
 					{[0, 1, 2].map((i) => (
-						<PixelHeart key={i} filled={i < lives} pixelSize={5} />
+						<PixelHeart
+							key={i}
+							filled={i < lives}
+							pixelSize={5}
+							losing={lostIdx === i}
+						/>
 					))}
 				</div>
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-4">
+					{streak >= 2 && (
+						<span
+							key={comboKey}
+							className="font-pixel text-xs text-amber-500 anim-combo-flash"
+							title={t("ui.practice.streak")}
+						>
+							×{streak}
+						</span>
+					)}
 					<button
 						type="button"
 						onClick={onToggleMute}
@@ -38,10 +89,15 @@ export function GameHeader({
 						{muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
 					</button>
 					<div className="flex items-center gap-2">
-						<span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+						<span className="font-pixel text-[10px] uppercase text-muted-foreground">
 							{t("ui.practice.score")}
 						</span>
-						<span className="text-2xl font-black tabular-nums">{score}</span>
+						<span
+							key={scoreKey}
+							className="font-pixel text-xl tabular-nums anim-score-pop inline-block"
+						>
+							{score}
+						</span>
 					</div>
 				</div>
 			</div>
@@ -49,9 +105,7 @@ export function GameHeader({
 				<div
 					key={timerStartedAt}
 					className="h-full rounded-full timer-bar"
-					style={{
-						animation: `timerShrink ${timerMs}ms linear forwards`,
-					}}
+					style={{ animation: `timerShrink ${timerMs}ms linear forwards` }}
 				/>
 			</div>
 			<style>{`

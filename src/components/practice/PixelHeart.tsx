@@ -11,9 +11,14 @@ const HEART_PIXELS = [
 interface PixelHeartProps {
 	filled: boolean;
 	pixelSize?: number;
+	losing?: boolean;
 }
 
-export function PixelHeart({ filled, pixelSize = 4 }: PixelHeartProps) {
+export function PixelHeart({
+	filled,
+	pixelSize = 4,
+	losing = false,
+}: PixelHeartProps) {
 	const cols = HEART_PIXELS[0].length;
 	const rows = HEART_PIXELS.length;
 	const color = filled ? "#ef4444" : "currentColor";
@@ -25,6 +30,8 @@ export function PixelHeart({ filled, pixelSize = 4 }: PixelHeartProps) {
 			height={rows * pixelSize}
 			viewBox={`0 0 ${cols * pixelSize} ${rows * pixelSize}`}
 			aria-hidden="true"
+			className={losing ? "anim-heart-lose" : undefined}
+			style={{ transition: "opacity 0.25s ease" }}
 		>
 			{HEART_PIXELS.map((row, y) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: static pixel grid, order never changes

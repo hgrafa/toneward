@@ -109,6 +109,8 @@ const en = {
 			unmute: "Unmute",
 			lastMatch: "Last match",
 			lastMatchScore: "{{score}} pts in {{time}}",
+			streak: "Streak",
+			bestStreak: "Best streak",
 		},
 	},
 	errors: {
