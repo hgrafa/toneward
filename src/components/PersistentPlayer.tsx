@@ -96,9 +96,7 @@ export function PersistentPlayer() {
 					</button>
 					<button
 						type="button"
-						aria-label={
-							muted ? t("ui.showroom.volume") : t("ui.showroom.volume")
-						}
+						aria-label={t("ui.showroom.volume")}
 						onClick={toggleMute}
 						className="text-muted-foreground hover:text-foreground"
 					>
