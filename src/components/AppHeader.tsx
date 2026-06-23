@@ -42,9 +42,9 @@ export function AppHeader() {
 			</div>
 			<div className="flex items-center gap-2">
 				<StudyTimerButton />
-				<LanguageToggle />
 				<MetronomePanel />
 				<AudioControlPanel />
+				<LanguageToggle />
 			</div>
 		</header>
 	);

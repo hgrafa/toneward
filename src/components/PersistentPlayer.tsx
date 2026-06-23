@@ -18,13 +18,7 @@ import { SPEED_STOPS, SpeedControl } from "@/components/SpeedControl";
 import { VOLUME_STOPS, VolumeControl } from "@/components/VolumeControl";
 import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
 
-const LAYOUT_SPRING = {
-	type: "spring",
-	stiffness: 360,
-	damping: 32,
-	mass: 0.9,
-} as const;
-const FADE = { duration: 0.18, ease: "easeOut" } as const;
+const SLIDE = { duration: 0.16, ease: "easeOut" } as const;
 
 function formatTime(seconds: number): string {
 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -96,9 +90,7 @@ export function PersistentPlayer() {
 	}
 
 	return (
-		<motion.div
-			layout
-			transition={LAYOUT_SPRING}
+		<div
 			onMouseEnter={cancelClose}
 			onMouseLeave={() => {
 				if (expanded) scheduleClose();
@@ -115,10 +107,10 @@ export function PersistentPlayer() {
 					/* ---- mini pill ---- */
 					<motion.div
 						key="mini"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={FADE}
+						initial={{ opacity: 0, y: 12 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: 12 }}
+						transition={SLIDE}
 						className="flex items-center gap-2 px-2.5 py-2"
 					>
 						<button
@@ -165,10 +157,10 @@ export function PersistentPlayer() {
 					/* ---- expanded card ---- */
 					<motion.div
 						key="expanded"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={FADE}
+						initial={{ opacity: 0, y: 12 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: 12 }}
+						transition={SLIDE}
 						className="flex flex-col gap-3 p-3.5"
 					>
 						<div className="flex items-center justify-between">
@@ -316,6 +308,6 @@ export function PersistentPlayer() {
 					</motion.div>
 				)}
 			</AnimatePresence>
-		</motion.div>
+		</div>
 	);
 }
