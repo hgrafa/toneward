@@ -7,9 +7,11 @@ All rendering uses shadcn/ui primitives + SVG.
 
 Vertical stack: Editor -> TuningControls -> Toolbar -> Fretboard -> BoxPatterns (see `App.tsx`).
 
-The app shell (`App.tsx`) is a sidebar (`AppSidebar`) + a single active view:
-`FretboardView` (the stack above) or `showroom/ShowroomView`. View state lives in
-`hooks/ViewContext` (`useView`).
+The app shell (`App.tsx`) is a fixed top `AppHeader` (brand lockup + current section name
++ language / Metronome / Audio controls) and a floating left `FloatingNav` capsule, over a
+single active view: `FretboardView` (the stack above), `showroom/ShowroomView`, or
+`practice/PracticeView`. View state lives in `hooks/ViewContext` (`useView`). The Metronome
+and Audio popovers live in the header (global), not in the Braco toolbar.
 
 ## Components
 
