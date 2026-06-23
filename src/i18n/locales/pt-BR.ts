@@ -80,6 +80,7 @@ const ptBR: TranslationSchema = {
 			switch: "Trocar",
 			pin: "Fixar player",
 			recent: "Recentes",
+			noRecent: "Nada tocado recentemente",
 		},
 		intervals: {
 			"1": "Uníssono",

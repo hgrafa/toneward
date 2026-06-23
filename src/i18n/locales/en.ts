@@ -77,6 +77,7 @@ const en = {
 			switch: "Switch",
 			pin: "Pin player",
 			recent: "Recent",
+			noRecent: "Nothing played recently",
 		},
 		intervals: {
 			"1": "Perfect Unison",

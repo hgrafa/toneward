@@ -6,10 +6,21 @@ import { fetchYouTubeTitle, parseYouTubeId } from "@/lib/youtube";
 
 export function PlayerLoader() {
 	const { t } = useTranslation();
-	const { setSource, recents } = useMediaPlayerCtx();
+	const { source, setSource, recents } = useMediaPlayerCtx();
 	const [url, setUrl] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const fileId = useId();
+
+	// Don't offer the track that's already loaded — clicking it would look like
+	// nothing happened.
+	const others = recents.filter(
+		(r) =>
+			!(
+				r.kind === "youtube" &&
+				source?.kind === "youtube" &&
+				r.videoId === source.videoId
+			),
+	);
 
 	function loadYouTube() {
 		const videoId = parseYouTubeId(url);
@@ -79,13 +90,13 @@ export function PlayerLoader() {
 				/>
 			</div>
 
-			{recents.length > 0 && (
-				<div className="flex flex-col gap-1.5 pt-0.5">
-					<span className="font-semibold text-[10px] text-white/40 uppercase tracking-wide">
-						{t("ui.player.recent")}
-					</span>
+			<div className="flex flex-col gap-1.5 pt-0.5">
+				<span className="font-semibold text-[10px] text-white/40 uppercase tracking-wide">
+					{t("ui.player.recent")}
+				</span>
+				{others.length > 0 ? (
 					<div className="flex flex-col gap-1">
-						{recents.map((r) => (
+						{others.map((r) => (
 							<button
 								key={r.kind === "youtube" ? r.videoId : r.title}
 								type="button"
@@ -98,8 +109,12 @@ export function PlayerLoader() {
 							</button>
 						))}
 					</div>
-				</div>
-			)}
+				) : (
+					<p className="px-0.5 py-1 text-white/35 text-xs italic">
+						{t("ui.player.noRecent")}
+					</p>
+				)}
+			</div>
 
 			{error && <p className="text-red-300 text-xs">{error}</p>}
 		</div>
