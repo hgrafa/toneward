@@ -319,12 +319,27 @@
 		transform: translateY(0) scale(1);
 	}
 }
+@keyframes playerPopOut {
+	from {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(8px) scale(0.97);
+	}
+}
 .player-pop {
 	transform-origin: bottom right;
-	animation: playerPop 0.18s ease-out;
+	animation: playerPop 0.2s ease-out;
+}
+.player-pop-out {
+	transform-origin: bottom right;
+	animation: playerPopOut 0.18s ease-in forwards;
 }
 @media (prefers-reduced-motion: reduce) {
-	.player-pop {
+	.player-pop,
+	.player-pop-out {
 		animation: none;
 	}
 }

@@ -7,7 +7,7 @@ import {
 	RotateCcw,
 	RotateCw,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PlayerLoader } from "@/components/PlayerLoader";
 import { SpeedControl } from "@/components/SpeedControl";
@@ -30,26 +30,63 @@ export function PersistentPlayer() {
 	const [swapping, setSwapping] = useState(false);
 	const [speedOpen, setSpeedOpen] = useState(false);
 	const [volumeOpen, setVolumeOpen] = useState(false);
+	const [closing, setClosing] = useState(false);
 
 	const hasTrack = source !== null;
 	const progressPct =
 		api.duration > 0 ? (api.currentTime / api.duration) * 100 : 0;
 
-	// Auto-open the card when a track is loaded so the user can confirm, and
+	// Pending auto-minimize timer + a live mirror of whether the card must stay
+	// open (pinned, or a control popover whose panel is portaled outside).
+	const closeTimer = useRef<number | null>(null);
+	const keepOpenRef = useRef(false);
+	keepOpenRef.current = pinned || speedOpen || volumeOpen;
+
+	// Auto-open the card when a track is loaded; cancel any pending close, and
 	// leave the "switch track" loader once a new source lands.
 	useEffect(() => {
-		if (source) setExpanded(true);
+		if (source) {
+			setExpanded(true);
+			setClosing(false);
+		}
 		setSwapping(false);
+		if (closeTimer.current !== null) {
+			window.clearTimeout(closeTimer.current);
+			closeTimer.current = null;
+		}
 	}, [source]);
 
-	// Auto-minimize on mouse-leave — unless pinned, or a control popover is open
-	// (its panel is portaled outside this element, so leaving would close it).
-	// Leaving also cancels an in-progress track swap.
-	function onLeave() {
-		if (!pinned && !speedOpen && !volumeOpen) {
-			setExpanded(false);
-			setSwapping(false);
+	useEffect(() => {
+		return () => {
+			if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+		};
+	}, []);
+
+	// Minimize after a short grace delay on mouse-leave, with a fade-out — unless
+	// pinned or a control popover is open. Re-entering cancels it.
+	function scheduleClose() {
+		if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+		closeTimer.current = window.setTimeout(() => {
+			if (keepOpenRef.current) {
+				closeTimer.current = null;
+				return;
+			}
+			setClosing(true);
+			closeTimer.current = window.setTimeout(() => {
+				closeTimer.current = null;
+				setClosing(false);
+				setExpanded(false);
+				setSwapping(false);
+			}, 180);
+		}, 650);
+	}
+
+	function cancelClose() {
+		if (closeTimer.current !== null) {
+			window.clearTimeout(closeTimer.current);
+			closeTimer.current = null;
 		}
+		setClosing(false);
 	}
 
 	function seekFromClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -60,7 +97,10 @@ export function PersistentPlayer() {
 
 	return (
 		<div
-			onMouseLeave={onLeave}
+			onMouseEnter={cancelClose}
+			onMouseLeave={() => {
+				if (expanded) scheduleClose();
+			}}
 			className="fixed right-4 bottom-4 z-40 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#23201c] text-white shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
 		>
 			{/* Hidden media backends — mounted once, never unmounted. */}
@@ -113,7 +153,9 @@ export function PersistentPlayer() {
 				</div>
 			) : (
 				/* ---- expanded card ---- */
-				<div className="player-pop flex flex-col gap-3 p-3.5">
+				<div
+					className={`${closing ? "player-pop-out" : "player-pop"} flex flex-col gap-3 p-3.5`}
+				>
 					<div className="flex items-center justify-between">
 						<span className="font-display font-bold text-sm">
 							{t("ui.player.title")}
