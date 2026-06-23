@@ -4,17 +4,15 @@ import {
 	Pause,
 	Pin,
 	Play,
-	Replace,
+	RefreshCw,
 	RotateCcw,
 	RotateCw,
-	Trash2,
-	Volume2,
-	VolumeX,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PlayerLoader } from "@/components/PlayerLoader";
 import { SpeedControl } from "@/components/SpeedControl";
+import { VolumeControl } from "@/components/VolumeControl";
 import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
 
 function formatTime(seconds: number): string {
@@ -24,15 +22,19 @@ function formatTime(seconds: number): string {
 	return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-// Animated "now playing" bars (brand gradient), hidden under reduced motion.
-function Equalizer() {
+// Static bar heights; the brand-gradient bars only animate while playing.
+const EQ_BARS = ["55%", "100%", "70%", "40%"];
+
+function Equalizer({ playing }: { playing: boolean }) {
 	return (
-		<span aria-hidden="true" className="flex h-3.5 items-end gap-[2px]">
-			{[0, 0.15, 0.3, 0.45].map((delay) => (
+		<span aria-hidden="true" className="flex h-5 shrink-0 items-end gap-[2px]">
+			{EQ_BARS.map((height, i) => (
 				<span
-					key={delay}
-					className="anim-eq-bar w-[3px] origin-bottom rounded-full bg-brand-gradient"
-					style={{ height: "100%", animationDelay: `${delay}s` }}
+					key={height}
+					className={`w-[3px] origin-bottom rounded-full bg-brand-gradient ${
+						playing ? "anim-eq-bar" : ""
+					}`}
+					style={{ height, animationDelay: `${i * 0.15}s` }}
 				/>
 			))}
 		</span>
@@ -41,16 +43,15 @@ function Equalizer() {
 
 export function PersistentPlayer() {
 	const { t } = useTranslation();
-	const { source, setSource, api, audioRef, ytContainerRef } =
-		useMediaPlayerCtx();
+	const { source, api, audioRef, ytContainerRef } = useMediaPlayerCtx();
 
 	const [expanded, setExpanded] = useState(false);
 	const [pinned, setPinned] = useState(false);
 	const [swapping, setSwapping] = useState(false);
-	const prevVolume = useRef(1);
+	const [speedOpen, setSpeedOpen] = useState(false);
+	const [volumeOpen, setVolumeOpen] = useState(false);
 
 	const hasTrack = source !== null;
-	const muted = api.volume === 0;
 	const progressPct =
 		api.duration > 0 ? (api.currentTime / api.duration) * 100 : 0;
 
@@ -61,16 +62,10 @@ export function PersistentPlayer() {
 		setSwapping(false);
 	}, [source]);
 
-	function toggleMute() {
-		if (muted) api.setVolume(prevVolume.current || 1);
-		else {
-			prevVolume.current = api.volume;
-			api.setVolume(0);
-		}
-	}
-
+	// Auto-minimize on mouse-leave — unless pinned, or a control popover is open
+	// (its panel is portaled outside this element, so leaving would close it).
 	function onLeave() {
-		if (!pinned) setExpanded(false);
+		if (!pinned && !speedOpen && !volumeOpen) setExpanded(false);
 	}
 
 	function seekFromClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -108,36 +103,32 @@ export function PersistentPlayer() {
 							<Play className="size-4" />
 						)}
 					</button>
-					{api.isPlaying && <Equalizer />}
+					{hasTrack && <Equalizer playing={api.isPlaying} />}
 					{hasTrack && (
 						<span className="min-w-0 flex-1 truncate text-white/80 text-xs">
 							{source.title}
 						</span>
 					)}
-					<SpeedControl
-						value={api.playbackRate}
-						onChange={api.setPlaybackRate}
-					/>
-					<button
-						type="button"
-						aria-label={t("ui.showroom.volume")}
-						onClick={toggleMute}
-						className="text-white/60 hover:text-white"
-					>
-						{muted ? (
-							<VolumeX className="size-4" />
-						) : (
-							<Volume2 className="size-4" />
-						)}
-					</button>
-					<button
-						type="button"
-						aria-label={t("ui.player.open")}
-						onClick={() => setExpanded(true)}
-						className="ml-auto text-white/60 hover:text-white"
-					>
-						<ChevronUp className="size-4" />
-					</button>
+					<div className="ml-auto flex items-center gap-2">
+						<SpeedControl
+							value={api.playbackRate}
+							onChange={api.setPlaybackRate}
+							onOpenChange={setSpeedOpen}
+						/>
+						<VolumeControl
+							value={api.volume}
+							onChange={api.setVolume}
+							onOpenChange={setVolumeOpen}
+						/>
+						<button
+							type="button"
+							aria-label={t("ui.player.open")}
+							onClick={() => setExpanded(true)}
+							className="text-white/60 hover:text-white"
+						>
+							<ChevronUp className="size-4" />
+						</button>
+					</div>
 				</div>
 			) : (
 				/* ---- expanded card ---- */
@@ -147,6 +138,21 @@ export function PersistentPlayer() {
 							{t("ui.player.title")}
 						</span>
 						<div className="flex items-center gap-1">
+							{hasTrack && (
+								<button
+									type="button"
+									onClick={() => setSwapping((s) => !s)}
+									aria-pressed={swapping}
+									className={`flex h-7 items-center gap-1.5 rounded-md px-2.5 font-semibold text-xs transition-colors ${
+										swapping
+											? "bg-white text-[#23201c]"
+											: "bg-white/10 text-white/80 hover:bg-white/20"
+									}`}
+								>
+									<RefreshCw className="size-3.5" />
+									{t("ui.player.switch")}
+								</button>
+							)}
 							<button
 								type="button"
 								aria-label={t("ui.player.pin")}
@@ -159,21 +165,6 @@ export function PersistentPlayer() {
 							>
 								<Pin className="size-4" />
 							</button>
-							{hasTrack && (
-								<button
-									type="button"
-									onClick={() => setSwapping((s) => !s)}
-									aria-pressed={swapping}
-									className={`flex h-7 items-center gap-1.5 rounded-md px-2.5 font-semibold text-xs transition-colors ${
-										swapping
-											? "bg-white text-[#23201c]"
-											: "bg-white/10 text-white/80 hover:bg-white/20"
-									}`}
-								>
-									<Replace className="size-3.5" />
-									{t("ui.player.switch")}
-								</button>
-							)}
 						</div>
 					</div>
 
@@ -185,23 +176,10 @@ export function PersistentPlayer() {
 								<div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-gradient">
 									<Music className="size-5 text-white" />
 								</div>
-								<div className="min-w-0 flex-1">
-									<div className="truncate font-semibold text-sm">
-										{source.title}
-									</div>
-									<div className="truncate text-white/50 text-xs">
-										{t("ui.player.subtitle")}
-									</div>
-								</div>
-								{api.isPlaying && <Equalizer />}
-								<button
-									type="button"
-									aria-label={t("ui.player.remove")}
-									onClick={() => setSource(null)}
-									className="flex size-8 shrink-0 items-center justify-center rounded-md bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
-								>
-									<Trash2 className="size-4" />
-								</button>
+								<span className="min-w-0 flex-1 truncate font-semibold text-sm">
+									{source.title}
+								</span>
+								<Equalizer playing={api.isPlaying} />
 							</div>
 
 							{/* seek (gradient progress, click to scrub) */}
@@ -226,7 +204,7 @@ export function PersistentPlayer() {
 							</div>
 
 							{/* transport */}
-							<div className="flex items-center justify-center gap-4">
+							<div className="flex items-center justify-center gap-5">
 								<button
 									type="button"
 									aria-label={t("ui.showroom.seekBack")}
@@ -259,35 +237,19 @@ export function PersistentPlayer() {
 								>
 									<RotateCw className="size-5" />
 								</button>
+							</div>
+
+							{/* speed + volume, same level */}
+							<div className="flex items-center justify-center gap-3">
 								<SpeedControl
 									value={api.playbackRate}
 									onChange={api.setPlaybackRate}
+									onOpenChange={setSpeedOpen}
 								/>
-							</div>
-
-							{/* volume */}
-							<div className="flex items-center gap-2">
-								<button
-									type="button"
-									aria-label={t("ui.showroom.volume")}
-									onClick={toggleMute}
-									className="text-white/60 hover:text-white"
-								>
-									{muted ? (
-										<VolumeX className="size-4" />
-									) : (
-										<Volume2 className="size-4" />
-									)}
-								</button>
-								<input
-									type="range"
-									aria-label={t("ui.showroom.volume")}
-									min={0}
-									max={1}
-									step={0.01}
+								<VolumeControl
 									value={api.volume}
-									onChange={(e) => api.setVolume(Number(e.target.value))}
-									className="flex-1 accent-white"
+									onChange={api.setVolume}
+									onOpenChange={setVolumeOpen}
 								/>
 							</div>
 						</>
