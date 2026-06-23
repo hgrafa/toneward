@@ -3,6 +3,7 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
 import { fetchYouTubeTitle, parseYouTubeId } from "@/lib/youtube";
+import type { AudioSource } from "@/types/showroom";
 
 export function PlayerLoader() {
 	const { t } = useTranslation();
@@ -11,16 +12,10 @@ export function PlayerLoader() {
 	const [error, setError] = useState<string | null>(null);
 	const fileId = useId();
 
-	// Don't offer the track that's already loaded — clicking it would look like
-	// nothing happened.
-	const others = recents.filter(
-		(r) =>
-			!(
-				r.kind === "youtube" &&
-				source?.kind === "youtube" &&
-				r.videoId === source.videoId
-			),
-	);
+	const isCurrent = (r: AudioSource) =>
+		r.kind === "youtube" &&
+		source?.kind === "youtube" &&
+		r.videoId === source.videoId;
 
 	function loadYouTube() {
 		const videoId = parseYouTubeId(url);
@@ -94,20 +89,35 @@ export function PlayerLoader() {
 				<span className="font-semibold text-[10px] text-white/40 uppercase tracking-wide">
 					{t("ui.player.recent")}
 				</span>
-				{others.length > 0 ? (
+				{recents.length > 0 ? (
 					<div className="flex flex-col gap-1">
-						{others.map((r) => (
-							<button
-								key={r.kind === "youtube" ? r.videoId : r.title}
-								type="button"
-								onClick={() => setSource(r)}
-								title={r.title}
-								className="flex items-center gap-2 truncate rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left text-white/80 text-xs hover:bg-white/15"
-							>
-								<Youtube className="size-3.5 shrink-0 text-white/40" />
-								<span className="truncate">{r.title}</span>
-							</button>
-						))}
+						{recents.map((r) => {
+							const key = r.kind === "youtube" ? r.videoId : r.title;
+							// The track that's already playing is shown but not clickable.
+							if (isCurrent(r)) {
+								return (
+									<div
+										key={key}
+										className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-2.5 py-1.5 text-white/45 text-xs"
+									>
+										<span className="size-1.5 shrink-0 rounded-full bg-[#22c55e]" />
+										<span className="truncate">{r.title}</span>
+									</div>
+								);
+							}
+							return (
+								<button
+									key={key}
+									type="button"
+									onClick={() => setSource(r)}
+									title={r.title}
+									className="flex items-center gap-2 truncate rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left text-white/80 text-xs hover:bg-white/15"
+								>
+									<Youtube className="size-3.5 shrink-0 text-white/40" />
+									<span className="truncate">{r.title}</span>
+								</button>
+							);
+						})}
 					</div>
 				) : (
 					<p className="px-0.5 py-1 text-white/35 text-xs italic">
