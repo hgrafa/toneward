@@ -71,6 +71,13 @@ const en = {
 			pdfDrop: "Drop a PDF to open it",
 			pdfClose: "Close",
 		},
+		player: {
+			title: "Playback",
+			open: "Open player",
+			minimize: "Minimize player",
+			pin: "Pin player",
+			remove: "Remove track",
+		},
 		intervals: {
 			"1": "Perfect Unison",
 			b2: "Minor 2nd",

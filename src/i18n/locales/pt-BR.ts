@@ -74,6 +74,13 @@ const ptBR: TranslationSchema = {
 			pdfDrop: "Solte um PDF para abrir",
 			pdfClose: "Fechar",
 		},
+		player: {
+			title: "Reprodução",
+			open: "Abrir player",
+			minimize: "Minimizar player",
+			pin: "Fixar player",
+			remove: "Remover faixa",
+		},
 		intervals: {
 			"1": "Uníssono",
 			b2: "2ª menor",
