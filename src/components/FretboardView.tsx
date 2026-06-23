@@ -1,10 +1,8 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { AudioControlPanel } from "@/components/AudioControlPanel";
 import { BoxPatterns } from "@/components/BoxPatterns";
 import { Editor } from "@/components/Editor";
 import { Fretboard } from "@/components/Fretboard";
-import { MetronomePanel } from "@/components/MetronomePanel";
 import { Toolbar } from "@/components/Toolbar";
 import { TuningControls } from "@/components/TuningControls";
 
@@ -20,11 +18,7 @@ export function FretboardView() {
 
 			<TuningControls />
 
-			<div className="flex flex-wrap items-center gap-4">
-				<Toolbar fretboardRef={fretboardRef} />
-				<MetronomePanel />
-				<AudioControlPanel />
-			</div>
+			<Toolbar fretboardRef={fretboardRef} />
 
 			<div
 				ref={fretboardRef}
