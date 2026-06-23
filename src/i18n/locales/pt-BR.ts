@@ -4,7 +4,7 @@ const ptBR: TranslationSchema = {
 	ui: {
 		appName: "Toneward",
 		sidebar: {
-			fretboard: "Braço",
+			fretboard: "Escalas",
 			showroom: "Showroom",
 			practice: "Prática",
 			langToggle: "Selecionar idioma",
