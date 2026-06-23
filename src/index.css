@@ -308,22 +308,25 @@
 	}
 }
 
-/* ---- Persistent player: "now playing" equalizer ---- */
-@keyframes eqBar {
-	0%,
-	100% {
-		transform: scaleY(0.35);
-	}
-	50% {
-		transform: scaleY(1);
+/* ---- Persistent player: "now playing" gradient border ---- */
+@keyframes borderSpin {
+	to {
+		transform: rotate(360deg);
 	}
 }
-.anim-eq-bar {
-	animation: eqBar 0.8s ease-in-out infinite;
+.player-glow-border {
+	background: conic-gradient(
+		from 0deg,
+		transparent 0deg,
+		#f23d78 55deg,
+		#f2683c 115deg,
+		#fba63f 175deg,
+		transparent 230deg
+	);
+	animation: borderSpin 4s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-	.anim-eq-bar {
+	.player-glow-border {
 		animation: none;
-		transform: scaleY(0.7);
 	}
 }
