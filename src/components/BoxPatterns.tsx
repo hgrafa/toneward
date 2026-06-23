@@ -64,28 +64,30 @@ export function BoxPatterns() {
 	if (!noteSet || boxPatterns.length === 0) return null;
 
 	return (
-		<div className="space-y-3">
-			<h2 className="text-sm font-medium text-muted-foreground">
+		<div className="space-y-3.5">
+			<h2 className="font-display font-semibold text-lg tracking-[-0.02em]">
 				{t("ui.boxPatterns.heading")}
 			</h2>
-			<div className="space-y-3">
+			<div className="grid gap-3.5 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
 				{boxPatterns.map((pattern) => (
 					<div
 						key={pattern.index}
-						className="overflow-x-auto rounded-lg border border-border bg-card p-4"
+						className="overflow-hidden rounded-2xl border border-border bg-card p-3.5"
 					>
-						<p className="mb-2 text-xs font-medium text-muted-foreground">
+						<p className="mb-2.5 font-bold text-[13px]">
 							{t("ui.boxPatterns.pattern", { n: pattern.index + 1 })}
 						</p>
-						<BoxFretboard
-							pattern={pattern}
-							stringCount={tuning.length}
-							displayMode={displayMode}
-							highlightRoot={highlightRoot}
-							rootPitchClass={
-								noteSet.root ? spelledToPitchClass(noteSet.root) : undefined
-							}
-						/>
+						<div className="overflow-x-auto">
+							<BoxFretboard
+								pattern={pattern}
+								stringCount={tuning.length}
+								displayMode={displayMode}
+								highlightRoot={highlightRoot}
+								rootPitchClass={
+									noteSet.root ? spelledToPitchClass(noteSet.root) : undefined
+								}
+							/>
+						</div>
 					</div>
 				))}
 			</div>

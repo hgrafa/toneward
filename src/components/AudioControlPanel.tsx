@@ -45,7 +45,7 @@ export function AudioControlPanel() {
 			<PopoverTrigger asChild>
 				<button
 					type="button"
-					className="flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted data-[state=open]:border-foreground/30 data-[state=open]:text-foreground"
+					className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 font-semibold text-secondary-foreground text-sm transition-colors hover:bg-muted data-[state=open]:border-transparent data-[state=open]:bg-foreground data-[state=open]:text-background"
 				>
 					<SlidersHorizontal className="size-3.5" />
 					{t("ui.audio.trigger")}

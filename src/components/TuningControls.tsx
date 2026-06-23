@@ -26,14 +26,14 @@ export function TuningControls() {
 	} = useInstrument();
 
 	return (
-		<div className="flex flex-wrap items-center gap-4">
-			{/* Instrument */}
-			<div className="flex items-center gap-2">
-				<span className="text-xs text-muted-foreground">
+		<div className="flex flex-col gap-3.5 rounded-[18px] border border-border bg-card p-[18px]">
+			{/* Instrument + string count */}
+			<div className="flex flex-wrap items-center gap-3">
+				<span className="w-[78px] font-semibold text-secondary-foreground text-sm">
 					{t("ui.tuning.instrument")}
 				</span>
 				<Select value={instrumentId} onValueChange={setInstrument}>
-					<SelectTrigger className="h-8 w-[130px] text-xs">
+					<SelectTrigger className="h-9 flex-1 rounded-[10px] text-sm">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -47,39 +47,37 @@ export function TuningControls() {
 						)}
 					</SelectContent>
 				</Select>
-			</div>
-
-			{/* String count */}
-			<div className="flex items-center gap-2">
-				<button
-					type="button"
-					aria-label={t("ui.tuning.removeString")}
-					disabled={tuning.length <= MIN_STRINGS}
-					onClick={() => setStringCount(tuning.length - 1)}
-					className="flex size-7 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
-				>
-					<Minus className="size-3.5" />
-				</button>
-				<span className="text-xs text-muted-foreground tabular-nums">
-					{t("ui.tuning.strings", { count: tuning.length })}
-				</span>
-				<button
-					type="button"
-					aria-label={t("ui.tuning.addString")}
-					disabled={tuning.length >= MAX_STRINGS}
-					onClick={() => setStringCount(tuning.length + 1)}
-					className="flex size-7 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
-				>
-					<Plus className="size-3.5" />
-				</button>
+				<div className="flex items-center overflow-hidden rounded-[10px] border border-border">
+					<button
+						type="button"
+						aria-label={t("ui.tuning.removeString")}
+						disabled={tuning.length <= MIN_STRINGS}
+						onClick={() => setStringCount(tuning.length - 1)}
+						className="flex size-9 items-center justify-center bg-card text-secondary-foreground transition-colors hover:bg-muted disabled:opacity-40"
+					>
+						<Minus className="size-4" />
+					</button>
+					<span className="w-[70px] text-center font-mono font-semibold text-sm tabular-nums">
+						{t("ui.tuning.strings", { count: tuning.length })}
+					</span>
+					<button
+						type="button"
+						aria-label={t("ui.tuning.addString")}
+						disabled={tuning.length >= MAX_STRINGS}
+						onClick={() => setStringCount(tuning.length + 1)}
+						className="flex size-9 items-center justify-center bg-card text-secondary-foreground transition-colors hover:bg-muted disabled:opacity-40"
+					>
+						<Plus className="size-4" />
+					</button>
+				</div>
 			</div>
 
 			{/* Per-string tuning (low → high) */}
-			<div className="flex items-center gap-2">
-				<span className="text-xs text-muted-foreground">
+			<div className="flex items-center gap-2.5">
+				<span className="w-[78px] font-semibold text-secondary-foreground text-sm">
 					{t("ui.tuning.tuning")}
 				</span>
-				<div className="flex flex-wrap gap-1">
+				<div className="flex flex-1 flex-wrap gap-1.5">
 					{tuning.map((note, index) => (
 						<Select
 							// biome-ignore lint/suspicious/noArrayIndexKey: string position is the identity here
@@ -93,7 +91,7 @@ export function TuningControls() {
 								aria-label={t("ui.tuning.stringTuning", {
 									n: tuning.length - index,
 								})}
-								className="h-8 w-[58px] text-xs"
+								className="h-9 min-w-0 flex-1 justify-center rounded-[9px] border-input bg-muted font-mono font-semibold text-sm"
 							>
 								<SelectValue />
 							</SelectTrigger>

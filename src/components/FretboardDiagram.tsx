@@ -270,7 +270,7 @@ export function FretboardDiagram({
 							r={d.dotRadius}
 							className={
 								root
-									? "fill-rose-500 stroke-rose-300"
+									? "fill-brand stroke-brand/40"
 									: isMarked
 										? "fill-primary stroke-primary/50"
 										: isGhost
