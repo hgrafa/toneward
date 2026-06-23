@@ -13,9 +13,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PlayerLoader } from "@/components/PlayerLoader";
+import { SpeedControl } from "@/components/SpeedControl";
 import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
-
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5] as const;
 
 function formatTime(seconds: number): string {
 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -41,11 +40,6 @@ export function PersistentPlayer() {
 	useEffect(() => {
 		if (source) setExpanded(true);
 	}, [source]);
-
-	function cycleSpeed() {
-		const i = SPEEDS.findIndex((s) => Math.abs(s - api.playbackRate) < 0.001);
-		api.setPlaybackRate(SPEEDS[(i + 1) % SPEEDS.length]);
-	}
 
 	function toggleMute() {
 		if (muted) api.setVolume(prevVolume.current || 1);
@@ -94,14 +88,10 @@ export function PersistentPlayer() {
 							<Play className="size-4" />
 						)}
 					</button>
-					<button
-						type="button"
-						aria-label={t("ui.showroom.speed")}
-						onClick={cycleSpeed}
-						className="h-7 rounded-md border border-border bg-card px-2 font-mono font-semibold text-secondary-foreground text-xs"
-					>
-						{`${+api.playbackRate.toFixed(2)}×`}
-					</button>
+					<SpeedControl
+						value={api.playbackRate}
+						onChange={api.setPlaybackRate}
+					/>
 					<button
 						type="button"
 						aria-label={t("ui.showroom.volume")}
@@ -245,14 +235,10 @@ export function PersistentPlayer() {
 								>
 									<RotateCw className="size-5" />
 								</button>
-								<button
-									type="button"
-									aria-label={t("ui.showroom.speed")}
-									onClick={cycleSpeed}
-									className="h-7 rounded-md border border-border bg-card px-2 font-mono font-semibold text-secondary-foreground text-xs"
-								>
-									{`${+api.playbackRate.toFixed(2)}×`}
-								</button>
+								<SpeedControl
+									value={api.playbackRate}
+									onChange={api.setPlaybackRate}
+								/>
 							</div>
 
 							{/* volume */}
