@@ -9,7 +9,6 @@ import {
 import type { AppView } from "@/types/showroom";
 
 const VIEW_KEY = "fretboard.view";
-const SIDEBAR_KEY = "fretboard.sidebarCollapsed";
 
 const VALID_VIEWS: AppView[] = ["fretboard", "showroom", "practice"];
 
@@ -25,28 +24,15 @@ function loadView(): AppView {
 	}
 }
 
-function loadCollapsed(): boolean {
-	try {
-		return localStorage.getItem(SIDEBAR_KEY) === "true";
-	} catch {
-		/* storage unavailable */
-		return false;
-	}
-}
-
 interface ViewState {
 	view: AppView;
 	setView: (view: AppView) => void;
-	sidebarCollapsed: boolean;
-	toggleSidebar: () => void;
 }
 
 const ViewContext = createContext<ViewState | null>(null);
 
 export function ViewProvider({ children }: { children: ReactNode }) {
 	const [view, setView] = useState<AppView>(loadView);
-	const [sidebarCollapsed, setSidebarCollapsed] =
-		useState<boolean>(loadCollapsed);
 
 	useEffect(() => {
 		try {
@@ -56,23 +42,7 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 		}
 	}, [view]);
 
-	useEffect(() => {
-		try {
-			localStorage.setItem(SIDEBAR_KEY, String(sidebarCollapsed));
-		} catch {
-			/* storage unavailable */
-		}
-	}, [sidebarCollapsed]);
-
-	const value = useMemo<ViewState>(
-		() => ({
-			view,
-			setView,
-			sidebarCollapsed,
-			toggleSidebar: () => setSidebarCollapsed((c) => !c),
-		}),
-		[view, sidebarCollapsed],
-	);
+	const value = useMemo<ViewState>(() => ({ view, setView }), [view]);
 
 	return <ViewContext.Provider value={value}>{children}</ViewContext.Provider>;
 }

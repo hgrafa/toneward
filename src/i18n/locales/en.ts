@@ -2,8 +2,6 @@ const en = {
 	ui: {
 		appName: "Toneward",
 		sidebar: {
-			expand: "Expand sidebar",
-			collapse: "Collapse sidebar",
 			fretboard: "Fretboard",
 			showroom: "Showroom",
 			practice: "Practice",
