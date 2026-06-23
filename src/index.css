@@ -308,28 +308,33 @@
 	}
 }
 
-/* ---- Persistent player: "now playing" glowing border ---- */
-@keyframes glowPulse {
-	0%,
-	100% {
-		box-shadow:
-			0 10px 30px rgba(0, 0, 0, 0.45),
-			0 0 8px 0 rgba(242, 61, 120, 0.3);
-	}
-	50% {
-		box-shadow:
-			0 10px 30px rgba(0, 0, 0, 0.45),
-			0 0 26px 4px rgba(242, 61, 120, 0.65);
+/* ---- Persistent player: "now playing" orbiting border light ---- */
+@keyframes orbitSpin {
+	to {
+		transform: translate(-50%, -50%) rotate(360deg);
 	}
 }
-.anim-player-glow {
-	animation: glowPulse 2s ease-in-out infinite;
+/* A big centred square with a short bright arc; the panel covers the middle,
+   so only a thin slice shows in the border frame and the light travels around. */
+.player-orbit {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 170%;
+	aspect-ratio: 1;
+	transform: translate(-50%, -50%) rotate(0deg);
+	background: conic-gradient(
+		from 0deg,
+		transparent 0deg,
+		transparent 296deg,
+		rgba(242, 61, 120, 0.85) 330deg,
+		rgba(251, 166, 63, 0.95) 352deg,
+		#ffffff 360deg
+	);
+	animation: orbitSpin 3s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-	.anim-player-glow {
+	.player-orbit {
 		animation: none;
-		box-shadow:
-			0 10px 30px rgba(0, 0, 0, 0.45),
-			0 0 16px 2px rgba(242, 61, 120, 0.45);
 	}
 }

@@ -58,11 +58,12 @@ export function PersistentPlayer() {
 	return (
 		<div
 			onMouseLeave={onLeave}
-			className={`fixed right-4 bottom-4 z-40 w-[min(380px,calc(100vw-2rem))] rounded-2xl p-px shadow-[0_10px_30px_rgba(0,0,0,0.45)] ${
-				api.isPlaying ? "anim-player-glow bg-brand-gradient" : "bg-white/10"
-			}`}
+			className="fixed right-4 bottom-4 z-40 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-white/10 p-[2px] shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
 		>
-			<div className="relative overflow-hidden rounded-[15px] bg-[#23201c] text-white">
+			{api.isPlaying && (
+				<div aria-hidden="true" className="player-orbit pointer-events-none" />
+			)}
+			<div className="relative z-10 overflow-hidden rounded-[14px] bg-[#23201c] text-white">
 				{/* Hidden media backends — mounted once, never unmounted. */}
 				{/* biome-ignore lint/a11y/useMediaCaption: user-supplied practice audio */}
 				<audio ref={audioRef} className="sr-only" />
