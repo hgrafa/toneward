@@ -76,6 +76,7 @@ const ptBR: TranslationSchema = {
 		},
 		player: {
 			title: "Reprodução",
+			subtitle: "Fila global · toca entre as abas",
 			open: "Abrir player",
 			switch: "Trocar",
 			pin: "Fixar player",

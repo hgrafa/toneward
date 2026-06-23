@@ -73,6 +73,7 @@ const en = {
 		},
 		player: {
 			title: "Playback",
+			subtitle: "Global queue · plays across tabs",
 			open: "Open player",
 			switch: "Switch",
 			pin: "Pin player",

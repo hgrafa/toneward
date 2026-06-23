@@ -42,8 +42,8 @@ export function PlayerLoader() {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="flex items-center gap-2 rounded-[11px] border border-input bg-muted px-3 py-1.5">
-				<Youtube className="size-4 shrink-0 text-muted-foreground" />
+			<div className="flex items-center gap-2 rounded-[11px] border border-white/15 bg-white/10 px-3 py-1.5">
+				<Youtube className="size-4 shrink-0 text-white/50" />
 				<input
 					type="url"
 					value={url}
@@ -52,20 +52,20 @@ export function PlayerLoader() {
 						if (e.key === "Enter") loadYouTube();
 					}}
 					placeholder={t("ui.showroom.youtubePlaceholder")}
-					className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+					className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40"
 				/>
 			</div>
 			<div className="flex gap-2">
 				<button
 					type="button"
 					onClick={loadYouTube}
-					className="h-9 flex-1 rounded-[11px] bg-foreground font-semibold text-background text-sm"
+					className="h-9 flex-1 rounded-[11px] bg-brand-gradient font-semibold text-white text-sm"
 				>
 					{t("ui.showroom.load")}
 				</button>
 				<label
 					htmlFor={fileId}
-					className="flex h-9 cursor-pointer items-center gap-2 rounded-[11px] border border-border bg-card px-3 font-semibold text-secondary-foreground text-sm hover:bg-muted"
+					className="flex h-9 cursor-pointer items-center gap-2 rounded-[11px] border border-white/15 bg-white/10 px-3 font-semibold text-white text-sm hover:bg-white/20"
 				>
 					<Music className="size-4" />
 					{t("ui.showroom.uploadMp3")}
@@ -78,7 +78,7 @@ export function PlayerLoader() {
 					onChange={(e) => loadFile(e.target.files?.[0])}
 				/>
 			</div>
-			{error && <p className="text-destructive text-xs">{error}</p>}
+			{error && <p className="text-red-300 text-xs">{error}</p>}
 		</div>
 	);
 }

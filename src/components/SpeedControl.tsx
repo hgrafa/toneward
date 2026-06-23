@@ -27,7 +27,7 @@ export function SpeedControl({ value, onChange }: SpeedControlProps) {
 				<button
 					type="button"
 					aria-label={t("ui.showroom.speed")}
-					className="flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 font-mono font-semibold text-secondary-foreground text-xs transition-colors hover:bg-muted data-[state=open]:border-transparent data-[state=open]:bg-foreground data-[state=open]:text-background"
+					className="flex h-7 items-center gap-1 rounded-md bg-white/10 px-2 font-mono font-semibold text-white text-xs transition-colors hover:bg-white/20 data-[state=open]:bg-white data-[state=open]:text-[#23201c]"
 				>
 					<Gauge className="size-3.5 shrink-0" />
 					<span className="w-10 text-center tabular-nums">

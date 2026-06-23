@@ -1,5 +1,6 @@
 import {
 	ChevronUp,
+	Music,
 	Pause,
 	Pin,
 	Play,
@@ -23,6 +24,21 @@ function formatTime(seconds: number): string {
 	return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+// Animated "now playing" bars (brand gradient), hidden under reduced motion.
+function Equalizer() {
+	return (
+		<span aria-hidden="true" className="flex h-3.5 items-end gap-[2px]">
+			{[0, 0.15, 0.3, 0.45].map((delay) => (
+				<span
+					key={delay}
+					className="anim-eq-bar w-[3px] origin-bottom rounded-full bg-brand-gradient"
+					style={{ height: "100%", animationDelay: `${delay}s` }}
+				/>
+			))}
+		</span>
+	);
+}
+
 export function PersistentPlayer() {
 	const { t } = useTranslation();
 	const { source, setSource, api, audioRef, ytContainerRef } =
@@ -31,11 +47,12 @@ export function PersistentPlayer() {
 	const [expanded, setExpanded] = useState(false);
 	const [pinned, setPinned] = useState(false);
 	const [swapping, setSwapping] = useState(false);
-	const [seeking, setSeeking] = useState<number | null>(null);
 	const prevVolume = useRef(1);
 
 	const hasTrack = source !== null;
 	const muted = api.volume === 0;
+	const progressPct =
+		api.duration > 0 ? (api.currentTime / api.duration) * 100 : 0;
 
 	// Auto-open the card when a track is loaded so the user can confirm, and
 	// leave the "switch track" loader once a new source lands.
@@ -56,18 +73,18 @@ export function PersistentPlayer() {
 		if (!pinned) setExpanded(false);
 	}
 
-	// Commit a buffered scrub on release (pointer, touch, or keyboard).
-	function commitSeek() {
-		if (seeking !== null) {
-			api.seek(seeking);
-			setSeeking(null);
-		}
+	function seekFromClick(e: React.MouseEvent<HTMLButtonElement>) {
+		const rect = e.currentTarget.getBoundingClientRect();
+		const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+		api.seek(pct * (api.duration || 0));
 	}
 
 	return (
 		<div
 			onMouseLeave={onLeave}
-			className="fixed right-4 bottom-4 z-40 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border bg-background/90 shadow-xl backdrop-blur-lg"
+			className={`fixed right-4 bottom-4 z-40 w-[min(380px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#23201c] text-white shadow-2xl transition-shadow ${
+				api.isPlaying ? "ring-1 ring-brand/50" : ""
+			}`}
 		>
 			{/* Hidden media backends — mounted once, never unmounted. */}
 			{/* biome-ignore lint/a11y/useMediaCaption: user-supplied practice audio */}
@@ -83,7 +100,7 @@ export function PersistentPlayer() {
 							api.isPlaying ? t("ui.showroom.pause") : t("ui.showroom.play")
 						}
 						onClick={api.toggle}
-						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background"
+						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[#23201c]"
 					>
 						{api.isPlaying ? (
 							<Pause className="size-4" />
@@ -91,6 +108,12 @@ export function PersistentPlayer() {
 							<Play className="size-4" />
 						)}
 					</button>
+					{api.isPlaying && <Equalizer />}
+					{hasTrack && (
+						<span className="min-w-0 flex-1 truncate text-white/80 text-xs">
+							{source.title}
+						</span>
+					)}
 					<SpeedControl
 						value={api.playbackRate}
 						onChange={api.setPlaybackRate}
@@ -99,7 +122,7 @@ export function PersistentPlayer() {
 						type="button"
 						aria-label={t("ui.showroom.volume")}
 						onClick={toggleMute}
-						className="text-muted-foreground hover:text-foreground"
+						className="text-white/60 hover:text-white"
 					>
 						{muted ? (
 							<VolumeX className="size-4" />
@@ -107,26 +130,11 @@ export function PersistentPlayer() {
 							<Volume2 className="size-4" />
 						)}
 					</button>
-					<input
-						type="range"
-						aria-label={t("ui.showroom.volume")}
-						min={0}
-						max={1}
-						step={0.01}
-						value={api.volume}
-						onChange={(e) => api.setVolume(Number(e.target.value))}
-						className="w-16 accent-foreground"
-					/>
-					{hasTrack && (
-						<span className="min-w-0 flex-1 truncate text-secondary-foreground text-xs">
-							{source.title}
-						</span>
-					)}
 					<button
 						type="button"
 						aria-label={t("ui.player.open")}
 						onClick={() => setExpanded(true)}
-						className="ml-auto text-muted-foreground hover:text-foreground"
+						className="ml-auto text-white/60 hover:text-white"
 					>
 						<ChevronUp className="size-4" />
 					</button>
@@ -145,8 +153,8 @@ export function PersistentPlayer() {
 								onClick={() => setPinned((p) => !p)}
 								className={`flex size-7 items-center justify-center rounded-md transition-colors ${
 									pinned
-										? "bg-foreground text-background"
-										: "text-muted-foreground hover:bg-muted"
+										? "bg-white text-[#23201c]"
+										: "text-white/60 hover:bg-white/10"
 								}`}
 							>
 								<Pin className="size-4" />
@@ -158,8 +166,8 @@ export function PersistentPlayer() {
 									aria-pressed={swapping}
 									className={`flex h-7 items-center gap-1.5 rounded-md px-2.5 font-semibold text-xs transition-colors ${
 										swapping
-											? "bg-foreground text-background"
-											: "border border-border bg-card text-secondary-foreground hover:bg-muted"
+											? "bg-white text-[#23201c]"
+											: "bg-white/10 text-white/80 hover:bg-white/20"
 									}`}
 								>
 									<Replace className="size-3.5" />
@@ -173,40 +181,46 @@ export function PersistentPlayer() {
 						<PlayerLoader />
 					) : (
 						<>
-							<div className="flex items-center gap-2">
-								<span className="min-w-0 flex-1 truncate font-semibold text-sm">
-									{source.title}
-								</span>
+							<div className="flex items-center gap-3">
+								<div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-gradient">
+									<Music className="size-5 text-white" />
+								</div>
+								<div className="min-w-0 flex-1">
+									<div className="truncate font-semibold text-sm">
+										{source.title}
+									</div>
+									<div className="truncate text-white/50 text-xs">
+										{t("ui.player.subtitle")}
+									</div>
+								</div>
+								{api.isPlaying && <Equalizer />}
 								<button
 									type="button"
 									aria-label={t("ui.player.remove")}
 									onClick={() => setSource(null)}
-									className="flex size-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-muted"
+									className="flex size-8 shrink-0 items-center justify-center rounded-md bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
 								>
 									<Trash2 className="size-4" />
 								</button>
 							</div>
 
-							{/* seek */}
+							{/* seek (gradient progress, click to scrub) */}
 							<div className="flex items-center gap-2">
-								<span className="w-9 text-right font-mono text-muted-foreground text-[11px] tabular-nums">
-									{formatTime(seeking ?? api.currentTime)}
+								<span className="w-9 text-right font-mono text-[11px] text-white/50 tabular-nums">
+									{formatTime(api.currentTime)}
 								</span>
-								<input
-									type="range"
+								<button
+									type="button"
 									aria-label={t("ui.showroom.seek")}
-									min={0}
-									max={api.duration || 0}
-									step={1}
-									value={
-										seeking ?? Math.min(api.currentTime, api.duration || 0)
-									}
-									onChange={(e) => setSeeking(Number(e.target.value))}
-									onPointerUp={commitSeek}
-									onKeyUp={commitSeek}
-									className="flex-1 accent-foreground"
-								/>
-								<span className="w-9 font-mono text-muted-foreground text-[11px] tabular-nums">
+									onClick={seekFromClick}
+									className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/15"
+								>
+									<div
+										className="h-full rounded-full bg-brand-gradient"
+										style={{ width: `${progressPct}%` }}
+									/>
+								</button>
+								<span className="w-9 font-mono text-[11px] text-white/50 tabular-nums">
 									{formatTime(api.duration)}
 								</span>
 							</div>
@@ -217,7 +231,7 @@ export function PersistentPlayer() {
 									type="button"
 									aria-label={t("ui.showroom.seekBack")}
 									onClick={() => api.skip(-10)}
-									className="text-secondary-foreground hover:text-foreground"
+									className="text-white/70 hover:text-white"
 								>
 									<RotateCcw className="size-5" />
 								</button>
@@ -229,7 +243,7 @@ export function PersistentPlayer() {
 											: t("ui.showroom.play")
 									}
 									onClick={api.toggle}
-									className="flex size-11 items-center justify-center rounded-full bg-foreground text-background"
+									className="flex size-11 items-center justify-center rounded-full bg-white text-[#23201c]"
 								>
 									{api.isPlaying ? (
 										<Pause className="size-5" />
@@ -241,7 +255,7 @@ export function PersistentPlayer() {
 									type="button"
 									aria-label={t("ui.showroom.seekForward")}
 									onClick={() => api.skip(10)}
-									className="text-secondary-foreground hover:text-foreground"
+									className="text-white/70 hover:text-white"
 								>
 									<RotateCw className="size-5" />
 								</button>
@@ -257,7 +271,7 @@ export function PersistentPlayer() {
 									type="button"
 									aria-label={t("ui.showroom.volume")}
 									onClick={toggleMute}
-									className="text-muted-foreground hover:text-foreground"
+									className="text-white/60 hover:text-white"
 								>
 									{muted ? (
 										<VolumeX className="size-4" />
@@ -273,12 +287,12 @@ export function PersistentPlayer() {
 									step={0.01}
 									value={api.volume}
 									onChange={(e) => api.setVolume(Number(e.target.value))}
-									className="flex-1 accent-foreground"
+									className="flex-1 accent-white"
 								/>
 							</div>
 						</>
 					)}
-					{api.error && <p className="text-destructive text-xs">{api.error}</p>}
+					{api.error && <p className="text-red-300 text-xs">{api.error}</p>}
 				</div>
 			)}
 		</div>

@@ -307,3 +307,23 @@
 		transition: none;
 	}
 }
+
+/* ---- Persistent player: "now playing" equalizer ---- */
+@keyframes eqBar {
+	0%,
+	100% {
+		transform: scaleY(0.35);
+	}
+	50% {
+		transform: scaleY(1);
+	}
+}
+.anim-eq-bar {
+	animation: eqBar 0.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.anim-eq-bar {
+		animation: none;
+		transform: scaleY(0.7);
+	}
+}
