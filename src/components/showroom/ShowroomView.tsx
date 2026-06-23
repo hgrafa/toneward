@@ -1,19 +1,12 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useShowroom } from "@/hooks/ShowroomContext";
-import { useMediaPlayer } from "@/hooks/useMediaPlayer";
-import { AudioDock } from "./AudioDock";
-import { MediaSourceBar } from "./MediaSourceBar";
 import { PdfViewer } from "./PdfViewer";
 
 export function ShowroomView() {
 	const { t } = useTranslation();
-	const { audioSource, setCurrentDocument } = useShowroom();
-	const audioRef = useRef<HTMLAudioElement | null>(null);
-	const ytContainerRef = useRef<HTMLDivElement | null>(null);
+	const { setCurrentDocument } = useShowroom();
 	const [dragging, setDragging] = useState(false);
-
-	const api = useMediaPlayer(audioSource, audioRef, ytContainerRef);
 
 	function onDrop(e: React.DragEvent) {
 		e.preventDefault();
@@ -37,26 +30,14 @@ export function ShowroomView() {
 			onDragLeave={() => setDragging(false)}
 			onDrop={onDrop}
 		>
-			<MediaSourceBar />
-
-			<div className="relative min-h-[60vh] flex-1 overflow-hidden rounded-lg border border-border bg-card pb-16">
+			<div className="relative min-h-[60vh] flex-1 overflow-hidden rounded-lg border border-border bg-card">
 				<PdfViewer />
 			</div>
 
 			{dragging && (
-				<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-lg border-2 border-primary border-dashed bg-background/80 text-sm font-medium">
+				<div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-lg border-2 border-primary border-dashed bg-background/80 font-medium text-sm">
 					{t("ui.showroom.pdfDrop")}
 				</div>
-			)}
-
-			{audioSource && (
-				<AudioDock
-					api={api}
-					title={audioSource.title}
-					kind={audioSource.kind}
-					audioRef={audioRef}
-					ytContainerRef={ytContainerRef}
-				/>
 			)}
 		</div>
 	);

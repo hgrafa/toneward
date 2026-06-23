@@ -1,9 +1,11 @@
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingNav } from "@/components/FloatingNav";
 import { FretboardView } from "@/components/FretboardView";
+import { PersistentPlayer } from "@/components/PersistentPlayer";
 import { PracticeView } from "@/components/practice/PracticeView";
 import { ShowroomView } from "@/components/showroom/ShowroomView";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
+import { MediaPlayerProvider } from "@/hooks/MediaPlayerContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
 import { ShowroomProvider } from "@/hooks/ShowroomContext";
 import { FretboardProvider } from "@/hooks/useFretboardContext";
@@ -16,7 +18,9 @@ export default function App() {
 				<AudioDevicesProvider>
 					<MetronomeProvider>
 						<ShowroomProvider>
-							<AppShell />
+							<MediaPlayerProvider>
+								<AppShell />
+							</MediaPlayerProvider>
 						</ShowroomProvider>
 					</MetronomeProvider>
 				</AudioDevicesProvider>
@@ -38,6 +42,7 @@ function AppShell() {
 					{view === "practice" && <PracticeView />}
 				</main>
 				<FloatingNav />
+				<PersistentPlayer />
 			</div>
 		</div>
 	);

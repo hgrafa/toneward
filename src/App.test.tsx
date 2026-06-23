@@ -15,5 +15,7 @@ describe("App shell", () => {
 		expect(
 			screen.getByRole("button", { name: "Showroom" }),
 		).toBeInTheDocument();
+		// The persistent player mounts once at the shell.
+		expect(screen.getByLabelText("Open player")).toBeInTheDocument();
 	});
 });
