@@ -40,8 +40,8 @@ export function StudyTimerPanel() {
 				<span className="font-display font-bold text-sm">
 					{t("ui.timer.title")}
 				</span>
-				<div className="rounded-xl border border-[#22c55e]/40 bg-[#22c55e]/10 p-4 text-center">
-					<p className="font-display font-bold text-[#15803d] text-base">
+				<div className="rounded-xl bg-[#16a34a] p-4 text-center">
+					<p className="font-display font-bold text-base text-white">
 						{trimmedGoal || t("ui.timer.congrats")} 🎉
 					</p>
 				</div>

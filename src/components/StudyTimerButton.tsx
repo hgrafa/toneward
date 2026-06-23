@@ -14,17 +14,23 @@ export function StudyTimerButton() {
 	const display = mode === "up" ? elapsed : remaining;
 	const trimmedGoal = goal.trim();
 
+	const base =
+		"flex h-9 max-w-[260px] items-center gap-2 rounded-lg px-3 font-semibold text-sm transition-colors";
+	const className = finished
+		? `${base} bg-[#16a34a] text-white`
+		: `${base} border border-border bg-card text-secondary-foreground hover:bg-muted data-[state=open]:border-transparent data-[state=open]:bg-foreground data-[state=open]:text-background`;
+
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
 					aria-label={t("ui.timer.title")}
-					className="flex h-9 max-w-[260px] items-center gap-2 rounded-lg border border-border bg-card px-3 font-semibold text-secondary-foreground text-sm transition-colors hover:bg-muted data-[state=open]:border-transparent data-[state=open]:bg-foreground data-[state=open]:text-background"
+					className={className}
 				>
 					<Clock className="size-4 shrink-0" />
 					{finished ? (
-						<span className="max-w-[180px] truncate text-[#15803d]">
+						<span className="max-w-[180px] truncate">
 							{trimmedGoal || t("ui.timer.congrats")} 🎉
 						</span>
 					) : (
