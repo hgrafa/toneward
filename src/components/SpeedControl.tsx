@@ -1,16 +1,21 @@
 import { Gauge } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PlayerSlider, type SliderStop } from "@/components/PlayerSlider";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
 
-const SPEED_PRESETS = [0.5, 0.75, 1, 1.5, 2] as const;
+const SPEED_STOPS: SliderStop[] = [
+	{ value: 0.5, label: ".5" },
+	{ value: 0.75, label: ".75" },
+	{ value: 1, label: "1" },
+	{ value: 1.5, label: "1.5" },
+	{ value: 2, label: "2" },
+];
 
 const formatSpeed = (r: number) => `${+r.toFixed(2)}×`;
-const formatPreset = (r: number) =>
-	r < 1 ? `.${r.toString().split(".")[1]}` : `${r}`;
 
 interface SpeedControlProps {
 	value: number;
@@ -44,38 +49,21 @@ export function SpeedControl({
 				align="end"
 				sideOffset={10}
 				collisionPadding={12}
-				className="w-44 border-white/10 bg-[#2b2724] text-white"
+				className="w-48 border-white/10 bg-[#2b2724] text-white"
 			>
 				<div className="flex flex-col items-center gap-3">
 					<span className="font-display font-bold text-3xl tabular-nums tracking-tight">
 						{formatSpeed(value)}
 					</span>
-					<input
-						type="range"
-						aria-label={t("ui.showroom.playbackSpeed")}
-						min={0.25}
+					<PlayerSlider
+						value={value}
+						min={0.5}
 						max={2}
 						step={0.05}
-						value={value}
-						onChange={(e) => onChange(Number(e.target.value))}
-						className="w-full accent-white"
+						ariaLabel={t("ui.showroom.playbackSpeed")}
+						stops={SPEED_STOPS}
+						onChange={onChange}
 					/>
-					<div className="flex w-full items-center justify-between">
-						{SPEED_PRESETS.map((rate) => (
-							<button
-								key={rate}
-								type="button"
-								onClick={() => onChange(rate)}
-								className={`rounded px-1.5 py-0.5 font-mono text-xs transition-colors ${
-									Math.abs(value - rate) < 0.001
-										? "font-semibold text-white"
-										: "text-white/50 hover:text-white"
-								}`}
-							>
-								{formatPreset(rate)}
-							</button>
-						))}
-					</div>
 				</div>
 			</PopoverContent>
 		</Popover>

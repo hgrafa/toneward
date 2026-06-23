@@ -1,12 +1,19 @@
 import { Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PlayerSlider, type SliderStop } from "@/components/PlayerSlider";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
 
-const VOLUME_PRESETS = [0, 0.25, 0.5, 0.75, 1] as const;
+const VOLUME_STOPS: SliderStop[] = [
+	{ value: 0, label: "0" },
+	{ value: 0.25, label: "25" },
+	{ value: 0.5, label: "50" },
+	{ value: 0.75, label: "75" },
+	{ value: 1, label: "100" },
+];
 
 const formatPct = (v: number) => `${Math.round(v * 100)}`;
 
@@ -44,38 +51,21 @@ export function VolumeControl({
 				align="end"
 				sideOffset={10}
 				collisionPadding={12}
-				className="w-44 border-white/10 bg-[#2b2724] text-white"
+				className="w-48 border-white/10 bg-[#2b2724] text-white"
 			>
 				<div className="flex flex-col items-center gap-3">
 					<span className="font-display font-bold text-3xl tabular-nums tracking-tight">
 						{formatPct(value)}%
 					</span>
-					<input
-						type="range"
-						aria-label={t("ui.showroom.volume")}
+					<PlayerSlider
+						value={value}
 						min={0}
 						max={1}
 						step={0.01}
-						value={value}
-						onChange={(e) => onChange(Number(e.target.value))}
-						className="w-full accent-white"
+						ariaLabel={t("ui.showroom.volume")}
+						stops={VOLUME_STOPS}
+						onChange={onChange}
 					/>
-					<div className="flex w-full items-center justify-between">
-						{VOLUME_PRESETS.map((v) => (
-							<button
-								key={v}
-								type="button"
-								onClick={() => onChange(v)}
-								className={`rounded px-1.5 py-0.5 font-mono text-xs transition-colors ${
-									Math.abs(value - v) < 0.001
-										? "font-semibold text-white"
-										: "text-white/50 hover:text-white"
-								}`}
-							>
-								{formatPct(v)}
-							</button>
-						))}
-					</div>
 				</div>
 			</PopoverContent>
 		</Popover>
