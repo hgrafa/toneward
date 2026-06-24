@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ShowroomProvider, useShowroom } from "@/hooks/ShowroomContext";
 import { PdfViewer } from "./PdfViewer";
 
@@ -10,6 +10,10 @@ function setup() {
 		</ShowroomProvider>,
 	);
 }
+
+beforeEach(() => {
+	localStorage.clear();
+});
 
 describe("PdfViewer", () => {
 	it("shows the empty-state drop zone when no document is loaded", () => {
@@ -25,16 +29,18 @@ describe("PdfViewer", () => {
 		expect(screen.getByText(/only pdf files/i)).toBeInTheDocument();
 	});
 
-	it("renders a viewer once a PDF document is set", () => {
+	it("renders a viewer once a PDF document is opened", () => {
 		vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:fake");
 
 		function Loader() {
-			const { setCurrentDocument } = useShowroom();
+			const { openDocument } = useShowroom();
 			return (
 				<button
 					type="button"
 					onClick={() =>
-						setCurrentDocument({ name: "score.pdf", objectUrl: "blob:fake" })
+						openDocument(
+							new File(["%PDF"], "score.pdf", { type: "application/pdf" }),
+						)
 					}
 				>
 					load

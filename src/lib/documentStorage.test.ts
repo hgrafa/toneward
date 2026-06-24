@@ -13,7 +13,7 @@ beforeEach(() => {
 	localStorage.clear();
 });
 
-function pdf(name: string, body = "%PDF-1.4 fake") {
+function pdf(body = "%PDF-1.4 fake") {
 	return new Blob([body], { type: "application/pdf" });
 }
 
@@ -23,7 +23,7 @@ describe("documentStorage", () => {
 	});
 
 	it("round-trips a saved document's name and bytes", async () => {
-		await saveStoredDocument("score.pdf", pdf("score.pdf", "hello"));
+		await saveStoredDocument("score.pdf", pdf("hello"));
 
 		const stored = await loadStoredDocument();
 		expect(stored?.name).toBe("score.pdf");
@@ -32,7 +32,7 @@ describe("documentStorage", () => {
 	});
 
 	it("clears a stored document", async () => {
-		await saveStoredDocument("score.pdf", pdf("score.pdf"));
+		await saveStoredDocument("score.pdf", pdf());
 		await clearStoredDocument();
 		expect(await loadStoredDocument()).toBeNull();
 	});
@@ -47,8 +47,8 @@ describe("documentStorage", () => {
 	});
 
 	it("replaces a previously stored document", async () => {
-		await saveStoredDocument("first.pdf", pdf("first.pdf", "one"));
-		await saveStoredDocument("second.pdf", pdf("second.pdf", "two"));
+		await saveStoredDocument("first.pdf", pdf("one"));
+		await saveStoredDocument("second.pdf", pdf("two"));
 
 		const stored = await loadStoredDocument();
 		expect(stored?.name).toBe("second.pdf");

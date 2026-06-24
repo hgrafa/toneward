@@ -70,6 +70,8 @@ const en = {
 			pdfDrag: "…or drag a file onto the page",
 			pdfDrop: "Drop a PDF to open it",
 			pdfClose: "Close",
+			pdfUnavailable:
+				"We saved “{{name}}” but couldn't reopen it. Please upload it again.",
 		},
 		player: {
 			title: "Playback",

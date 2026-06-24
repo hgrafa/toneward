@@ -5,7 +5,12 @@ import { useShowroom } from "@/hooks/ShowroomContext";
 
 export function PdfViewer() {
 	const { t } = useTranslation();
-	const { currentDocument, setCurrentDocument } = useShowroom();
+	const {
+		currentDocument,
+		unavailableDocumentName,
+		openDocument,
+		closeDocument,
+	} = useShowroom();
 	const [error, setError] = useState<string | null>(null);
 	const inputId = useId();
 
@@ -16,10 +21,7 @@ export function PdfViewer() {
 			return;
 		}
 		setError(null);
-		setCurrentDocument({
-			name: file.name,
-			objectUrl: URL.createObjectURL(file),
-		});
+		openDocument(file);
 	}
 
 	if (currentDocument) {
@@ -32,7 +34,7 @@ export function PdfViewer() {
 					</span>
 					<button
 						type="button"
-						onClick={() => setCurrentDocument(null)}
+						onClick={closeDocument}
 						className="rounded-md border border-input px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
 					>
 						{t("ui.showroom.pdfClose")}
@@ -60,6 +62,13 @@ export function PdfViewer() {
 			<p className="text-xs text-muted-foreground">
 				{t("ui.showroom.pdfDrag")}
 			</p>
+			{unavailableDocumentName && (
+				<p className="max-w-sm text-xs text-amber-600 dark:text-amber-500">
+					{t("ui.showroom.pdfUnavailable", {
+						name: unavailableDocumentName,
+					})}
+				</p>
+			)}
 			{error && <p className="text-xs text-destructive">{error}</p>}
 			<input
 				id={inputId}

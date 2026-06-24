@@ -5,7 +5,7 @@ import { PdfViewer } from "./PdfViewer";
 
 export function ShowroomView() {
 	const { t } = useTranslation();
-	const { setCurrentDocument } = useShowroom();
+	const { openDocument } = useShowroom();
 	const [dragging, setDragging] = useState(false);
 
 	function onDrop(e: React.DragEvent) {
@@ -13,10 +13,7 @@ export function ShowroomView() {
 		setDragging(false);
 		const file = e.dataTransfer.files?.[0];
 		if (file?.type === "application/pdf") {
-			setCurrentDocument({
-				name: file.name,
-				objectUrl: URL.createObjectURL(file),
-			});
+			openDocument(file);
 		}
 	}
 

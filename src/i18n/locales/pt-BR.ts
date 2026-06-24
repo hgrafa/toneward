@@ -73,6 +73,8 @@ const ptBR: TranslationSchema = {
 			pdfDrag: "…ou arraste um arquivo para a página",
 			pdfDrop: "Solte um PDF para abrir",
 			pdfClose: "Fechar",
+			pdfUnavailable:
+				"Salvamos “{{name}}”, mas não foi possível reabri-lo. Envie o arquivo novamente.",
 		},
 		player: {
 			title: "Reprodução",

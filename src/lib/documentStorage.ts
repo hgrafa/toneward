@@ -132,9 +132,7 @@ export async function loadStoredDocument(): Promise<StoredDocument | null> {
 
 	try {
 		const bytes = await getBytes();
-		const blob = bytes
-			? new Blob([bytes.buffer], { type: bytes.type })
-			: null;
+		const blob = bytes ? new Blob([bytes.buffer], { type: bytes.type }) : null;
 		return { name, blob };
 	} catch {
 		// bytes unreadable but we know a document existed → tombstone
