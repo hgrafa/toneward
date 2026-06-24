@@ -23,6 +23,15 @@ import { afterEach } from "vitest";
 	}
 }
 
+// jsdom's Blob/File only implement slice/size/type — no arrayBuffer()/text().
+// Swap in Node's spec-complete implementations so storage code that reads bytes
+// works under test (real browsers already provide these).
+{
+	const { Blob: NodeBlob, File: NodeFile } = await import("node:buffer");
+	globalThis.Blob = NodeBlob as unknown as typeof Blob;
+	globalThis.File = NodeFile as unknown as typeof File;
+}
+
 // jsdom does not implement URL.createObjectURL / revokeObjectURL.
 // Define stubs so vi.spyOn can wrap them in component tests.
 if (!URL.createObjectURL) {
