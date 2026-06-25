@@ -13,14 +13,28 @@ import {
 	loadStoredDocument,
 	saveStoredDocument,
 } from "@/lib/documentStorage";
+import {
+	addRecentDocument,
+	listRecentDocuments,
+	type RecentDocumentMeta,
+	readRecentDocument,
+	removeRecentDocument,
+} from "@/lib/recentDocuments";
 import type { ShowroomDocument } from "@/types/showroom";
 
 interface ShowroomState {
 	currentDocument: ShowroomDocument | null;
 	/** Name of a document we saved previously but can no longer reopen, if any. */
 	unavailableDocumentName: string | null;
+	/** Recently opened documents, most-recent first (for quick re-open). */
+	recentDocuments: RecentDocumentMeta[];
 	/** Open a document from a file and persist it across reloads. */
 	openDocument: (file: File) => void;
+	/**
+	 * Re-open a previously opened document from history. Resolves `false` when its
+	 * bytes can no longer be recovered (the entry is dropped from history).
+	 */
+	openRecentDocument: (id: string) => Promise<boolean>;
 	/** Close the current document and forget the persisted copy. */
 	closeDocument: () => void;
 	/** Dismiss the "couldn't reopen" notice and clear the stale marker. */
@@ -39,20 +53,53 @@ export function ShowroomProvider({ children }: { children: ReactNode }) {
 	const [unavailableDocumentName, setUnavailableDocumentName] = useState<
 		string | null
 	>(null);
+	const [recentDocuments, setRecentDocuments] = useState<RecentDocumentMeta[]>(
+		() => listRecentDocuments(),
+	);
 
 	// Keep the latest document in a ref so the unmount cleanup can revoke its blob URL.
 	const docRef = useRef<ShowroomDocument | null>(null);
 	docRef.current = currentDocument;
 
-	const openDocument = useCallback((file: File) => {
-		const objectUrl = URL.createObjectURL(file);
+	// Swap in a freshly created object URL, revoking any prior blob URL.
+	const showDocument = useCallback((name: string, blob: Blob) => {
+		const objectUrl = URL.createObjectURL(blob);
 		setCurrentDocumentState((prev) => {
 			if (prev) revokeIfBlob(prev.objectUrl);
-			return { name: file.name, objectUrl };
+			return { name, objectUrl };
 		});
 		setUnavailableDocumentName(null);
-		void saveStoredDocument(file.name, file);
 	}, []);
+
+	const openDocument = useCallback(
+		(file: File) => {
+			showDocument(file.name, file);
+			void saveStoredDocument(file.name, file);
+			void addRecentDocument(file.name, file).then(() => {
+				setRecentDocuments(listRecentDocuments());
+			});
+		},
+		[showDocument],
+	);
+
+	const openRecentDocument = useCallback(
+		async (id: string): Promise<boolean> => {
+			const meta = listRecentDocuments().find((e) => e.id === id);
+			const blob = await readRecentDocument(id);
+			if (!meta || !blob) {
+				await removeRecentDocument(id);
+				setRecentDocuments(listRecentDocuments());
+				return false;
+			}
+			showDocument(meta.name, blob);
+			void saveStoredDocument(meta.name, blob);
+			// Re-opening bumps it to the front of the history.
+			await addRecentDocument(meta.name, blob);
+			setRecentDocuments(listRecentDocuments());
+			return true;
+		},
+		[showDocument],
+	);
 
 	const closeDocument = useCallback(() => {
 		setCurrentDocumentState((prev) => {
@@ -96,14 +143,18 @@ export function ShowroomProvider({ children }: { children: ReactNode }) {
 		() => ({
 			currentDocument,
 			unavailableDocumentName,
+			recentDocuments,
 			openDocument,
+			openRecentDocument,
 			closeDocument,
 			dismissUnavailable,
 		}),
 		[
 			currentDocument,
 			unavailableDocumentName,
+			recentDocuments,
 			openDocument,
+			openRecentDocument,
 			closeDocument,
 			dismissUnavailable,
 		],

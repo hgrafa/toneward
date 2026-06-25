@@ -15,7 +15,7 @@ updates don't re-render them.
 These live here too but are separate concerns, composed directly in `App.tsx`:
 - `ViewContext.tsx` — `useView`: the active tab (`view`/`setView`), persisted to localStorage (`fretboard.view`).
 - `MediaPlayerContext.tsx` — `useMediaPlayerCtx`: the persistent player's `source`, `setSource` (revokes a prior mp3 blob), the `<audio>`/YouTube refs, and the `useMediaPlayer` controller. Mounted ONCE at the shell so playback survives tab changes. Link (YouTube) sources persist to localStorage (`tw-player-source`); uploaded files cannot (their blob URL dies on reload).
-- `ShowroomContext.tsx` — `useShowroom`: the Showroom PDF document only (audio moved out to `MediaPlayerContext`).
+- `ShowroomContext.tsx` — `useShowroom`: the Showroom PDF document only (audio moved out to `MediaPlayerContext`). Also exposes a capped `recentDocuments` history + `openRecentDocument(id)` for quick re-open (backed by `@/lib/recentDocuments`).
 - `MetronomeContext.tsx` / `AudioDevicesContext.tsx` — the metronome engine + shared audio-output-device discovery (used by the header Metrônomo/Áudio popovers).
 - `StudyTimerContext.tsx` — `useStudyTimer`: an independent study stopwatch/countdown (up/down mode, a session-goal text, congrats when a countdown ends). Runs its own 1s interval and touches no other state, so it never disturbs the game/audio/view. UI lives in `components/StudyTimerPanel` (opened from the floating nav).
 

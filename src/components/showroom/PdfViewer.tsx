@@ -2,6 +2,7 @@ import { FileText, Upload } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useShowroom } from "@/hooks/ShowroomContext";
+import { RecentDocuments } from "./RecentDocuments";
 
 export function PdfViewer() {
 	const { t } = useTranslation();
@@ -70,6 +71,7 @@ export function PdfViewer() {
 				</p>
 			)}
 			{error && <p className="text-xs text-destructive">{error}</p>}
+			<RecentDocuments />
 			<input
 				id={inputId}
 				type="file"

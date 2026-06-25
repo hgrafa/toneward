@@ -8,6 +8,9 @@ across reloads.
 ## Components
 - `ShowroomView` — page composition; PDF drag-and-drop onto the page.
 - `PdfViewer` — native `<iframe>` viewer + empty-state upload; validates `application/pdf`.
+- `RecentDocuments` — empty-state quick-reopen list (renders nothing when there's no
+  history). Click re-opens via `openRecentDocument(id)`; on failure shows an inline
+  "couldn't reopen" notice (same amber pattern as `pdfUnavailable`).
 
 ## State
 - `hooks/ShowroomContext` — `currentDocument` (in-memory) persisted across reloads (issue
@@ -17,6 +20,10 @@ across reloads.
 - `@/lib/documentStorage` — PDF bytes in IndexedDB (`ArrayBuffer` + MIME type) plus a
   lightweight name marker in localStorage (`fretboard.showroom.document`). All access is
   wrapped in try/catch (private mode / quota).
+- `recentDocuments` + `openRecentDocument(id)` on `ShowroomContext` back the recent-files
+  history (`@/lib/recentDocuments`). A capped ring of recent PDFs' bytes; reopening bumps
+  an entry to the front; an unreadable entry is dropped and `openRecentDocument` resolves
+  `false`.
 
 ## What NOT to do
 - Don't re-add audio UI here — the persistent player owns playback (YouTube + audio file).
