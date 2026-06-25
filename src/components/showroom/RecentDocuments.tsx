@@ -31,16 +31,17 @@ export function RecentDocuments() {
 					{t("ui.showroom.recentEmpty")}
 				</p>
 			) : (
-				<ul className="flex flex-col gap-1">
+				<ul className="flex flex-col">
 					{docs.map((doc) => (
 						<li key={doc.id}>
 							<button
 								type="button"
 								onClick={() => handleOpen(doc.id, doc.name)}
-								className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-left text-sm hover:bg-muted"
+								title={doc.name}
+								className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-muted"
 							>
 								<FileText className="size-4 shrink-0 text-muted-foreground" />
-								<span className="truncate">{doc.name}</span>
+								<span className="min-w-0 truncate">{doc.name}</span>
 							</button>
 						</li>
 					))}
