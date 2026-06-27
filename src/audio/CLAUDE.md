@@ -16,6 +16,11 @@ and device routing live. Kept out of `core/` (which stays pure music theory, no 
 - `start`/`stop`/`dispose`, `configure`, `setOutputDevice`, `onBeat` callback for UI flashing.
 - One `AudioContext` per metronome instance; routed via `applySink`.
 
+### notePlayer.ts
+- `NotePlayer` class — plays a finite, fully-known sequence of `Pitch`es (a box-pattern run). Unlike the metronome's endless scheduler, every note is scheduled in one pass against the audio clock, with matching timers firing the `onNote`/`onEnd` UI callbacks at sounding time.
+- Three crude single-oscillator timbres (`NoteTone`: `plucked` / `clean` / `warm`); per-tone gain trim + envelope. `configure({ tone, volume })`, `play(pitches)` (cancels any run in progress), `stop`, `dispose`, `setOutputDevice`.
+- Owns its OWN `AudioContext` (created lazily on first `play`), routed via `applySink` — independent of the metronome's output.
+
 ### devices.ts
 - Output-device discovery + routing capability detection.
 - `isOutputRoutingSupported` gates per-device routing (Chromium-only `setSinkId`).
@@ -33,8 +38,9 @@ what will allow multiple sounds to play on different devices. Device *discovery*
 ## Consumers
 - `hooks/AudioDevicesContext.tsx` — shared device list + label-reveal, used by all sources.
 - `hooks/MetronomeContext.tsx` owns a `Metronome` instance.
+- `hooks/NotePlaybackContext.tsx` owns a `NotePlayer` instance (box-pattern playback + tone/volume settings).
 - `components/MetronomePanel.tsx` — the metronome popover (transport + BPM only).
-- `components/AudioControlPanel.tsx` — routing hub: per-source output-device dropdowns.
+- `components/AudioControlPanel.tsx` — routing hub: per-source output-device dropdowns + the note-playback voice (tone + volume).
 
 ## What NOT to do
 - Don't add music-theory math here — that belongs in `core/`. Import pitch data from there.
