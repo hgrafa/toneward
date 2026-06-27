@@ -45,6 +45,7 @@ const ptBR: TranslationSchema = {
 			outputTitle: "Saída de áudio",
 			outputDesc: "Escolha por qual dispositivo cada som é reproduzido.",
 			metronome: "Metrônomo",
+			track: "Faixa",
 			refresh: "Atualizar",
 			systemDefault: "Padrão do sistema",
 			tip: "Dica: escolha dispositivos diferentes para cada som — ex.: metrônomo no alto-falante e prática no fone.",

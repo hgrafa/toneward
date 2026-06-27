@@ -42,6 +42,7 @@ const en = {
 			outputTitle: "Audio output",
 			outputDesc: "Choose which device each sound plays through.",
 			metronome: "Metronome",
+			track: "Track",
 			refresh: "Refresh",
 			systemDefault: "System default",
 			tip: "Tip: pick different devices per sound to play them separately — e.g. a click on your speakers while practice plays on headphones.",

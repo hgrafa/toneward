@@ -20,7 +20,7 @@ and device routing live. Kept out of `core/` (which stays pure music theory, no 
 - Output-device discovery + routing capability detection.
 - `isOutputRoutingSupported` gates per-device routing (Chromium-only `setSinkId`).
 - `listOutputDevices` / `revealDeviceLabels` (labels hidden until an audio permission is granted).
-- `applySink` is a no-op where `setSinkId` is missing → graceful fallback to the default output.
+- `applySink` (AudioContext, e.g. the metronome) / `applyElementSink` (HTMLMediaElement, the track's `<audio>`) route a source to a chosen output; both no-op where `setSinkId` is missing → graceful fallback to the default output.
 
 ## Key invariant
 Per-device routing is a **progressive enhancement**. Everything must still work (through the

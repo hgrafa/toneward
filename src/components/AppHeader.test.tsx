@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AppHeader } from "@/components/AppHeader";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
+import { MediaPlayerProvider } from "@/hooks/MediaPlayerContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
 import { StudyTimerProvider } from "@/hooks/StudyTimerContext";
 import { ViewProvider } from "@/hooks/ViewContext";
@@ -11,9 +12,11 @@ function renderHeader() {
 		<ViewProvider>
 			<AudioDevicesProvider>
 				<MetronomeProvider>
-					<StudyTimerProvider>
-						<AppHeader />
-					</StudyTimerProvider>
+					<MediaPlayerProvider>
+						<StudyTimerProvider>
+							<AppHeader />
+						</StudyTimerProvider>
+					</MediaPlayerProvider>
 				</MetronomeProvider>
 			</AudioDevicesProvider>
 		</ViewProvider>,

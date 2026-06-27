@@ -12,6 +12,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useAudioDevices } from "@/hooks/AudioDevicesContext";
+import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
 import { useMetronome } from "@/hooks/MetronomeContext";
 
 // Radix <Select.Item> forbids an empty-string value (it's reserved for "clear
@@ -33,11 +35,30 @@ interface OutputRow {
 
 export function AudioControlPanel() {
 	const { t } = useTranslation();
-	const { routingSupported, devices, deviceId, setDeviceId, refreshDevices } =
+	// Device discovery is shared; each source keeps its OWN selected device.
+	const {
+		routingSupported,
+		devices,
+		refresh: refreshDevices,
+	} = useAudioDevices();
+	const { deviceId: metronomeDeviceId, setDeviceId: setMetronomeDeviceId } =
 		useMetronome();
+	const { deviceId: trackDeviceId, setDeviceId: setTrackDeviceId } =
+		useMediaPlayerCtx();
 
 	const rows: OutputRow[] = [
-		{ id: "metronome", label: t("ui.audio.metronome"), deviceId, setDeviceId },
+		{
+			id: "track",
+			label: t("ui.audio.track"),
+			deviceId: trackDeviceId,
+			setDeviceId: setTrackDeviceId,
+		},
+		{
+			id: "metronome",
+			label: t("ui.audio.metronome"),
+			deviceId: metronomeDeviceId,
+			setDeviceId: setMetronomeDeviceId,
+		},
 	];
 
 	return (

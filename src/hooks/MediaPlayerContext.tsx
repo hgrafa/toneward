@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { applyElementSink } from "@/audio/devices";
 import { type MediaPlayerApi, useMediaPlayer } from "@/hooks/useMediaPlayer";
 import type { AudioSource } from "@/types/showroom";
 
@@ -57,6 +58,11 @@ interface MediaPlayerState {
 	api: MediaPlayerApi;
 	audioRef: RefObject<HTMLAudioElement | null>;
 	ytContainerRef: RefObject<HTMLDivElement | null>;
+	// Output routing — the track's own selected device (independent of the
+	// metronome). Applies to file (mp3) playback via the <audio> element;
+	// YouTube plays in a cross-origin iframe and can't be re-routed.
+	deviceId: string;
+	setDeviceId: (id: string) => void;
 }
 
 const MediaPlayerContext = createContext<MediaPlayerState | null>(null);
@@ -68,6 +74,7 @@ export function MediaPlayerProvider({ children }: { children: ReactNode }) {
 	const [recents, setRecents] = useState<AudioSource[]>(loadRecents);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const ytContainerRef = useRef<HTMLDivElement | null>(null);
+	const [deviceId, setDeviceIdState] = useState("");
 
 	// Keep the latest source in a ref so unmount cleanup can revoke a live blob.
 	const sourceRef = useRef<AudioSource | null>(null);
@@ -116,11 +123,33 @@ export function MediaPlayerProvider({ children }: { children: ReactNode }) {
 		};
 	}, []);
 
+	const setDeviceId = useCallback((id: string) => {
+		setDeviceIdState(id);
+		void applyElementSink(audioRef.current, id);
+	}, []);
+
+	// Re-apply the chosen sink whenever the <audio> element is (re)bound to a new
+	// file source — `useMediaPlayer` resets `el.src` on each mp3 swap, and a fresh
+	// element starts on the default output. No-op for YouTube (no <audio>).
+	useEffect(() => {
+		if (source?.kind === "mp3")
+			void applyElementSink(audioRef.current, deviceId);
+	}, [source, deviceId]);
+
 	const api = useMediaPlayer(source, audioRef, ytContainerRef);
 
 	const value = useMemo<MediaPlayerState>(
-		() => ({ source, setSource, recents, api, audioRef, ytContainerRef }),
-		[source, setSource, recents, api],
+		() => ({
+			source,
+			setSource,
+			recents,
+			api,
+			audioRef,
+			ytContainerRef,
+			deviceId,
+			setDeviceId,
+		}),
+		[source, setSource, recents, api, setDeviceId, deviceId],
 	);
 
 	return (
