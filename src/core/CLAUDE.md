@@ -22,8 +22,12 @@ Pure TypeScript. No React, no DOM. Everything here is unit-testable in isolation
 
 ### pitch.ts
 - `Pitch = { note, octave }` — absolute sounding pitch. Spelling is deliberately NOT part of Pitch (it's context-dependent).
-- `assignOctaves` derives octaves from a low→high tuning; `getPitchAtPosition`; `midiNumber`.
-- Foundation for future audio/sorting — nothing consumes it yet.
+- `assignOctaves` derives octaves from a low→high tuning; `getPitchAtPosition`; `midiNumber`; `midiToFreq` (equal-tempered Hz, A4 = 440).
+- Consumed by `playback.ts` and the `audio/notePlayer` engine.
+
+### playback.ts
+- Turns a box pattern's `FretPosition[]` into a sounding sequence for the note player. Pure (no DOM).
+- `pitchesForBox` maps positions → `Pitch[]`, sorted low→high and de-duped by pitch (flips `FretPosition.string` ↔ tuning index). `orderForDirection` orders an ascending list by `PlaybackDirection` (`up` / `down` / `up-down`; up-down ascends then descends without repeating the top, closing on the root). `boxPlaybackSequence` composes the two.
 
 ## Key invariant
 Pitch class is the math identity. Spelling and octave are additive layers on top.
