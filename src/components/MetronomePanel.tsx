@@ -1,7 +1,13 @@
 import { Minus, Pause, Play, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { beatInterval, tempoMarking } from "@/audio/metronomeMath";
+import {
+	beatInterval,
+	MAX_BPM,
+	MIN_BPM,
+	tempoMarking,
+} from "@/audio/metronomeMath";
+import { NumericInput } from "@/components/NumericInput";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -125,11 +131,14 @@ export function MetronomePanel() {
 					>
 						<Minus className="size-5" />
 					</Button>
-					<div className="flex flex-1 items-center justify-center rounded-xl border bg-muted/40 py-3">
-						<span className="font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight">
-							{bpm}
-						</span>
-					</div>
+					<NumericInput
+						value={bpm}
+						onChange={setBpm}
+						min={MIN_BPM}
+						max={MAX_BPM}
+						label={t("ui.metronome.tempoInput")}
+						className="h-auto min-w-0 flex-1 rounded-xl bg-muted/40 py-3 text-center font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight"
+					/>
 					<Button
 						variant="outline"
 						size="icon-lg"

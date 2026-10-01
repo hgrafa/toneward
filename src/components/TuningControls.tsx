@@ -1,5 +1,6 @@
 import { Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { NumericInput } from "@/components/NumericInput";
 import {
 	Select,
 	SelectContent,
@@ -57,9 +58,17 @@ export function TuningControls() {
 					>
 						<Minus className="size-4" />
 					</button>
-					<span className="w-[70px] text-center font-mono font-semibold text-sm tabular-nums">
-						{t("ui.tuning.strings", { count: tuning.length })}
-					</span>
+					<div className="flex w-[88px] items-center justify-center gap-1 font-mono font-semibold text-sm tabular-nums">
+						<NumericInput
+							value={tuning.length}
+							onChange={setStringCount}
+							min={MIN_STRINGS}
+							max={MAX_STRINGS}
+							label={t("ui.tuning.stringCount")}
+							className="h-8 w-6 border-0 bg-transparent px-0 text-center font-mono font-semibold text-sm shadow-none"
+						/>
+						{t("ui.tuning.stringUnit", { count: tuning.length })}
+					</div>
 					<button
 						type="button"
 						aria-label={t("ui.tuning.addString")}

@@ -32,10 +32,14 @@ const ptBR: TranslationSchema = {
 			strings_other: "{{count}} cordas",
 			removeString: "Remover corda",
 			addString: "Adicionar corda",
+			stringCount: "Número de cordas",
+			stringUnit_one: "corda",
+			stringUnit_other: "cordas",
 			stringTuning: "Afinação da corda {{n}}",
 		},
 		metronome: {
 			trigger: "Metrônomo",
+			tempoInput: "Tempo em BPM",
 			start: "Iniciar",
 			stop: "Parar",
 			reset: "Reiniciar",
@@ -91,6 +95,7 @@ const ptBR: TranslationSchema = {
 		},
 		timer: {
 			title: "Tempo de estudo",
+			durationInput: "Duração em minutos",
 			up: "Progressivo",
 			down: "Regressivo",
 			start: "Iniciar",
