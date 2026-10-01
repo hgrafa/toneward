@@ -15,7 +15,7 @@ export function StudyTimerButton() {
 	const trimmedGoal = goal.trim();
 
 	const base =
-		"flex h-9 max-w-[260px] items-center gap-2 rounded-lg px-3 font-semibold text-sm transition-colors";
+		"flex h-9 max-w-[260px] items-center gap-2 rounded-lg px-2 font-semibold text-sm transition-colors sm:px-3";
 	const className = finished
 		? `${base} bg-[#16a34a] text-white`
 		: `${base} border border-border bg-card text-secondary-foreground hover:bg-muted data-[state=open]:border-transparent data-[state=open]:bg-foreground data-[state=open]:text-background`;
@@ -30,12 +30,12 @@ export function StudyTimerButton() {
 				>
 					<Clock className="size-4 shrink-0" />
 					{finished ? (
-						<span className="max-w-[180px] truncate">
+						<span className="hidden max-w-[180px] truncate sm:inline">
 							{trimmedGoal || t("ui.timer.congrats")} 🎉
 						</span>
 					) : (
 						<>
-							<span className="font-mono tabular-nums">
+							<span className="hidden font-mono tabular-nums sm:inline">
 								{formatClock(display)}
 							</span>
 							{running && trimmedGoal && (

@@ -22,8 +22,8 @@ export function AppHeader() {
 	};
 
 	return (
-		<header className="flex h-[60px] shrink-0 items-center justify-between border-border border-b bg-background/80 px-5 backdrop-blur-lg">
-			<div className="flex items-center gap-3.5">
+		<header className="flex h-[60px] min-w-0 shrink-0 items-center justify-between gap-2 border-border border-b bg-background/80 px-3 backdrop-blur-lg sm:px-5">
+			<div className="flex shrink-0 items-center gap-3.5">
 				<div className="flex items-center gap-3">
 					<div
 						className="flex size-9 items-center justify-center rounded-[11px] font-display font-bold text-base text-white"
@@ -31,16 +31,16 @@ export function AppHeader() {
 					>
 						T
 					</div>
-					<span className="font-display font-bold text-[19px] tracking-[-0.02em]">
+					<span className="hidden font-display font-bold text-[19px] tracking-[-0.02em] min-[360px]:inline">
 						{t("ui.appName")}
 					</span>
 				</div>
-				<div className="h-[30px] w-px bg-border" />
-				<span className="font-semibold text-secondary-foreground text-sm tracking-[-0.01em]">
+				<div className="hidden h-[30px] w-px bg-border md:block" />
+				<span className="hidden font-semibold text-secondary-foreground text-sm tracking-[-0.01em] md:inline">
 					{sectionLabel[view]}
 				</span>
 			</div>
-			<div className="flex items-center gap-2">
+			<div className="flex shrink-0 items-center gap-1 sm:gap-2">
 				<StudyTimerButton />
 				<MetronomePanel />
 				<AudioControlPanel />

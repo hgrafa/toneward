@@ -1,16 +1,19 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	computeViewBox,
 	FretboardDiagram,
 	MAIN_DIMENSIONS,
 } from "@/components/FretboardDiagram";
 import { formatSpelled, spelledToPitchClass } from "@/core/notes";
+import { positionKeysForPitch } from "@/core/playback";
 import {
 	useDerived,
 	useDisplay,
 	useInput,
 	useInstrument,
 } from "@/hooks/useFretboardContext";
+import { useNoteAudition } from "@/hooks/useNoteAudition";
 
 interface TooltipData {
 	x: number;
@@ -20,10 +23,15 @@ interface TooltipData {
 }
 
 export function Fretboard() {
+	const { t } = useTranslation();
 	const { positions } = useDerived();
 	const { displayMode, highlightRoot, fretRange } = useDisplay();
 	const { noteSet } = useInput();
 	const { tuning } = useInstrument();
+	const { audition, activePitch, playbackError } = useNoteAudition(
+		"main",
+		tuning,
+	);
 	const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
 	const [minFret, maxFret] = fretRange;
@@ -47,6 +55,19 @@ export function Fretboard() {
 				highlightRoot={highlightRoot}
 				rootPitchClass={
 					noteSet?.root ? spelledToPitchClass(noteSet.root) : undefined
+				}
+				onClickPosition={audition}
+				positionAriaLabel={(pos) =>
+					t("ui.fretboard.playNote", {
+						note: formatSpelled(pos.spelled),
+						string: pos.string,
+						fret: pos.fret,
+					})
+				}
+				activePositions={
+					activePitch
+						? positionKeysForPitch(positions, tuning, activePitch)
+						: undefined
 				}
 				onHoverPosition={(data) =>
 					setTooltip(
@@ -87,6 +108,11 @@ export function Fretboard() {
 						{tooltip.interval ? ` (${tooltip.interval})` : ""}
 					</text>
 				</svg>
+			)}
+			{playbackError && (
+				<p role="alert" className="text-xs text-destructive">
+					{t("ui.boxPatterns.playbackError")}
+				</p>
 			)}
 		</div>
 	);
