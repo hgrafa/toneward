@@ -40,7 +40,7 @@ export function BoxPlayControls({
 		<div className="flex flex-wrap items-center gap-2">
 			<Button
 				type="button"
-				size="sm"
+				size="icon-sm"
 				variant="default"
 				onClick={() => toggle("up-down")}
 				aria-pressed={isActive("up-down")}
@@ -50,16 +50,13 @@ export function BoxPlayControls({
 						? t("ui.boxPatterns.stop")
 						: t("ui.boxPatterns.playUpDown")
 				}
-				className="gap-1.5 rounded-lg px-3"
+				className="rounded-lg"
 			>
 				{isActive("up-down") ? (
 					<Square className="fill-current" />
 				) : (
 					<Play className="fill-current" />
 				)}
-				{isActive("up-down")
-					? t("ui.boxPatterns.stop")
-					: t("ui.boxPatterns.upDown")}
 			</Button>
 			<div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
 				<Button
@@ -89,7 +86,7 @@ export function BoxPlayControls({
 					)}
 				</Button>
 			</div>
-			{playbackError === id && (
+			{(playbackError === id || playbackError === `note-${id}`) && (
 				<p role="alert" className="w-full text-xs text-destructive">
 					{t("ui.boxPatterns.playbackError")}
 				</p>

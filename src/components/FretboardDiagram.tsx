@@ -80,6 +80,7 @@ export interface FretboardDiagramProps {
 		data: { x: number; y: number; pos: FretPosition } | null,
 	) => void;
 	onClickPosition?: (pos: FretPosition) => void;
+	positionAriaLabel?: (pos: FretPosition) => string;
 	markedPositions?: Set<string>; // keys: `${string}-${fret}`
 	activePositions?: Set<string>; // sounding positions, without ghosting the rest
 }
@@ -95,6 +96,7 @@ export function FretboardDiagram({
 	rootPitchClass,
 	onHoverPosition,
 	onClickPosition,
+	positionAriaLabel,
 	markedPositions,
 	activePositions,
 }: FretboardDiagramProps) {
@@ -257,6 +259,14 @@ export function FretboardDiagram({
 					<g
 						key={`dot-${pos.string}-${pos.fret}`}
 						className={interactive ? "cursor-pointer" : undefined}
+						role={onClickPosition ? "button" : undefined}
+						tabIndex={onClickPosition ? 0 : undefined}
+						aria-label={
+							onClickPosition
+								? (positionAriaLabel?.(pos) ??
+									`${formatSpelled(pos.spelled)}, ${pos.string}:${pos.fret}`)
+								: undefined
+						}
 						onMouseEnter={
 							onHoverPosition
 								? () => onHoverPosition({ x: cx, y: cy, pos })
@@ -266,6 +276,16 @@ export function FretboardDiagram({
 							onHoverPosition ? () => onHoverPosition(null) : undefined
 						}
 						onClick={onClickPosition ? () => onClickPosition(pos) : undefined}
+						onKeyDown={
+							onClickPosition
+								? (event) => {
+										if (event.key === "Enter" || event.key === " ") {
+											event.preventDefault();
+											onClickPosition(pos);
+										}
+									}
+								: undefined
+						}
 					>
 						{isActive && (
 							<circle

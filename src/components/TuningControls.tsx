@@ -27,7 +27,7 @@ export function TuningControls() {
 	} = useInstrument();
 
 	return (
-		<div className="flex flex-col gap-3.5 rounded-[18px] border border-border bg-card p-[18px]">
+		<div className="flex min-w-0 flex-col gap-3.5 rounded-[18px] border border-border bg-card p-[18px]">
 			{/* Instrument + string count */}
 			<div className="flex flex-wrap items-center gap-3">
 				<span className="w-[78px] font-semibold text-secondary-foreground text-sm">
@@ -82,11 +82,11 @@ export function TuningControls() {
 			</div>
 
 			{/* Per-string tuning (low → high) */}
-			<div className="flex items-center gap-2.5">
-				<span className="w-[78px] font-semibold text-secondary-foreground text-sm">
+			<div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:flex-wrap sm:items-start">
+				<span className="w-[78px] shrink-0 font-semibold text-secondary-foreground text-sm sm:pt-2">
 					{t("ui.tuning.tuning")}
 				</span>
-				<div className="flex flex-1 flex-wrap gap-1.5">
+				<div className="grid min-w-[56px] flex-1 grid-cols-[repeat(auto-fit,minmax(56px,1fr))] gap-1.5">
 					{tuning.map((note, index) => (
 						<Select
 							// biome-ignore lint/suspicious/noArrayIndexKey: string position is the identity here
@@ -100,7 +100,7 @@ export function TuningControls() {
 								aria-label={t("ui.tuning.stringTuning", {
 									n: tuning.length - index,
 								})}
-								className="h-9 min-w-0 flex-1 justify-center rounded-[9px] border-input bg-muted font-mono font-semibold text-sm"
+								className="h-9 w-full min-w-0 justify-center gap-1 rounded-[9px] border-input bg-muted px-2 font-mono font-semibold text-sm"
 							>
 								<SelectValue />
 							</SelectTrigger>
