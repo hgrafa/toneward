@@ -123,11 +123,11 @@ export function MetronomePanel() {
 				{/* Stepper */}
 				<div className="flex items-stretch gap-2">
 					<Button
-						variant="outline"
+						variant="ghost"
 						size="icon-lg"
 						onClick={() => setBpm(bpm - 1)}
 						aria-label="Decrease tempo"
-						className="h-auto w-12 rounded-xl"
+						className="h-auto w-12 rounded-none bg-transparent hover:bg-transparent dark:hover:bg-transparent"
 					>
 						<Minus className="size-5" />
 					</Button>
@@ -137,14 +137,14 @@ export function MetronomePanel() {
 						min={MIN_BPM}
 						max={MAX_BPM}
 						label={t("ui.metronome.tempoInput")}
-						className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent py-3 text-center font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight shadow-none focus-visible:border-0 focus-visible:ring-0 dark:bg-transparent"
+						className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent py-3 text-center font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight shadow-none focus-visible:border-0 focus-visible:ring-0 md:text-5xl dark:bg-transparent"
 					/>
 					<Button
-						variant="outline"
+						variant="ghost"
 						size="icon-lg"
 						onClick={() => setBpm(bpm + 1)}
 						aria-label="Increase tempo"
-						className="h-auto w-12 rounded-xl"
+						className="h-auto w-12 rounded-none bg-transparent hover:bg-transparent dark:hover:bg-transparent"
 					>
 						<Plus className="size-5" />
 					</Button>
