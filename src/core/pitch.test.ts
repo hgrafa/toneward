@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Tuning } from "@/types/music";
-import { assignOctaves, getPitchAtPosition, midiNumber } from "./pitch";
+import {
+	assignOctaves,
+	getPitchAtPosition,
+	midiNumber,
+	midiToFreq,
+} from "./pitch";
 
 const GUITAR: Tuning = ["E", "A", "D", "G", "B", "E"];
 
@@ -30,5 +35,13 @@ describe("midiNumber", () => {
 		expect(midiNumber({ note: "A", octave: 4 })).toBe(69);
 		expect(midiNumber({ note: "C", octave: 4 })).toBe(60);
 		expect(midiNumber({ note: "E", octave: 2 })).toBe(40);
+	});
+});
+
+describe("midiToFreq", () => {
+	it("anchors A4 at 440 Hz and rises an octave per +12 semitones", () => {
+		expect(midiToFreq(69)).toBeCloseTo(440, 5);
+		expect(midiToFreq(81)).toBeCloseTo(880, 5);
+		expect(midiToFreq(60)).toBeCloseTo(261.6256, 3);
 	});
 });

@@ -7,6 +7,7 @@ import { ShowroomView } from "@/components/showroom/ShowroomView";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
 import { MediaPlayerProvider } from "@/hooks/MediaPlayerContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
+import { NotePlaybackProvider } from "@/hooks/NotePlaybackContext";
 import { ShowroomProvider } from "@/hooks/ShowroomContext";
 import { StudyTimerProvider } from "@/hooks/StudyTimerContext";
 import { FretboardProvider } from "@/hooks/useFretboardContext";
@@ -18,13 +19,15 @@ export default function App() {
 			<FretboardProvider>
 				<AudioDevicesProvider>
 					<MetronomeProvider>
-						<ShowroomProvider>
-							<MediaPlayerProvider>
-								<StudyTimerProvider>
-									<AppShell />
-								</StudyTimerProvider>
-							</MediaPlayerProvider>
-						</ShowroomProvider>
+						<NotePlaybackProvider>
+							<ShowroomProvider>
+								<MediaPlayerProvider>
+									<StudyTimerProvider>
+										<AppShell />
+									</StudyTimerProvider>
+								</MediaPlayerProvider>
+							</ShowroomProvider>
+						</NotePlaybackProvider>
 					</MetronomeProvider>
 				</AudioDevicesProvider>
 			</FretboardProvider>

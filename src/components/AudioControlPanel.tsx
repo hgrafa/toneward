@@ -12,9 +12,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { useAudioDevices } from "@/hooks/AudioDevicesContext";
 import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
 import { useMetronome } from "@/hooks/MetronomeContext";
+import { useNotePlayback } from "@/hooks/NotePlaybackContext";
 
 // Radix <Select.Item> forbids an empty-string value (it's reserved for "clear
 // selection"), but the default output's deviceId IS "". Bridge with a sentinel.
@@ -24,8 +26,8 @@ const toSelectValue = (deviceId: string) =>
 const fromSelectValue = (value: string) =>
 	value === DEFAULT_VALUE ? "" : value;
 
-// One routable audio output. As more sources are added (e.g. note playback),
-// each becomes a row here with its own device dropdown.
+// One routable audio output. Each source (metronome, notes, …) is a row here
+// with its own device dropdown, so sounds can play on different devices.
 interface OutputRow {
 	id: string;
 	label: string;
@@ -43,6 +45,12 @@ export function AudioControlPanel() {
 	} = useAudioDevices();
 	const { deviceId: metronomeDeviceId, setDeviceId: setMetronomeDeviceId } =
 		useMetronome();
+	const {
+		deviceId: notesDeviceId,
+		setDeviceId: setNotesDeviceId,
+		volume,
+		setVolume,
+	} = useNotePlayback();
 	const { deviceId: trackDeviceId, setDeviceId: setTrackDeviceId } =
 		useMediaPlayerCtx();
 
@@ -59,6 +67,12 @@ export function AudioControlPanel() {
 			deviceId: metronomeDeviceId,
 			setDeviceId: setMetronomeDeviceId,
 		},
+		{
+			id: "notes",
+			label: t("ui.audio.notes"),
+			deviceId: notesDeviceId,
+			setDeviceId: setNotesDeviceId,
+		},
 	];
 
 	return (
@@ -72,9 +86,21 @@ export function AudioControlPanel() {
 					{t("ui.audio.trigger")}
 				</button>
 			</PopoverTrigger>
-			<PopoverContent align="start" sideOffset={10} className="w-80">
+			<PopoverContent align="start" sideOffset={10} className="w-80 rounded-xl">
 				<div className="space-y-1">
-					<p className="text-sm font-semibold">{t("ui.audio.outputTitle")}</p>
+					<div className="flex items-center justify-between">
+						<p className="text-sm font-semibold">{t("ui.audio.outputTitle")}</p>
+						{routingSupported && (
+							<button
+								type="button"
+								onClick={() => void refreshDevices()}
+								className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+							>
+								<RefreshCw className="size-3" />
+								{t("ui.audio.refresh")}
+							</button>
+						)}
+					</div>
 					<p className="text-xs text-muted-foreground">
 						{t("ui.audio.outputDesc")}
 					</p>
@@ -84,17 +110,7 @@ export function AudioControlPanel() {
 					<div className="mt-4 space-y-3">
 						{rows.map((row) => (
 							<div key={row.id} className="space-y-1.5">
-								<div className="flex items-center justify-between">
-									<span className="text-xs font-medium">{row.label}</span>
-									<button
-										type="button"
-										onClick={() => void refreshDevices()}
-										className="flex items-center gap-1 text-[0.7rem] text-muted-foreground transition-colors hover:text-foreground"
-									>
-										<RefreshCw className="size-3" />
-										{t("ui.audio.refresh")}
-									</button>
-								</div>
+								<span className="text-xs font-medium">{row.label}</span>
 								<Select
 									value={toSelectValue(row.deviceId)}
 									onValueChange={(v) => row.setDeviceId(fromSelectValue(v))}
@@ -115,15 +131,36 @@ export function AudioControlPanel() {
 								</Select>
 							</div>
 						))}
-						<p className="pt-1 text-[0.7rem] leading-relaxed text-muted-foreground">
-							{t("ui.audio.tip")}
-						</p>
 					</div>
 				) : (
 					<p className="mt-4 text-xs leading-relaxed text-muted-foreground">
 						{t("ui.audio.noRoutingMsg")}
 					</p>
 				)}
+
+				{/* Note-playback voice — works regardless of per-device routing. */}
+				<div className="mt-4 space-y-3 border-t border-border pt-4">
+					<p className="text-sm font-semibold">{t("ui.audio.notesTitle")}</p>
+
+					<div className="space-y-1.5">
+						<div className="flex items-center justify-between">
+							<span className="text-xs font-medium">
+								{t("ui.audio.volume")}
+							</span>
+							<span className="text-[0.7rem] text-muted-foreground tabular-nums">
+								{Math.round(volume * 100)}%
+							</span>
+						</div>
+						<Slider
+							value={[Math.round(volume * 100)]}
+							min={0}
+							max={100}
+							step={1}
+							aria-label={t("ui.audio.volume")}
+							onValueChange={([v]) => setVolume(v / 100)}
+						/>
+					</div>
+				</div>
 			</PopoverContent>
 		</Popover>
 	);

@@ -44,3 +44,8 @@ export function getPitchAtPosition(
 export function midiNumber(pitch: Pitch): number {
 	return (pitch.octave + 1) * 12 + noteIndex(pitch.note);
 }
+
+// Equal-tempered frequency (Hz) of a MIDI note number, anchored at A4 = 440 Hz.
+export function midiToFreq(midi: number): number {
+	return 440 * 2 ** ((midi - 69) / 12);
+}

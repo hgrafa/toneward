@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
 import { MediaPlayerProvider } from "@/hooks/MediaPlayerContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
+import { NotePlaybackProvider } from "@/hooks/NotePlaybackContext";
 import { StudyTimerProvider } from "@/hooks/StudyTimerContext";
 import { ViewProvider } from "@/hooks/ViewContext";
 
@@ -13,9 +14,11 @@ function renderHeader() {
 			<AudioDevicesProvider>
 				<MetronomeProvider>
 					<MediaPlayerProvider>
-						<StudyTimerProvider>
-							<AppHeader />
-						</StudyTimerProvider>
+						<NotePlaybackProvider>
+							<StudyTimerProvider>
+								<AppHeader />
+							</StudyTimerProvider>
+						</NotePlaybackProvider>
 					</MediaPlayerProvider>
 				</MetronomeProvider>
 			</AudioDevicesProvider>
