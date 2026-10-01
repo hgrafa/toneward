@@ -137,7 +137,7 @@ export function MetronomePanel() {
 						min={MIN_BPM}
 						max={MAX_BPM}
 						label={t("ui.metronome.tempoInput")}
-						className="h-auto min-w-0 flex-1 rounded-xl bg-muted/40 py-3 text-center font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight"
+						className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent py-3 text-center font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight shadow-none focus-visible:border-0 focus-visible:ring-0 dark:bg-transparent"
 					/>
 					<Button
 						variant="outline"
