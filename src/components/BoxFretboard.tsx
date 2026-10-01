@@ -3,7 +3,9 @@ import {
 	FretboardDiagram,
 	type FretboardDimensions,
 } from "@/components/FretboardDiagram";
-import type { BoxPattern, DisplayMode, NoteName } from "@/types/music";
+import type { Pitch } from "@/core/pitch";
+import { positionKeysForPitch } from "@/core/playback";
+import type { BoxPattern, DisplayMode, NoteName, Tuning } from "@/types/music";
 
 const MIN_DISPLAY_FRETS = 7;
 
@@ -16,6 +18,8 @@ export function BoxFretboard({
 	displayMode,
 	highlightRoot,
 	rootPitchClass,
+	tuning,
+	activePitch,
 	dimensions = BOX_DIMENSIONS,
 }: {
 	pattern: BoxPattern;
@@ -23,6 +27,8 @@ export function BoxFretboard({
 	displayMode: DisplayMode;
 	highlightRoot: boolean;
 	rootPitchClass?: NoteName;
+	tuning: Tuning;
+	activePitch?: Pitch | null;
 	dimensions?: FretboardDimensions;
 }) {
 	const { minFret, maxFret, positions } = pattern;
@@ -37,6 +43,9 @@ export function BoxFretboard({
 		displayMinFret + MIN_DISPLAY_FRETS,
 		maxFret + extraFrets,
 	);
+	const activePositions = activePitch
+		? positionKeysForPitch(positions, tuning, activePitch)
+		: undefined;
 
 	return (
 		<FretboardDiagram
@@ -48,6 +57,7 @@ export function BoxFretboard({
 			displayMode={displayMode}
 			highlightRoot={highlightRoot}
 			rootPitchClass={rootPitchClass}
+			activePositions={activePositions}
 		/>
 	);
 }

@@ -18,14 +18,15 @@ and device routing live. Kept out of `core/` (which stays pure music theory, no 
 
 ### notePlayer.ts
 - `NotePlayer` class — plays a finite, fully-known sequence of `Pitch`es (a box-pattern run). Unlike the metronome's endless scheduler, every note is scheduled in one pass against the audio clock, with matching timers firing the `onNote`/`onEnd` UI callbacks at sounding time.
-- Three crude single-oscillator timbres (`NoteTone`: `plucked` / `clean` / `warm`); per-tone gain trim + envelope. `configure({ tone, volume })`, `play(pitches)` (cancels any run in progress), `stop`, `dispose`, `setOutputDevice`.
+- Uses the bundled, CC BY 4.0 piano recording (`public/audio/piano.mp3`) and its matching zone preset (`pianoPreset.json`); each note uses the nearest recorded pitch and a short decay envelope. The recording loads on first play and is cached for later runs. See `public/audio/README.md` for attribution.
+- `configure({ volume })`, `play(pitches)` (cancels any run in progress, including one waiting for the sample), `stop`, `dispose`, `setOutputDevice`.
 - Owns its OWN `AudioContext` (created lazily on first `play`), routed via `applySink` — independent of the metronome's output.
 
 ### devices.ts
 - Output-device discovery + routing capability detection.
 - `isOutputRoutingSupported` gates per-device routing (Chromium-only `setSinkId`).
 - `listOutputDevices` / `revealDeviceLabels` (labels hidden until an audio permission is granted).
-- `applySink` is a no-op where `setSinkId` is missing → graceful fallback to the default output.
+- `applySink` (AudioContext, e.g. the metronome) / `applyElementSink` (HTMLMediaElement, the track's `<audio>`) route a source to a chosen output; both no-op where `setSinkId` is missing → graceful fallback to the default output.
 
 ## Key invariant
 Per-device routing is a **progressive enhancement**. Everything must still work (through the
@@ -38,9 +39,9 @@ what will allow multiple sounds to play on different devices. Device *discovery*
 ## Consumers
 - `hooks/AudioDevicesContext.tsx` — shared device list + label-reveal, used by all sources.
 - `hooks/MetronomeContext.tsx` owns a `Metronome` instance.
-- `hooks/NotePlaybackContext.tsx` owns a `NotePlayer` instance (box-pattern playback + tone/volume settings).
+- `hooks/NotePlaybackContext.tsx` owns a `NotePlayer` instance (box-pattern playback + volume setting).
 - `components/MetronomePanel.tsx` — the metronome popover (transport + BPM only).
-- `components/AudioControlPanel.tsx` — routing hub: per-source output-device dropdowns + the note-playback voice (tone + volume).
+- `components/AudioControlPanel.tsx` — routing hub: per-source output-device dropdowns + piano volume.
 
 ## What NOT to do
 - Don't add music-theory math here — that belongs in `core/`. Import pitch data from there.

@@ -47,6 +47,29 @@ export async function applySink(
 	}
 }
 
+// `HTMLMediaElement.setSinkId` is not yet in the TS DOM lib, so we narrow to it.
+type SinkCapableMediaElement = HTMLMediaElement & {
+	setSinkId?: (sinkId: string) => Promise<void>;
+};
+
+// Route a media element (the track player's <audio>) to a chosen output, the
+// same graceful-degradation contract as `applySink` but for an HTMLMediaElement
+// rather than an AudioContext. A null element or missing `setSinkId` is a no-op
+// so playback keeps using the default sink; a failed call is logged, not thrown.
+export async function applyElementSink(
+	el: HTMLMediaElement | null,
+	deviceId: string,
+): Promise<void> {
+	if (!el) return;
+	const sinkable = el as SinkCapableMediaElement;
+	if (typeof sinkable.setSinkId !== "function") return;
+	try {
+		await sinkable.setSinkId(deviceId);
+	} catch (err) {
+		console.warn("Could not route track audio to the selected device:", err);
+	}
+}
+
 // Enumerate audio output devices. Labels are only populated after the user has
 // granted audio permission; until then the OS hides them and we synthesize a
 // stable placeholder so the list is still usable.

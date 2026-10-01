@@ -1,7 +1,5 @@
 import { RefreshCw, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { NoteTone } from "@/audio/notePlayer";
-import { Button } from "@/components/ui/button";
 import {
 	Popover,
 	PopoverContent,
@@ -15,6 +13,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { useAudioDevices } from "@/hooks/AudioDevicesContext";
+import { useMediaPlayerCtx } from "@/hooks/MediaPlayerContext";
 import { useMetronome } from "@/hooks/MetronomeContext";
 import { useNotePlayback } from "@/hooks/NotePlaybackContext";
 
@@ -35,27 +35,38 @@ interface OutputRow {
 	setDeviceId: (id: string) => void;
 }
 
-const TONE_OPTIONS: { value: NoteTone; labelKey: string }[] = [
-	{ value: "plucked", labelKey: "ui.audio.tonePlucked" },
-	{ value: "clean", labelKey: "ui.audio.toneClean" },
-	{ value: "warm", labelKey: "ui.audio.toneWarm" },
-];
-
 export function AudioControlPanel() {
 	const { t } = useTranslation();
-	const { routingSupported, devices, deviceId, setDeviceId, refreshDevices } =
+	// Device discovery is shared; each source keeps its OWN selected device.
+	const {
+		routingSupported,
+		devices,
+		refresh: refreshDevices,
+	} = useAudioDevices();
+	const { deviceId: metronomeDeviceId, setDeviceId: setMetronomeDeviceId } =
 		useMetronome();
 	const {
 		deviceId: notesDeviceId,
 		setDeviceId: setNotesDeviceId,
-		tone,
-		setTone,
 		volume,
 		setVolume,
 	} = useNotePlayback();
+	const { deviceId: trackDeviceId, setDeviceId: setTrackDeviceId } =
+		useMediaPlayerCtx();
 
 	const rows: OutputRow[] = [
-		{ id: "metronome", label: t("ui.audio.metronome"), deviceId, setDeviceId },
+		{
+			id: "track",
+			label: t("ui.audio.track"),
+			deviceId: trackDeviceId,
+			setDeviceId: setTrackDeviceId,
+		},
+		{
+			id: "metronome",
+			label: t("ui.audio.metronome"),
+			deviceId: metronomeDeviceId,
+			setDeviceId: setMetronomeDeviceId,
+		},
 		{
 			id: "notes",
 			label: t("ui.audio.notes"),
@@ -75,9 +86,21 @@ export function AudioControlPanel() {
 					{t("ui.audio.trigger")}
 				</button>
 			</PopoverTrigger>
-			<PopoverContent align="start" sideOffset={10} className="w-80">
+			<PopoverContent align="start" sideOffset={10} className="w-80 rounded-xl">
 				<div className="space-y-1">
-					<p className="text-sm font-semibold">{t("ui.audio.outputTitle")}</p>
+					<div className="flex items-center justify-between">
+						<p className="text-sm font-semibold">{t("ui.audio.outputTitle")}</p>
+						{routingSupported && (
+							<button
+								type="button"
+								onClick={() => void refreshDevices()}
+								className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+							>
+								<RefreshCw className="size-3" />
+								{t("ui.audio.refresh")}
+							</button>
+						)}
+					</div>
 					<p className="text-xs text-muted-foreground">
 						{t("ui.audio.outputDesc")}
 					</p>
@@ -87,17 +110,7 @@ export function AudioControlPanel() {
 					<div className="mt-4 space-y-3">
 						{rows.map((row) => (
 							<div key={row.id} className="space-y-1.5">
-								<div className="flex items-center justify-between">
-									<span className="text-xs font-medium">{row.label}</span>
-									<button
-										type="button"
-										onClick={() => void refreshDevices()}
-										className="flex items-center gap-1 text-[0.7rem] text-muted-foreground transition-colors hover:text-foreground"
-									>
-										<RefreshCw className="size-3" />
-										{t("ui.audio.refresh")}
-									</button>
-								</div>
+								<span className="text-xs font-medium">{row.label}</span>
 								<Select
 									value={toSelectValue(row.deviceId)}
 									onValueChange={(v) => row.setDeviceId(fromSelectValue(v))}
@@ -118,9 +131,6 @@ export function AudioControlPanel() {
 								</Select>
 							</div>
 						))}
-						<p className="pt-1 text-[0.7rem] leading-relaxed text-muted-foreground">
-							{t("ui.audio.tip")}
-						</p>
 					</div>
 				) : (
 					<p className="mt-4 text-xs leading-relaxed text-muted-foreground">
@@ -131,24 +141,6 @@ export function AudioControlPanel() {
 				{/* Note-playback voice — works regardless of per-device routing. */}
 				<div className="mt-4 space-y-3 border-t border-border pt-4">
 					<p className="text-sm font-semibold">{t("ui.audio.notesTitle")}</p>
-
-					<div className="space-y-1.5">
-						<span className="text-xs font-medium">{t("ui.audio.tone")}</span>
-						<div className="grid grid-cols-3 gap-1.5">
-							{TONE_OPTIONS.map((opt) => (
-								<Button
-									key={opt.value}
-									type="button"
-									size="sm"
-									variant={tone === opt.value ? "default" : "outline"}
-									aria-pressed={tone === opt.value}
-									onClick={() => setTone(opt.value)}
-								>
-									{t(opt.labelKey)}
-								</Button>
-							))}
-						</div>
-					</div>
 
 					<div className="space-y-1.5">
 						<div className="flex items-center justify-between">

@@ -5,6 +5,7 @@ import {
 	boxPlaybackSequence,
 	orderForDirection,
 	pitchesForBox,
+	positionKeysForPitch,
 } from "./playback";
 
 const GUITAR: Tuning = ["E", "A", "D", "G", "B", "E"];
@@ -73,5 +74,14 @@ describe("boxPlaybackSequence", () => {
 		expect(midis(boxPlaybackSequence(positions, GUITAR, "up-down"))).toEqual([
 			40, 47, 64, 47, 40,
 		]);
+	});
+});
+
+describe("positionKeysForPitch", () => {
+	it("lights both fretboard positions for a sounding unison", () => {
+		const positions = [pos(6, 5), pos(5, 0), pos(1, 5)];
+		expect(
+			positionKeysForPitch(positions, GUITAR, { note: "A", octave: 2 }),
+		).toEqual(new Set(["6-5", "5-0"]));
 	});
 });

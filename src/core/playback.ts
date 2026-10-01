@@ -46,3 +46,23 @@ export function boxPlaybackSequence(
 ): Pitch[] {
 	return orderForDirection(pitchesForBox(positions, tuning), direction);
 }
+
+// One sounding pitch can appear at several fretboard positions. Light each
+// matching position while that note sounds so the exercise remains readable.
+export function positionKeysForPitch(
+	positions: FretPosition[],
+	tuning: Tuning,
+	pitch: Pitch,
+): Set<string> {
+	const target = midiNumber(pitch);
+	return new Set(
+		positions
+			.filter(
+				(pos) =>
+					midiNumber(
+						getPitchAtPosition(tuning, tuning.length - pos.string, pos.fret),
+					) === target,
+			)
+			.map((pos) => `${pos.string}-${pos.fret}`),
+	);
+}

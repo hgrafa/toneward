@@ -23,7 +23,7 @@ and Áudio popovers live in the header (global), not in the Braço toolbar.
 - Thin wrapper: pulls from `useDerived`/`useDisplay`/`useInput`/`useInstrument`, renders `<FretboardDiagram dimensions={MAIN_DIMENSIONS}>`, owns the tooltip overlay.
 
 ### BoxPatterns + BoxFretboard / BoxPlayControls / BoxPatternDialog
-- `BoxFretboard`: renders one box on the shared `FretboardDiagram`, padding its span to a readable window; takes a `dimensions` preset so the same pattern is compact in a card or larger in the modal. Extracted so the card and the dialog share it.
+- `BoxFretboard`: renders one box on the shared `FretboardDiagram`, padding its span to a readable window; takes a `dimensions` preset so the same pattern is compact in a card or larger in the modal. Lights every position matching the currently sounding pitch.
 - `BoxPlayControls`: per-pattern transport (`useNotePlayback`) — a primary "up & down" run plus one-way ascending/descending drills; clicking the active direction stops it. Takes a stable `id` (`box-<index>`) shared by card + modal.
 - `BoxPatternDialog`: an expand-to-modal view (`ui/dialog`) of one pattern at `MAIN_DIMENSIONS` + the play controls; trigger is a corner icon button.
 - `BoxPatterns`: the grid — each card is `BoxFretboard` + `BoxPatternDialog` trigger + `BoxPlayControls`.

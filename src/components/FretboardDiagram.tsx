@@ -81,6 +81,7 @@ export interface FretboardDiagramProps {
 	) => void;
 	onClickPosition?: (pos: FretPosition) => void;
 	markedPositions?: Set<string>; // keys: `${string}-${fret}`
+	activePositions?: Set<string>; // sounding positions, without ghosting the rest
 }
 
 export function FretboardDiagram({
@@ -95,6 +96,7 @@ export function FretboardDiagram({
 	onHoverPosition,
 	onClickPosition,
 	markedPositions,
+	activePositions,
 }: FretboardDiagramProps) {
 	const fretCount = maxFret - minFret;
 	const showNut = minFret === 0;
@@ -246,6 +248,7 @@ export function FretboardDiagram({
 				const label = dotLabel(pos);
 				const posKey = `${pos.string}-${pos.fret}`;
 				const isMarked = markedPositions?.has(posKey) ?? false;
+				const isActive = activePositions?.has(posKey) ?? false;
 				const isGhost = markedPositions !== undefined && !root && !isMarked;
 				const interactive =
 					Boolean(onHoverPosition) || Boolean(onClickPosition);
@@ -264,20 +267,31 @@ export function FretboardDiagram({
 						}
 						onClick={onClickPosition ? () => onClickPosition(pos) : undefined}
 					>
+						{isActive && (
+							<circle
+								cx={cx}
+								cy={cy}
+								r={d.dotRadius + 5}
+								className="fill-none stroke-brand"
+								strokeWidth={2}
+							/>
+						)}
 						<circle
 							cx={cx}
 							cy={cy}
 							r={d.dotRadius}
 							className={
-								root
-									? "fill-brand stroke-brand/40"
-									: isMarked
-										? "fill-primary stroke-primary/50"
-										: isGhost
-											? "fill-muted-foreground/25 stroke-transparent"
-											: "fill-foreground stroke-background"
+								isActive
+									? "fill-brand stroke-brand"
+									: root
+										? "fill-brand stroke-brand/40"
+										: isMarked
+											? "fill-primary stroke-primary/50"
+											: isGhost
+												? "fill-muted-foreground/25 stroke-transparent"
+												: "fill-foreground stroke-background"
 							}
-							strokeWidth={root ? 2 : 1}
+							strokeWidth={root || isActive ? 2 : 1}
 						/>
 						{label && !isGhost && (
 							<text
@@ -286,9 +300,9 @@ export function FretboardDiagram({
 								dy="0.35em"
 								textAnchor="middle"
 								fontSize={d.dotFontSize}
-								fontWeight={root ? 700 : 500}
+								fontWeight={root || isActive ? 700 : 500}
 								className={
-									root
+									root || isActive
 										? "fill-white select-none"
 										: "fill-background select-none"
 								}

@@ -46,16 +46,13 @@ const ptBR: TranslationSchema = {
 			outputDesc: "Escolha por qual dispositivo cada som é reproduzido.",
 			metronome: "Metrônomo",
 			notes: "Notas",
+			track: "Faixa",
 			refresh: "Atualizar",
 			systemDefault: "Padrão do sistema",
 			tip: "Dica: escolha dispositivos diferentes para cada som — ex.: metrônomo no alto-falante e prática no fone.",
 			noRoutingMsg:
 				"Este navegador usa a saída padrão do sistema. O roteamento por dispositivo requer Chrome ou Edge.",
-			notesTitle: "Reprodução das notas",
-			tone: "Timbre",
-			tonePlucked: "Palhetada",
-			toneClean: "Limpa",
-			toneWarm: "Quente",
+			notesTitle: "Notas de piano",
 			volume: "Volume",
 		},
 		boxPatterns: {
@@ -63,9 +60,12 @@ const ptBR: TranslationSchema = {
 			pattern: "Padrão {{n}}",
 			play: "Tocar",
 			stop: "Parar",
+			upDown: "Subir e descer",
 			playUpDown: "Tocar subindo e descendo",
 			playUp: "Tocar subindo",
 			playDown: "Tocar descendo",
+			playbackError:
+				"Não foi possível carregar o som do piano. Tente novamente.",
 			expand: "Expandir {{name}}",
 		},
 		showroom: {

@@ -9,7 +9,7 @@ import {
 	useState,
 } from "react";
 import type { OutputDevice } from "@/audio/devices";
-import { NotePlayer, type NoteTone } from "@/audio/notePlayer";
+import { NotePlayer } from "@/audio/notePlayer";
 import type { Pitch } from "@/core/pitch";
 import type { PlaybackDirection } from "@/core/playback";
 import { useAudioDevices } from "./AudioDevicesContext";
@@ -18,25 +18,14 @@ import { useAudioDevices } from "./AudioDevicesContext";
 // concern from the metronome and the track player; shares device *discovery* via
 // AudioDevicesContext but keeps its OWN selected output (see audio/CLAUDE.md).
 
-const TONE_KEY = "toneward.notes.tone";
 const VOLUME_KEY = "toneward.notes.volume";
-const TONES: NoteTone[] = ["plucked", "clean", "warm"];
-const DEFAULT_TONE: NoteTone = "plucked";
 const DEFAULT_VOLUME = 0.8;
-
-function loadTone(): NoteTone {
-	try {
-		const v = localStorage.getItem(TONE_KEY);
-		if (v && (TONES as string[]).includes(v)) return v as NoteTone;
-	} catch {
-		// private mode / quota — fall through to the default.
-	}
-	return DEFAULT_TONE;
-}
 
 function loadVolume(): number {
 	try {
-		const v = Number(localStorage.getItem(VOLUME_KEY));
+		const stored = localStorage.getItem(VOLUME_KEY);
+		if (stored === null) return DEFAULT_VOLUME;
+		const v = Number(stored);
 		if (Number.isFinite(v) && v >= 0 && v <= 1) return v;
 	} catch {
 		// ignore
@@ -60,9 +49,7 @@ export interface PlayingState {
 }
 
 interface NotePlaybackState {
-	tone: NoteTone;
 	volume: number;
-	setTone: (t: NoteTone) => void;
 	setVolume: (v: number) => void;
 	// Output routing (shared discovery, per-source selection)
 	routingSupported: boolean;
@@ -72,6 +59,8 @@ interface NotePlaybackState {
 	refreshDevices: () => Promise<void>;
 	// Transport
 	playing: PlayingState | null;
+	activePitch: Pitch | null;
+	playbackError: string | null;
 	play: (id: string, pitches: Pitch[], direction: PlaybackDirection) => void;
 	stop: () => void;
 }
@@ -83,8 +72,11 @@ export function NotePlaybackProvider({ children }: { children: ReactNode }) {
 	if (engineRef.current === null) engineRef.current = new NotePlayer();
 	const engine = engineRef.current;
 
-	const [tone, setToneState] = useState<NoteTone>(loadTone);
 	const [volume, setVolumeState] = useState<number>(loadVolume);
+	const [activePitch, setActivePitch] = useState<Pitch | null>(null);
+	const [playbackError, setPlaybackError] = useState<string | null>(null);
+	const sequenceRef = useRef<Pitch[]>([]);
+	const runIdRef = useRef(0);
 
 	const {
 		routingSupported,
@@ -95,16 +87,22 @@ export function NotePlaybackProvider({ children }: { children: ReactNode }) {
 
 	const [playing, setPlaying] = useState<PlayingState | null>(null);
 
-	// Keep the engine's voice in sync with the chosen tone/volume so the next run
-	// (or notes still being scheduled) uses the latest settings.
+	// The scheduled run uses the chosen volume at each note onset.
 	useEffect(() => {
-		engine.configure({ tone, volume });
-	}, [engine, tone, volume]);
+		engine.configure({ volume });
+	}, [engine, volume]);
 
 	// Clear the transport state when a run finishes on its own.
 	useEffect(() => {
-		engine.onEnd = () => setPlaying(null);
+		engine.onNote = (index) => {
+			setActivePitch(index >= 0 ? (sequenceRef.current[index] ?? null) : null);
+		};
+		engine.onEnd = () => {
+			setPlaying(null);
+			setActivePitch(null);
+		};
 		return () => {
+			engine.onNote = null;
 			engine.onEnd = null;
 		};
 	}, [engine]);
@@ -114,11 +112,6 @@ export function NotePlaybackProvider({ children }: { children: ReactNode }) {
 			void engine.dispose();
 		};
 	}, [engine]);
-
-	const setTone = useCallback((t: NoteTone) => {
-		setToneState(t);
-		persist(TONE_KEY, t);
-	}, []);
 
 	const setVolume = useCallback((v: number) => {
 		setVolumeState(v);
@@ -135,23 +128,32 @@ export function NotePlaybackProvider({ children }: { children: ReactNode }) {
 
 	const play = useCallback(
 		(id: string, pitches: Pitch[], direction: PlaybackDirection) => {
-			engine.configure({ tone, volume });
+			const runId = ++runIdRef.current;
+			sequenceRef.current = pitches;
+			setActivePitch(null);
+			setPlaybackError(null);
+			engine.configure({ volume });
 			setPlaying({ id, direction });
-			void engine.play(pitches);
+			void engine.play(pitches).catch(() => {
+				if (runId !== runIdRef.current) return;
+				setPlaying(null);
+				setActivePitch(null);
+				setPlaybackError(id);
+			});
 		},
-		[engine, tone, volume],
+		[engine, volume],
 	);
 
 	const stop = useCallback(() => {
+		runIdRef.current++;
 		engine.stop();
 		setPlaying(null);
+		setActivePitch(null);
 	}, [engine]);
 
 	const value = useMemo<NotePlaybackState>(
 		() => ({
-			tone,
 			volume,
-			setTone,
 			setVolume,
 			routingSupported,
 			devices,
@@ -159,13 +161,13 @@ export function NotePlaybackProvider({ children }: { children: ReactNode }) {
 			setDeviceId,
 			refreshDevices,
 			playing,
+			activePitch,
+			playbackError,
 			play,
 			stop,
 		}),
 		[
-			tone,
 			volume,
-			setTone,
 			setVolume,
 			routingSupported,
 			devices,
@@ -173,6 +175,8 @@ export function NotePlaybackProvider({ children }: { children: ReactNode }) {
 			setDeviceId,
 			refreshDevices,
 			playing,
+			activePitch,
+			playbackError,
 			play,
 			stop,
 		],

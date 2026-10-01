@@ -19,7 +19,7 @@ export function BoxPlayControls({
 	tuning: Tuning;
 }) {
 	const { t } = useTranslation();
-	const { playing, play, stop } = useNotePlayback();
+	const { playing, playbackError, play, stop } = useNotePlayback();
 
 	const isActive = (direction: PlaybackDirection) =>
 		playing?.id === id && playing.direction === direction;
@@ -37,15 +37,20 @@ export function BoxPlayControls({
 	};
 
 	return (
-		<div className="flex items-center gap-1.5">
+		<div className="flex flex-wrap items-center gap-2">
 			<Button
 				type="button"
 				size="sm"
-				variant={isActive("up-down") ? "default" : "secondary"}
+				variant="default"
 				onClick={() => toggle("up-down")}
 				aria-pressed={isActive("up-down")}
 				title={t("ui.boxPatterns.playUpDown")}
-				className="gap-1.5"
+				aria-label={
+					isActive("up-down")
+						? t("ui.boxPatterns.stop")
+						: t("ui.boxPatterns.playUpDown")
+				}
+				className="gap-1.5 rounded-lg px-3"
 			>
 				{isActive("up-down") ? (
 					<Square className="fill-current" />
@@ -54,30 +59,41 @@ export function BoxPlayControls({
 				)}
 				{isActive("up-down")
 					? t("ui.boxPatterns.stop")
-					: t("ui.boxPatterns.play")}
+					: t("ui.boxPatterns.upDown")}
 			</Button>
-			<Button
-				type="button"
-				size="icon-sm"
-				variant="outline"
-				onClick={() => toggle("up")}
-				aria-pressed={isActive("up")}
-				aria-label={t("ui.boxPatterns.playUp")}
-				title={t("ui.boxPatterns.playUp")}
-			>
-				{isActive("up") ? <Square className="fill-current" /> : <ArrowUp />}
-			</Button>
-			<Button
-				type="button"
-				size="icon-sm"
-				variant="outline"
-				onClick={() => toggle("down")}
-				aria-pressed={isActive("down")}
-				aria-label={t("ui.boxPatterns.playDown")}
-				title={t("ui.boxPatterns.playDown")}
-			>
-				{isActive("down") ? <Square className="fill-current" /> : <ArrowDown />}
-			</Button>
+			<div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
+				<Button
+					type="button"
+					size="icon-sm"
+					variant={isActive("up") ? "secondary" : "ghost"}
+					onClick={() => toggle("up")}
+					aria-pressed={isActive("up")}
+					aria-label={t("ui.boxPatterns.playUp")}
+					title={t("ui.boxPatterns.playUp")}
+				>
+					{isActive("up") ? <Square className="fill-current" /> : <ArrowUp />}
+				</Button>
+				<Button
+					type="button"
+					size="icon-sm"
+					variant={isActive("down") ? "secondary" : "ghost"}
+					onClick={() => toggle("down")}
+					aria-pressed={isActive("down")}
+					aria-label={t("ui.boxPatterns.playDown")}
+					title={t("ui.boxPatterns.playDown")}
+				>
+					{isActive("down") ? (
+						<Square className="fill-current" />
+					) : (
+						<ArrowDown />
+					)}
+				</Button>
+			</div>
+			{playbackError === id && (
+				<p role="alert" className="w-full text-xs text-destructive">
+					{t("ui.boxPatterns.playbackError")}
+				</p>
+			)}
 		</div>
 	);
 }

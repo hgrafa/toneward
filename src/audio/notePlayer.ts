@@ -1,53 +1,62 @@
-// A Web Audio engine for playing a finite sequence of notes (a box pattern run).
-// Unlike the Metronome's endless look-ahead scheduler, a run is short and fully
-// known up front, so every note is scheduled in one pass against the audio clock
-// and a matching timer fires the `onNote` UI callback at sounding time.
-//
-// Like every audio source here it owns its OWN AudioContext so it can be routed
-// to a chosen output device independently (see audio/CLAUDE.md).
+// Plays box-pattern runs with the bundled piano recording. The recording holds
+// thirteen sampled notes; the preset maps nearby pitches to each sample.
+// This source owns its AudioContext so note routing stays independent.
 
-import { midiNumber, midiToFreq, type Pitch } from "@/core/pitch";
+import { midiNumber, type Pitch } from "@/core/pitch";
 import { applySink } from "./devices";
+import pianoPreset from "./pianoPreset.json";
 
-// Timbres offered to the user. Each is a crude single-oscillator voice — enough
-// to give the run a distinct character without a sample library.
-export type NoteTone = "plucked" | "clean" | "warm";
+const NOTE_SPACING_S = 0.44;
+const NOTE_LENGTH_S = 1.15;
+const SILENCE = 0.0001;
+
+type PianoZone = readonly [
+	number,
+	number,
+	number,
+	boolean,
+	number,
+	number,
+	number,
+	number,
+	boolean,
+	number,
+	number,
+	number,
+];
+const zones = pianoPreset.zones as unknown as PianoZone[];
 
 export interface NotePlayerConfig {
-	tone: NoteTone;
-	volume: number; // 0..1
+	volume: number;
 }
 
-interface ToneSpec {
-	type: OscillatorType;
-	attack: number; // seconds to reach peak
-	length: number; // seconds until the note decays out
-	gain: number; // per-tone loudness trim (osc types differ in perceived volume)
+function zoneForMidi(midi: number): PianoZone {
+	return (
+		zones.find((zone) => midi >= zone[1] && midi <= zone[2]) ??
+		(midi < zones[0][1] ? zones[0] : zones[zones.length - 1])
+	);
 }
 
-const TONE_SPECS: Record<NoteTone, ToneSpec> = {
-	plucked: { type: "sawtooth", attack: 0.004, length: 0.4, gain: 0.5 },
-	clean: { type: "sine", attack: 0.015, length: 0.5, gain: 0.95 },
-	warm: { type: "triangle", attack: 0.05, length: 0.6, gain: 0.85 },
-};
-
-// Time between successive note onsets. A note's tail (TONE_SPECS.length) can
-// exceed this so the run sounds connected rather than staccato.
-const NOTE_SPACING_S = 0.32;
+function findMasterOffset(buffer: AudioBuffer): number {
+	// The source file begins with a calibration beep to account for MP3 padding.
+	const data = buffer.getChannelData(0);
+	for (let i = 0; i < Math.min(data.length, buffer.sampleRate); i++) {
+		if (data[i] > 0.5) return i / buffer.sampleRate - 27 / 44100;
+	}
+	throw new Error("Piano sample calibration marker is missing");
+}
 
 export class NotePlayer {
 	private ctx: AudioContext | null = null;
 	private deviceId = "";
-	private active: OscillatorNode[] = [];
+	private active: AudioBufferSourceNode[] = [];
 	private timeouts: ReturnType<typeof setTimeout>[] = [];
-	// Bumped on every play/stop so stale timers from a superseded run are ignored.
 	private token = 0;
+	private sample: Promise<{ buffer: AudioBuffer; offset: number }> | null =
+		null;
+	private config: NotePlayerConfig = { volume: 0.8 };
 
-	private config: NotePlayerConfig = { tone: "plucked", volume: 0.8 };
-
-	// Fires with the index of the note now sounding, or -1 when the run ends.
 	onNote: ((index: number) => void) | null = null;
-	// Fires once when a run finishes (not when it's stopped early).
 	onEnd: (() => void) | null = null;
 
 	get isPlaying(): boolean {
@@ -63,57 +72,56 @@ export class NotePlayer {
 		if (this.ctx) await applySink(this.ctx, deviceId);
 	}
 
-	// Schedule and play a sequence, cancelling any run already in progress.
 	async play(pitches: Pitch[]): Promise<void> {
 		this.stop();
 		if (pitches.length === 0) return;
-
+		const token = ++this.token;
 		if (!this.ctx) {
 			this.ctx = new AudioContext();
 			if (this.deviceId) await applySink(this.ctx, this.deviceId);
 		}
-		// Contexts start suspended until a user gesture resumes them.
-		await this.ctx.resume();
-
 		const ctx = this.ctx;
-		const token = ++this.token;
-		const start = ctx.currentTime + 0.06;
+		// Resume during the user gesture, before the asynchronous sample fetch.
+		await ctx.resume();
+		const { buffer, offset } = await this.loadSample(ctx);
+		if (this.token !== token) return;
 
-		pitches.forEach((pitch, i) => {
-			const time = start + i * NOTE_SPACING_S;
-			this.scheduleNote(ctx, midiToFreq(midiNumber(pitch)), time);
-			const delayMs = Math.max(0, (time - ctx.currentTime) * 1000);
+		const start = ctx.currentTime + 0.05;
+		pitches.forEach((pitch, index) => {
+			const time = start + index * NOTE_SPACING_S;
+			this.scheduleNote(ctx, buffer, offset, midiNumber(pitch), time);
 			this.timeouts.push(
-				setTimeout(() => {
-					if (this.token === token) this.onNote?.(i);
-				}, delayMs),
+				setTimeout(
+					() => {
+						if (this.token === token) this.onNote?.(index);
+					},
+					Math.max(0, (time - ctx.currentTime) * 1000),
+				),
 			);
 		});
-
-		const endMs = Math.max(
-			0,
-			(start + pitches.length * NOTE_SPACING_S - ctx.currentTime) * 1000,
-		);
+		const end = start + (pitches.length - 1) * NOTE_SPACING_S + NOTE_LENGTH_S;
 		this.timeouts.push(
-			setTimeout(() => {
-				if (this.token !== token) return;
-				this.active = [];
-				this.onNote?.(-1);
-				this.onEnd?.();
-			}, endMs),
+			setTimeout(
+				() => {
+					if (this.token !== token) return;
+					this.active = [];
+					this.onNote?.(-1);
+					this.onEnd?.();
+				},
+				Math.max(0, (end - ctx.currentTime) * 1000),
+			),
 		);
 	}
 
-	// Stop immediately, silencing scheduled notes and pending UI callbacks.
 	stop(): void {
 		this.token++;
-		for (const id of this.timeouts) clearTimeout(id);
+		for (const timeout of this.timeouts) clearTimeout(timeout);
 		this.timeouts = [];
-		for (const osc of this.active) {
+		for (const source of this.active) {
 			try {
-				osc.stop();
+				source.stop();
 			} catch {
-				// Already stopped — ignore.
+				// A completed source may already have stopped.
 			}
 		}
 		this.active = [];
@@ -128,25 +136,54 @@ export class NotePlayer {
 		}
 	}
 
-	private scheduleNote(ctx: AudioContext, freq: number, time: number): void {
-		const spec = TONE_SPECS[this.config.tone];
-		const osc = ctx.createOscillator();
+	private loadSample(
+		ctx: AudioContext,
+	): Promise<{ buffer: AudioBuffer; offset: number }> {
+		if (!this.sample) {
+			this.sample = (async () => {
+				const response = await fetch(
+					`${import.meta.env.BASE_URL}audio/piano.mp3`,
+				);
+				if (!response.ok) throw new Error("Piano sample could not be loaded");
+				const buffer = await ctx.decodeAudioData(await response.arrayBuffer());
+				return { buffer, offset: findMasterOffset(buffer) };
+			})().catch((error: unknown) => {
+				this.sample = null;
+				throw error;
+			});
+		}
+		return this.sample;
+	}
+
+	private scheduleNote(
+		ctx: AudioContext,
+		buffer: AudioBuffer,
+		masterOffset: number,
+		midi: number,
+		time: number,
+	): void {
+		const zone = zoneForMidi(midi);
+		const rate = 2 ** ((midi - zone[0]) / 12);
+		const source = ctx.createBufferSource();
 		const gain = ctx.createGain();
-		osc.type = spec.type;
-		osc.frequency.setValueAtTime(freq, time);
-
-		const peak = Math.max(0.0001, this.config.volume * spec.gain);
-		gain.gain.setValueAtTime(0.0001, time);
-		gain.gain.exponentialRampToValueAtTime(peak, time + spec.attack);
-		gain.gain.exponentialRampToValueAtTime(0.0001, time + spec.length);
-
-		osc.connect(gain).connect(ctx.destination);
-		osc.start(time);
-		osc.stop(time + spec.length + 0.02);
-
-		this.active.push(osc);
-		osc.onended = () => {
-			this.active = this.active.filter((o) => o !== osc);
+		const duration = Math.min(
+			NOTE_LENGTH_S,
+			(zone[9] + zone[10] / zone[11] - 0.04) / rate,
+		);
+		source.buffer = buffer;
+		source.playbackRate.value = rate;
+		gain.gain.setValueAtTime(SILENCE, time);
+		gain.gain.exponentialRampToValueAtTime(
+			Math.max(SILENCE, this.config.volume * zone[5] * 0.55),
+			time + 0.008,
+		);
+		gain.gain.exponentialRampToValueAtTime(SILENCE, time + duration);
+		source.connect(gain).connect(ctx.destination);
+		source.start(time, zone[4] + masterOffset);
+		source.stop(time + duration);
+		this.active.push(source);
+		source.onended = () => {
+			this.active = this.active.filter((current) => current !== source);
 		};
 	}
 }

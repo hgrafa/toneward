@@ -10,6 +10,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import type { Pitch } from "@/core/pitch";
 import type { BoxPattern, DisplayMode, NoteName, Tuning } from "@/types/music";
 import { BoxPlayControls } from "./BoxPlayControls";
 
@@ -23,6 +24,7 @@ export function BoxPatternDialog({
 	highlightRoot,
 	rootPitchClass,
 	tuning,
+	activePitch,
 }: {
 	pattern: BoxPattern;
 	stringCount: number;
@@ -30,6 +32,7 @@ export function BoxPatternDialog({
 	highlightRoot: boolean;
 	rootPitchClass?: NoteName;
 	tuning: Tuning;
+	activePitch?: Pitch | null;
 }) {
 	const { t } = useTranslation();
 	const title = t("ui.boxPatterns.pattern", { n: pattern.index + 1 });
@@ -48,25 +51,29 @@ export function BoxPatternDialog({
 					<Maximize2 />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-w-3xl">
+			<DialogContent className="rounded-xl sm:max-w-4xl">
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
-				<div className="overflow-x-auto">
+				<div className="overflow-x-auto rounded-lg bg-muted/45 px-2 py-3">
 					<BoxFretboard
 						pattern={pattern}
 						stringCount={stringCount}
 						displayMode={displayMode}
 						highlightRoot={highlightRoot}
 						rootPitchClass={rootPitchClass}
+						tuning={tuning}
+						activePitch={activePitch}
 						dimensions={MAIN_DIMENSIONS}
 					/>
 				</div>
-				<BoxPlayControls
-					id={`box-${pattern.index}`}
-					pattern={pattern}
-					tuning={tuning}
-				/>
+				<div className="border-t border-border pt-3">
+					<BoxPlayControls
+						id={`box-${pattern.index}`}
+						pattern={pattern}
+						tuning={tuning}
+					/>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);
