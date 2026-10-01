@@ -1,7 +1,13 @@
 import { Minus, Pause, Play, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { beatInterval, tempoMarking } from "@/audio/metronomeMath";
+import {
+	beatInterval,
+	MAX_BPM,
+	MIN_BPM,
+	tempoMarking,
+} from "@/audio/metronomeMath";
+import { NumericInput } from "@/components/NumericInput";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -54,12 +60,30 @@ export function MetronomePanel() {
 			<PopoverContent align="start" sideOffset={10} className="w-72 p-5">
 				{/* Pendulum */}
 				<div className="relative mx-auto flex h-24 w-full items-end justify-center">
-					{/* faint arc the weight travels along */}
-					<div
-						className={`absolute bottom-2 h-16 w-28 rounded-[50%] border border-dashed transition-colors ${
-							isPlaying ? "border-border" : "border-transparent"
-						}`}
-					/>
+					{/* Wooden cabinet of a mechanical metronome, behind the moving arm. */}
+					<svg
+						aria-hidden="true"
+						viewBox="0 0 112 96"
+						className="absolute bottom-0 h-24 w-28"
+						fill="none"
+					>
+						<path
+							d="M40 14h34l28 72H10l30-72Z"
+							fill="#b9a17f"
+							stroke="#7d674e"
+							strokeLinejoin="round"
+						/>
+						<path d="M40 16h31l23 68H19l21-68Z" fill="#e5d5b9" />
+						<path d="M72 16h2l28 70h-8L72 16Z" fill="#9b8261" />
+						<path d="M43 19h25" stroke="#f5e9d5" strokeLinecap="round" />
+						<path d="M56 29v45" stroke="#b9a486" strokeWidth="1.5" />
+						<path
+							d="M46 37h5m10 0h5M45 47h6m10 0h6M44 57h7m10 0h7M43 67h8m10 0h8"
+							stroke="#a38c6c"
+							strokeLinecap="round"
+						/>
+						<rect x="8" y="84" width="96" height="8" rx="2" fill="#514231" />
+					</svg>
 					{/* arm + weight, pivoting at the base */}
 					<div
 						className="absolute bottom-2 h-20 w-[3px] origin-bottom rounded-full bg-foreground/80 ease-in-out"
@@ -69,14 +93,9 @@ export function MetronomePanel() {
 							transitionDuration: swingDuration,
 						}}
 					>
-						<div
-							className={`-translate-x-1/2 absolute top-5 left-1/2 size-3.5 rounded-full transition-colors ${
-								isPlaying ? "bg-primary" : "bg-muted-foreground/60"
-							}`}
-						/>
+						<div className="-translate-x-1/2 absolute top-5 left-1/2 size-3.5 rounded-full bg-foreground" />
 					</div>
-					{/* base + pivot */}
-					<div className="absolute bottom-1 h-2 w-20 rounded-full bg-muted" />
+					{/* pivot */}
 					<div className="absolute bottom-[5px] size-2.5 rounded-full bg-foreground" />
 				</div>
 
@@ -117,25 +136,28 @@ export function MetronomePanel() {
 				{/* Stepper */}
 				<div className="flex items-stretch gap-2">
 					<Button
-						variant="outline"
+						variant="ghost"
 						size="icon-lg"
 						onClick={() => setBpm(bpm - 1)}
 						aria-label="Decrease tempo"
-						className="h-auto w-12 rounded-xl"
+						className="h-auto w-12 rounded-none bg-transparent hover:bg-transparent dark:hover:bg-transparent"
 					>
 						<Minus className="size-5" />
 					</Button>
-					<div className="flex flex-1 items-center justify-center rounded-xl border bg-muted/40 py-3">
-						<span className="font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight">
-							{bpm}
-						</span>
-					</div>
+					<NumericInput
+						value={bpm}
+						onChange={setBpm}
+						min={MIN_BPM}
+						max={MAX_BPM}
+						label={t("ui.metronome.tempoInput")}
+						className="h-auto min-w-0 flex-1 rounded-none border-0 bg-transparent py-3 text-center font-bold text-5xl text-foreground leading-none tabular-nums tracking-tight shadow-none focus-visible:border-0 focus-visible:ring-0 md:text-5xl dark:bg-transparent"
+					/>
 					<Button
-						variant="outline"
+						variant="ghost"
 						size="icon-lg"
 						onClick={() => setBpm(bpm + 1)}
 						aria-label="Increase tempo"
-						className="h-auto w-12 rounded-xl"
+						className="h-auto w-12 rounded-none bg-transparent hover:bg-transparent dark:hover:bg-transparent"
 					>
 						<Plus className="size-5" />
 					</Button>

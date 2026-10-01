@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { FretboardProvider } from "@/hooks/useFretboardContext";
 import { TuningControls } from "./TuningControls";
@@ -23,8 +23,13 @@ describe("TuningControls", () => {
 		expect(screen.getByLabelText("String 1 tuning")).toBeInTheDocument();
 	});
 
-	it("shows the current string count", () => {
+	it("accepts a typed string count", () => {
 		setup();
-		expect(screen.getByText(/6 strings/i)).toBeInTheDocument();
+		const input = screen.getByRole("spinbutton", { name: "String count" });
+		input.focus();
+		fireEvent.change(input, { target: { value: "8" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+		expect(screen.getAllByRole("combobox")).toHaveLength(9);
+		expect(input).toHaveValue(8);
 	});
 });

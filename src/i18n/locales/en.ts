@@ -29,10 +29,14 @@ const en = {
 			strings_other: "{{count}} strings",
 			removeString: "Remove string",
 			addString: "Add string",
+			stringCount: "String count",
+			stringUnit_one: "string",
+			stringUnit_other: "strings",
 			stringTuning: "String {{n}} tuning",
 		},
 		metronome: {
 			trigger: "Metronome",
+			tempoInput: "Tempo in BPM",
 			start: "Start",
 			stop: "Stop",
 			reset: "Reset",
@@ -87,6 +91,7 @@ const en = {
 		},
 		timer: {
 			title: "Study timer",
+			durationInput: "Duration in minutes",
 			up: "Count up",
 			down: "Countdown",
 			start: "Start",

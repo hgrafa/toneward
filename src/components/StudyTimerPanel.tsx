@@ -1,6 +1,7 @@
 import { Minus, Play, Plus, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { NumericInput } from "@/components/NumericInput";
 import {
 	formatClock,
 	type TimerMode,
@@ -157,9 +158,17 @@ export function StudyTimerPanel() {
 						>
 							<Minus className="size-4" />
 						</button>
-						<span className="w-20 text-center font-mono font-semibold text-sm tabular-nums">
-							{durationMin} {t("ui.timer.min")}
-						</span>
+						<div className="flex w-20 items-center justify-center gap-1 font-mono font-semibold text-sm tabular-nums">
+							<NumericInput
+								value={durationMin}
+								onChange={setDurationMin}
+								min={1}
+								max={180}
+								label={t("ui.timer.durationInput")}
+								className="h-7 w-10 border-0 bg-transparent px-0 text-center font-mono font-semibold text-sm shadow-none"
+							/>
+							{t("ui.timer.min")}
+						</div>
 						<button
 							type="button"
 							aria-label="+5 min"
