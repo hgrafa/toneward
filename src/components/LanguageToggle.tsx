@@ -39,10 +39,12 @@ export function LanguageToggle() {
 			<SelectTrigger
 				size="sm"
 				aria-label={t("ui.sidebar.langToggle")}
-				className="h-9 gap-2 rounded-lg border-border bg-card px-3 font-semibold text-secondary-foreground"
+				className="h-9 gap-1 rounded-lg border-border bg-card px-2 font-semibold text-secondary-foreground sm:gap-2 sm:px-3"
 			>
 				{lang === "pt-BR" ? <BrazilFlag /> : <USFlag />}
-				<span className="text-xs">{lang === "pt-BR" ? "PT" : "EN"}</span>
+				<span className="hidden text-xs sm:inline">
+					{lang === "pt-BR" ? "PT" : "EN"}
+				</span>
 			</SelectTrigger>
 			<SelectContent position="popper" align="end">
 				<SelectItem value="en">

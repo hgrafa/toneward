@@ -68,6 +68,9 @@ const en = {
 			playbackError: "Couldn't load the piano sound. Try again.",
 			expand: "Expand {{name}}",
 		},
+		fretboard: {
+			playNote: "Play {{note}}, string {{string}}, fret {{fret}}",
+		},
 		showroom: {
 			youtubePlaceholder: "Paste a YouTube link…",
 			load: "Load",

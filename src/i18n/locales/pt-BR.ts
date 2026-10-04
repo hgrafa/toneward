@@ -72,6 +72,9 @@ const ptBR: TranslationSchema = {
 				"Não foi possível carregar o som do piano. Tente novamente.",
 			expand: "Expandir {{name}}",
 		},
+		fretboard: {
+			playNote: "Tocar {{note}}, corda {{string}}, casa {{fret}}",
+		},
 		showroom: {
 			youtubePlaceholder: "Cole um link do YouTube…",
 			load: "Carregar",

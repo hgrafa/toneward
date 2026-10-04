@@ -1,10 +1,13 @@
+import { useTranslation } from "react-i18next";
 import {
 	BOX_DIMENSIONS,
 	FretboardDiagram,
 	type FretboardDimensions,
 } from "@/components/FretboardDiagram";
+import { formatSpelled } from "@/core/notes";
 import type { Pitch } from "@/core/pitch";
 import { positionKeysForPitch } from "@/core/playback";
+import { useNoteAudition } from "@/hooks/useNoteAudition";
 import type { BoxPattern, DisplayMode, NoteName, Tuning } from "@/types/music";
 
 const MIN_DISPLAY_FRETS = 7;
@@ -31,6 +34,11 @@ export function BoxFretboard({
 	activePitch?: Pitch | null;
 	dimensions?: FretboardDimensions;
 }) {
+	const { t } = useTranslation();
+	const { audition, activePitch: auditionPitch } = useNoteAudition(
+		`box-${pattern.index}`,
+		tuning,
+	);
 	const { minFret, maxFret, positions } = pattern;
 
 	const patternSpan = maxFret - minFret;
@@ -43,8 +51,9 @@ export function BoxFretboard({
 		displayMinFret + MIN_DISPLAY_FRETS,
 		maxFret + extraFrets,
 	);
-	const activePositions = activePitch
-		? positionKeysForPitch(positions, tuning, activePitch)
+	const soundingPitch = auditionPitch ?? activePitch;
+	const activePositions = soundingPitch
+		? positionKeysForPitch(positions, tuning, soundingPitch)
 		: undefined;
 
 	return (
@@ -58,6 +67,14 @@ export function BoxFretboard({
 			highlightRoot={highlightRoot}
 			rootPitchClass={rootPitchClass}
 			activePositions={activePositions}
+			onClickPosition={audition}
+			positionAriaLabel={(pos) =>
+				t("ui.fretboard.playNote", {
+					note: formatSpelled(pos.spelled),
+					string: pos.string,
+					fret: pos.fret,
+				})
+			}
 		/>
 	);
 }
