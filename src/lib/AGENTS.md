@@ -5,6 +5,7 @@
 - `utils.ts` - shadcn `cn()` class-name helper. Leave as the shadcn default.
 - `tuningStorage.ts` - load/save the tuning to localStorage (`fretboard.tuning`). Validates shape on load and falls back to the default instrument on anything invalid.
 - `documentStorage.ts` - persist the Showroom PDF across reloads: bytes in IndexedDB (`ArrayBuffer` + MIME type), name marker in localStorage (`fretboard.showroom.document`). When the marker survives but the bytes don't, `loadStoredDocument` returns a tombstone (`{ name, blob: null }`) so the UI can say "couldn't reopen".
+- `supabase.ts` - the one Supabase client (`null` without `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`). PKCE OAuth flow; the session lives in localStorage under `toneward.auth`. Only `hooks/AuthContext` should import it for auth.
 
 ## Conventions
 

@@ -1,28 +1,33 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AppHeader } from "@/components/AppHeader";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
+import { AuthProvider } from "@/hooks/AuthContext";
 import { MediaPlayerProvider } from "@/hooks/MediaPlayerContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
 import { NotePlaybackProvider } from "@/hooks/NotePlaybackContext";
 import { StudyTimerProvider } from "@/hooks/StudyTimerContext";
 import { ViewProvider } from "@/hooks/ViewContext";
 
+vi.mock("@/lib/supabase", () => ({ supabase: null }));
+
 function renderHeader() {
 	return render(
-		<ViewProvider>
-			<AudioDevicesProvider>
-				<MetronomeProvider>
-					<MediaPlayerProvider>
-						<NotePlaybackProvider>
-							<StudyTimerProvider>
-								<AppHeader />
-							</StudyTimerProvider>
-						</NotePlaybackProvider>
-					</MediaPlayerProvider>
-				</MetronomeProvider>
-			</AudioDevicesProvider>
-		</ViewProvider>,
+		<AuthProvider>
+			<ViewProvider>
+				<AudioDevicesProvider>
+					<MetronomeProvider>
+						<MediaPlayerProvider>
+							<NotePlaybackProvider>
+								<StudyTimerProvider>
+									<AppHeader />
+								</StudyTimerProvider>
+							</NotePlaybackProvider>
+						</MediaPlayerProvider>
+					</MetronomeProvider>
+				</AudioDevicesProvider>
+			</ViewProvider>
+		</AuthProvider>,
 	);
 }
 
@@ -38,5 +43,12 @@ describe("AppHeader", () => {
 		renderHeader();
 		expect(screen.getByText("Metronome")).toBeInTheDocument();
 		expect(screen.getByText("Audio")).toBeInTheDocument();
+	});
+
+	it("hides the sign-in button when Supabase isn't configured", () => {
+		renderHeader();
+		expect(
+			screen.queryByRole("button", { name: "Sign in" }),
+		).not.toBeInTheDocument();
 	});
 });

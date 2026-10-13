@@ -10,7 +10,7 @@ import type { AppView } from "@/types/showroom";
 
 const VIEW_KEY = "fretboard.view";
 
-const VALID_VIEWS: AppView[] = ["fretboard", "showroom", "practice"];
+const VALID_VIEWS: AppView[] = ["fretboard", "showroom", "practice", "account"];
 
 function loadView(): AppView {
 	try {

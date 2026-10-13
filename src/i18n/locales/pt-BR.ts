@@ -9,6 +9,26 @@ const ptBR: TranslationSchema = {
 			practice: "Prática",
 			langToggle: "Selecionar idioma",
 		},
+		account: {
+			section: "Conta",
+			signIn: "Entrar",
+			createAccount: "Criar conta",
+			modeLabel: "Entrar ou criar uma conta",
+			signInTitle: "Que bom te ver de novo",
+			signInSubtitle: "Entre com a conta Google que você já usou.",
+			registerTitle: "Crie sua conta",
+			registerSubtitle:
+				"É grátis e leva um clique. Sem senha nova para lembrar.",
+			continueWithGoogle: "Continuar com Google",
+			redirecting: "Indo para o Google…",
+			optional: "O Toneward funciona sem conta.",
+			skip: "Continuar sem conta",
+			signInFailed: "Não foi possível entrar com o Google. Tente de novo.",
+			unavailable: "O login não está disponível no momento.",
+			signedInWith: "Conectado com Google",
+			backToApp: "Voltar ao Toneward",
+			signOut: "Sair",
+		},
 		editor: {
 			label: "Notas ou intervalos",
 			placeholder:

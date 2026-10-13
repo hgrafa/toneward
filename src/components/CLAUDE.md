@@ -32,10 +32,17 @@ and Áudio popovers live in the header (global), not in the Braço toolbar.
 - `Editor` → `useInput`; `Toolbar` → `useDisplay`; `TuningControls` → `useInstrument`.
 
 ### App shell — AppHeader / FloatingNav / LanguageToggle
-- `AppHeader`: fixed top bar — squircle logo + wordmark + current section name; right side composes `LanguageToggle` + the global `MetronomePanel`/`AudioControlPanel` popovers. The section name maps the current `useView()` view to `ui.sidebar.{fretboard,showroom,practice}`.
+- `AppHeader`: fixed top bar — `BrandMark` squircle logo + wordmark + current section name; right side composes `LanguageToggle` + the global `MetronomePanel`/`AudioControlPanel` popovers + `account/AccountButton`. The section name maps the current `useView()` view to `ui.sidebar.{fretboard,showroom,practice}` (or `ui.account.section`).
+- `BrandMark`: the gradient "T" squircle. Reuse it; don't re-inline the gradient.
 - `FloatingNav`: floating left capsule, hover-expand; the 3 view buttons drive `useView`; the active item uses the `bg-brand-gradient` utility.
 - `LanguageToggle`: the flag `Select`, extracted so it can live in the header.
 - Accent discipline: the brand gradient appears only on the logo mark + active nav; header pills are stone-neutral and invert to dark ink when open.
+
+### Accounts — account/AccountView / AccountButton / UserAvatar
+- Sign-in is **optional**: every feature works signed out. Google OAuth only (Supabase Auth); "Create account" and "Sign in" are the same Google redirect with different copy.
+- `AccountView` is the `account` view (not in `FloatingNav`; opened from the header). Signed out: Sign in / Create account toggle + "Continue with Google". Signed in: avatar, name, email, sign out.
+- `AccountButton` renders nothing when Supabase isn't configured (`useAuth().configured`), so builds without the env vars show no account UI.
+- Reads `useAuth` (`@/hooks/AuthContext`); never import `@/lib/supabase` from a component.
 
 ### Persistent player — PersistentPlayer / PlayerLoader / SpeedControl / VolumeControl / PlayerSlider
 - `PersistentPlayer` is mounted ONCE in `App.tsx`'s shell body and never unmounts on tab change, so the hidden `<audio>` + YouTube container keep playing across tabs. Reads `useMediaPlayerCtx` (`@/hooks/MediaPlayerContext`). Mini pill ↔ expanded card; auto-minimizes on mouse-leave UNLESS pinned or a control popover is open (`speedOpen`/`volumeOpen` guard — the popover panel is portaled outside the player). "Switch/Trocar" re-opens the loader to swap the track.
