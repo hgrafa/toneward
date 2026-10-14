@@ -4,6 +4,7 @@ const ptBR: TranslationSchema = {
 	ui: {
 		appName: "Toneward",
 		sidebar: {
+			home: "Início",
 			fretboard: "Escalas",
 			showroom: "Showroom",
 			practice: "Prática",
@@ -54,10 +55,44 @@ const ptBR: TranslationSchema = {
 					"Muitos e-mails enviados. Espere um pouco e tente de novo.",
 			},
 			unavailable: "O login não está disponível no momento.",
-			signedInWithGoogle: "Conectado com Google",
-			signedInWithEmail: "Conectado com e-mail",
 			backToApp: "Voltar ao Toneward",
 			signOut: "Sair",
+			menuLabel: "Menu da conta, {{name}}",
+		},
+		home: {
+			greeting: "Olá, {{name}}!",
+			greetingAnonymous: "Olá!",
+			phrases: {
+				morning: [
+					"Bom dia! Começando os estudos de hoje?",
+					"Ouvidos descansados, dedos prontos. Bora aquecer.",
+					"Café numa mão, violão na outra?",
+				],
+				afternoon: [
+					"Boa tarde! Que tal umas escalas?",
+					"Uma sessão rápida agora espanta a ferrugem.",
+					"Vamos transformar essa tarde em hora de estudo.",
+				],
+				evening: [
+					"Boa noite! Bora relaxar tocando um pouco?",
+					"As melhores jams acontecem depois do pôr do sol.",
+					"Mais uma passada antes do jantar?",
+				],
+				night: [
+					"Sessão de madrugada? Cuidado com os vizinhos.",
+					"Corujas dão ótimos músicos.",
+					"Ainda acordado? Uns minutinhos de estudo não fazem mal.",
+				],
+				anytime: [
+					"Bora voltar ao trabalho.",
+					"Continue de onde parou.",
+					"Cada minuto no braço do instrumento conta.",
+				],
+			},
+			shortcuts: "Voltar a tocar",
+			fretboardHint: "Mapeie notas, escalas e intervalos pelo braço.",
+			showroomHint: "Toque junto com uma música e sua partitura.",
+			practiceHint: "Treine o reconhecimento de intervalos contra o relógio.",
 		},
 		editor: {
 			label: "Notas ou intervalos",

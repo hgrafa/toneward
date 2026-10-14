@@ -4,14 +4,17 @@ import { FloatingNav } from "@/components/FloatingNav";
 import { ViewProvider } from "@/hooks/ViewContext";
 
 describe("FloatingNav", () => {
-	it("renders the three views and marks the active one", () => {
+	it("renders the four views and marks the active one", () => {
 		render(
 			<ViewProvider>
 				<FloatingNav />
 			</ViewProvider>,
 		);
-		const fretboard = screen.getByRole("button", { name: "Fretboard" });
-		expect(fretboard).toHaveAttribute("aria-current", "page");
+		const home = screen.getByRole("button", { name: "Home" });
+		expect(home).toHaveAttribute("aria-current", "page");
+		expect(
+			screen.getByRole("button", { name: "Fretboard" }),
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole("button", { name: "Showroom" }),
 		).toBeInTheDocument();
@@ -31,8 +34,8 @@ describe("FloatingNav", () => {
 			"aria-current",
 			"page",
 		);
-		expect(
-			screen.getByRole("button", { name: "Fretboard" }),
-		).not.toHaveAttribute("aria-current");
+		expect(screen.getByRole("button", { name: "Home" })).not.toHaveAttribute(
+			"aria-current",
+		);
 	});
 });

@@ -35,8 +35,8 @@ describe("AppHeader", () => {
 	it("shows the brand lockup and the current section name", () => {
 		renderHeader();
 		expect(screen.getByText("Toneward")).toBeInTheDocument();
-		// Default view is "fretboard" → section label "Fretboard" (en).
-		expect(screen.getByText("Fretboard")).toBeInTheDocument();
+		// Default view is "home" → section label "Home" (en).
+		expect(screen.getByText("Home")).toBeInTheDocument();
 	});
 
 	it("renders the global Metronome and Audio controls", () => {

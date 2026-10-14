@@ -9,13 +9,16 @@ describe("App shell", () => {
 		render(<App />);
 		// Brand wordmark lives in the header.
 		expect(screen.getByText("Toneward")).toBeInTheDocument();
-		// Floating nav exposes the three views as buttons.
-		expect(screen.getByRole("button", { name: "Fretboard" })).toHaveAttribute(
+		// Floating nav exposes the views as buttons; first visits land on Home.
+		expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute(
 			"aria-current",
 			"page",
 		);
 		expect(
-			screen.getByRole("button", { name: "Showroom" }),
+			screen.getByRole("button", { name: "Fretboard" }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", { level: 1, name: "Hello there!" }),
 		).toBeInTheDocument();
 		// The persistent player mounts once at the shell.
 		expect(screen.getByLabelText("Open player")).toBeInTheDocument();

@@ -13,6 +13,7 @@ export function AppHeader() {
 	const { view } = useView();
 
 	const sectionLabel: Record<AppView, string> = {
+		home: t("ui.sidebar.home"),
 		fretboard: t("ui.sidebar.fretboard"),
 		showroom: t("ui.sidebar.showroom"),
 		practice: t("ui.sidebar.practice"),

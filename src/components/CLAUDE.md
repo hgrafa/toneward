@@ -8,7 +8,7 @@ Vertical stack: Editor → TuningControls → Toolbar → Fretboard → BoxPatte
 
 The app shell (`App.tsx`) is a fixed top `AppHeader` (brand lockup + current section name
 + language / Metrônomo / Áudio controls) and a floating left `FloatingNav` capsule, over a
-single active view: `FretboardView` (the stack above), `showroom/ShowroomView`, or
+single active view: `home/HomeView` (the default), `FretboardView` (the stack above), `showroom/ShowroomView`, or
 `practice/PracticeView`. View state lives in `hooks/ViewContext` (`useView`). The Metrônomo
 and Áudio popovers live in the header (global), not in the Braço toolbar.
 
@@ -32,20 +32,23 @@ and Áudio popovers live in the header (global), not in the Braço toolbar.
 - `Editor` → `useInput`; `Toolbar` → `useDisplay`; `TuningControls` → `useInstrument`.
 
 ### App shell — AppHeader / FloatingNav / LanguageToggle
-- `AppHeader`: fixed top bar — `BrandMark` squircle logo + wordmark + current section name; right side composes `LanguageToggle` + the global `MetronomePanel`/`AudioControlPanel` popovers + `account/AccountButton`. The section name maps the current `useView()` view to `ui.sidebar.{fretboard,showroom,practice}`.
+- `AppHeader`: fixed top bar — `BrandMark` squircle logo + wordmark + current section name; right side composes `LanguageToggle` + the global `MetronomePanel`/`AudioControlPanel` popovers + `account/AccountButton`. The section name maps the current `useView()` view to `ui.sidebar.{home,fretboard,showroom,practice}`.
 - `BrandMark`: the gradient "T" squircle. Reuse it; don't re-inline the gradient.
-- `FloatingNav`: floating left capsule, hover-expand; the 3 view buttons drive `useView`; the active item uses the `bg-brand-gradient` utility.
+- `FloatingNav`: floating left capsule, hover-expand; the 4 view buttons (Home first) drive `useView`; the active item uses the `bg-brand-gradient` utility.
 - `LanguageToggle`: the flag `Select`, extracted so it can live in the header.
 - Accent discipline: the brand gradient appears only on the logo mark + active nav; header pills are stone-neutral and invert to dark ink when open.
 
 ### Accounts — account/AccountScreen / AccountButton / UserAvatar / backdrops
 - Sign-in is **optional**: every feature works signed out. Supabase Auth with email + password (sign up needs the confirmation email link; "Forgot password?" sends a reset link) or Google OAuth.
-- `AccountScreen` is a full-screen Radix `Dialog` (open state: `useView().accountOpen`) layered OVER the shell, not a view — the current view and `PersistentPlayer` stay mounted and keep playing underneath. Header/nav/player are covered so the screen stays focused. Signed out: Sign in / Create account toggle, email form, "or" + "Continue with Google"; a "Check your email" notice after sign-up or reset. After a reset link: a "Set a new password" form. Signed in: avatar, name, email, provider, sign out. `App.tsx` opens it when an auth redirect comes back with an error or a password recovery. Known Supabase error codes are translated (`ui.account.errors.*`).
+- `AccountScreen` is a full-screen Radix `Dialog` (open state: `useView().accountOpen`) layered OVER the shell, not a view — the current view and `PersistentPlayer` stay mounted and keep playing underneath. Header/nav/player are covered so the screen stays focused. Signed out: Sign in / Create account toggle, email form, "or" + "Continue with Google"; a "Check your email" notice after sign-up or reset. After a reset link: a "Set a new password" form. It only signs people in: once a session exists (and no password recovery is pending) it closes itself. `App.tsx` opens it when an auth redirect comes back with an error or a password recovery. Known Supabase error codes are translated (`ui.account.errors.*`).
 - `backdrops/`: the decorative background behind the card — `WavesBackdrop` (layered brand-gradient sine waves) plus `NotationLayer` (faint drifting clefs/notes). CSS transform animations only, `aria-hidden`, static under `prefers-reduced-motion`, paused when the tab is hidden or via the screen's pause button (`paused` prop, WCAG 2.2.2).
-- `AccountButton` renders nothing when Supabase isn't configured (`useAuth().configured`), so builds without the env vars show no account UI.
+- `AccountButton` renders nothing when Supabase isn't configured (`useAuth().configured`), so builds without the env vars show no account UI. Signed out it opens `AccountScreen`; signed in it is an avatar + first-name pill that opens a shadcn `DropdownMenu` (avatar + name, sign out). New account options go in that menu, not a page. Sign-out errors show inside the menu.
 - Reads `useAuth` (`@/hooks/AuthContext`); never import `@/lib/supabase` from a component.
 - `GoogleMark`: the official multicolor Google "G" (inline SVG). The one exception to the lucide/phosphor-only icon rule — Google's sign-in branding guidelines require this mark, not an icon-set glyph.
 - `GoogleSignInButton`: our styled button calling `useAuth().signInWithGoogle` — a full-page redirect, never a popup.
+
+### Home - home/HomeView
+- Greets by first name (`firstName` from `account/UserAvatar`) or anonymously, with a phrase picked once per visit from `ui.home.phrases.{morning,afternoon,evening,night}` plus `anytime` (`partOfDay(hour)` picks the bucket). Below it, shortcut cards that `setView` to the other pages.
 
 ### Persistent player — PersistentPlayer / PlayerLoader / SpeedControl / VolumeControl / PlayerSlider
 - `PersistentPlayer` is mounted ONCE in `App.tsx`'s shell body and never unmounts on tab change, so the hidden `<audio>` + YouTube container keep playing across tabs. Reads `useMediaPlayerCtx` (`@/hooks/MediaPlayerContext`). Mini pill ↔ expanded card; auto-minimizes on mouse-leave UNLESS pinned or a control popover is open (`speedOpen`/`volumeOpen` guard — the popover panel is portaled outside the player). "Switch/Trocar" re-opens the loader to swap the track.

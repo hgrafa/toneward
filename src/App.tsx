@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { AccountScreen } from "@/components/account/AccountScreen";
 import { FloatingNav } from "@/components/FloatingNav";
 import { FretboardView } from "@/components/FretboardView";
+import { HomeView } from "@/components/home/HomeView";
 import { PersistentPlayer } from "@/components/PersistentPlayer";
 import { PracticeView } from "@/components/practice/PracticeView";
 import { ShowroomView } from "@/components/showroom/ShowroomView";
@@ -42,18 +43,21 @@ export default function App() {
 
 function AppShell() {
 	const { view, setAccountOpen } = useView();
-	const { error, recovering } = useAuth();
+	const { error, recovering, user } = useAuth();
+	const signedOut = user === null;
 
 	// A failed auth redirect or a password-reset link lands back here; continue on the account screen.
+	// Errors while signed in (e.g. a failed sign-out) show in the header's account menu instead.
 	useEffect(() => {
-		if (error || recovering) setAccountOpen(true);
-	}, [error, recovering, setAccountOpen]);
+		if ((error && signedOut) || recovering) setAccountOpen(true);
+	}, [error, signedOut, recovering, setAccountOpen]);
 
 	return (
 		<div className="flex h-screen flex-col bg-background text-foreground">
 			<AppHeader />
 			<div className="relative flex-1 overflow-hidden">
 				<main className="h-full overflow-y-auto">
+					{view === "home" && <HomeView />}
 					{view === "fretboard" && <FretboardView />}
 					{view === "showroom" && <ShowroomView />}
 					{view === "practice" && <PracticeView />}

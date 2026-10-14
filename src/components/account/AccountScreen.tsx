@@ -1,8 +1,9 @@
-import { Loader2, LogOut, Mail, Pause, Play, X } from "lucide-react";
+import { Loader2, Mail, Pause, Play, X } from "lucide-react";
 import {
 	type ComponentProps,
 	type FormEvent,
 	type ReactNode,
+	useEffect,
 	useId,
 	useState,
 } from "react";
@@ -20,9 +21,7 @@ import { type AuthFailure, useAuth } from "@/hooks/AuthContext";
 import { useView } from "@/hooks/ViewContext";
 import { NotationLayer } from "./backdrops/NotationLayer";
 import { WavesBackdrop } from "./backdrops/WavesBackdrop";
-import { GoogleMark } from "./GoogleMark";
 import { GoogleSignInButton } from "./GoogleSignInButton";
-import { displayName, UserAvatar } from "./UserAvatar";
 
 type Mode = "signIn" | "register" | "reset";
 const TABS = ["signIn", "register"] as const;
@@ -65,6 +64,12 @@ export function AccountScreen() {
 	const { configured, loading, user, recovering } = useAuth();
 	const { accountOpen, setAccountOpen } = useView();
 	const [paused, setPaused] = useState(false);
+	const signedIn = user !== null && !recovering;
+
+	// Signed-in account actions live in the header menu; this screen only signs people in.
+	useEffect(() => {
+		if (accountOpen && signedIn) setAccountOpen(false);
+	}, [accountOpen, signedIn, setAccountOpen]);
 
 	return (
 		<Dialog open={accountOpen} onOpenChange={setAccountOpen}>
@@ -103,14 +108,12 @@ export function AccountScreen() {
 						</DialogTitle>
 						{!configured ? (
 							<Unavailable />
-						) : loading ? (
+						) : recovering ? (
+							<NewPassword />
+						) : loading || user ? (
 							<div className="flex justify-center py-16">
 								<Loader2 className="size-7 animate-spin text-muted-foreground" />
 							</div>
-						) : recovering ? (
-							<NewPassword />
-						) : user ? (
-							<SignedIn />
 						) : (
 							<SignedOut />
 						)}
@@ -400,60 +403,6 @@ function NewPassword() {
 					{t("ui.account.savePassword")}
 				</button>
 			</form>
-		</div>
-	);
-}
-
-function SignedIn() {
-	const { t } = useTranslation();
-	const { user, signOut, error } = useAuth();
-	const { setAccountOpen } = useView();
-	if (!user) return null;
-
-	const name = displayName(user);
-	const viaGoogle = user.app_metadata?.provider === "google";
-
-	return (
-		<div className="flex flex-col items-center gap-7 text-center">
-			<UserAvatar user={user} className="size-20 text-2xl" />
-			<div className="flex flex-col gap-1.5">
-				<h1 className={TITLE}>{name}</h1>
-				{user.email && user.email !== name && (
-					<p className="text-[15px] text-secondary-foreground">{user.email}</p>
-				)}
-				<p className="mt-1 inline-flex items-center justify-center gap-1.5 text-muted-foreground text-sm">
-					{viaGoogle ? (
-						<GoogleMark className="size-4" />
-					) : (
-						<Mail className="size-4" />
-					)}
-					{t(
-						viaGoogle
-							? "ui.account.signedInWithGoogle"
-							: "ui.account.signedInWithEmail",
-					)}
-				</p>
-			</div>
-
-			{error && (
-				<ErrorNote>
-					<p>{error}</p>
-				</ErrorNote>
-			)}
-
-			<div className="flex w-full flex-col gap-2.5">
-				<button
-					type="button"
-					onClick={() => setAccountOpen(false)}
-					className={PRIMARY}
-				>
-					{t("ui.account.backToApp")}
-				</button>
-				<button type="button" onClick={signOut} className={SECONDARY}>
-					<LogOut className="size-5" />
-					{t("ui.account.signOut")}
-				</button>
-			</div>
 		</div>
 	);
 }
