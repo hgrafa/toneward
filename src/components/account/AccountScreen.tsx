@@ -284,6 +284,38 @@ function SignedOut() {
 				</ErrorNote>
 			)}
 
+			{mode !== "reset" && (
+				<>
+					<div className="flex flex-col gap-2">
+						<button
+							type="button"
+							onClick={handleGoogle}
+							disabled={redirecting}
+							className={PRIMARY}
+						>
+							{redirecting ? (
+								<Loader2 className="size-5 animate-spin" />
+							) : (
+								<GoogleLogo weight="bold" className="size-5" />
+							)}
+							{t(
+								redirecting
+									? "ui.account.redirecting"
+									: "ui.account.continueWithGoogle",
+							)}
+						</button>
+						<p className="text-center text-muted-foreground text-xs">
+							{t("ui.account.googleHint")}
+						</p>
+					</div>
+					<div className="flex items-center gap-3 text-muted-foreground text-xs uppercase tracking-wider">
+						<span className="h-px flex-1 bg-border" />
+						{t("ui.account.orEmail")}
+						<span className="h-px flex-1 bg-border" />
+					</div>
+				</>
+			)}
+
 			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 				{mode === "register" && (
 					<Field
@@ -333,7 +365,11 @@ function SignedOut() {
 						<p>{formError}</p>
 					</ErrorNote>
 				)}
-				<button type="submit" disabled={busy} className={PRIMARY}>
+				<button
+					type="submit"
+					disabled={busy}
+					className={mode === "reset" ? PRIMARY : SECONDARY}
+				>
 					{busy && <Loader2 className="size-5 animate-spin" />}
 					{t(
 						mode === "signIn"
@@ -345,7 +381,7 @@ function SignedOut() {
 				</button>
 			</form>
 
-			{mode === "reset" ? (
+			{mode === "reset" && (
 				<button
 					type="button"
 					onClick={() => switchMode("signIn")}
@@ -353,31 +389,6 @@ function SignedOut() {
 				>
 					{t("ui.account.backToSignIn")}
 				</button>
-			) : (
-				<>
-					<div className="flex items-center gap-3 text-muted-foreground text-xs uppercase tracking-wider">
-						<span className="h-px flex-1 bg-border" />
-						{t("ui.account.or")}
-						<span className="h-px flex-1 bg-border" />
-					</div>
-					<button
-						type="button"
-						onClick={handleGoogle}
-						disabled={redirecting}
-						className={SECONDARY}
-					>
-						{redirecting ? (
-							<Loader2 className="size-5 animate-spin" />
-						) : (
-							<GoogleLogo weight="bold" className="size-5" />
-						)}
-						{t(
-							redirecting
-								? "ui.account.redirecting"
-								: "ui.account.continueWithGoogle",
-						)}
-					</button>
-				</>
 			)}
 
 			<button
