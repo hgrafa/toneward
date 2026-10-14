@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountButton } from "@/components/account/AccountButton";
 import { AccountScreen } from "@/components/account/AccountScreen";
 import { AuthProvider } from "@/hooks/AuthContext";
@@ -8,6 +8,7 @@ import { ViewProvider } from "@/hooks/ViewContext";
 const auth = vi.hoisted(() => ({
 	session: null as null | { user: Record<string, unknown> },
 	signInWithOAuth: vi.fn(),
+	signInWithIdToken: vi.fn(),
 	signInWithPassword: vi.fn(),
 	signUp: vi.fn(),
 	resetPasswordForEmail: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock("@/lib/supabase", () => ({
 				return { data: { subscription: { unsubscribe: () => {} } } };
 			},
 			signInWithOAuth: auth.signInWithOAuth,
+			signInWithIdToken: auth.signInWithIdToken,
 			signInWithPassword: auth.signInWithPassword,
 			signUp: auth.signUp,
 			resetPasswordForEmail: auth.resetPasswordForEmail,
@@ -34,6 +36,17 @@ vi.mock("@/lib/supabase", () => ({
 
 vi.mock("@/components/account/backdrops/WavesBackdrop", () => ({
 	WavesBackdrop: () => null,
+}));
+
+const gsi = vi.hoisted(() => ({
+	initialize: vi.fn(),
+	renderButton: vi.fn(),
+}));
+
+vi.mock("@/lib/googleIdentity", () => ({
+	loadGoogleIdentity: () => Promise.resolve(gsi),
+	createNonce: () =>
+		Promise.resolve({ nonce: "raw-nonce", hashed: "hashed-nonce" }),
 }));
 
 const USER = {
@@ -72,14 +85,23 @@ function submit() {
 describe("AccountScreen", () => {
 	beforeEach(() => {
 		localStorage.clear();
+		// Default to the redirect fallback; the Google-button test opts in.
+		vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
+		gsi.initialize.mockReset();
+		gsi.renderButton.mockReset();
 		auth.session = null;
 		auth.signInWithOAuth.mockReset().mockResolvedValue({ error: null });
+		auth.signInWithIdToken.mockReset().mockResolvedValue({ error: null });
 		auth.signInWithPassword.mockReset().mockResolvedValue({ error: null });
 		auth.signUp
 			.mockReset()
 			.mockResolvedValue({ data: { session: null }, error: null });
 		auth.resetPasswordForEmail.mockReset().mockResolvedValue({ error: null });
 		auth.signOut.mockReset().mockResolvedValue({ error: null });
+	});
+
+	afterEach(() => {
+		vi.unstubAllEnvs();
 	});
 
 	it("opens full-screen from the header and switches to create account", async () => {
@@ -149,6 +171,34 @@ describe("AccountScreen", () => {
 			"hugo@example.com",
 			expect.objectContaining({ redirectTo: expect.any(String) }),
 		);
+	});
+
+	it("signs in with Google's own button when a client ID is configured", async () => {
+		vi.stubEnv(
+			"VITE_GOOGLE_CLIENT_ID",
+			"client-123.apps.googleusercontent.com",
+		);
+		await openAccount();
+
+		await waitFor(() => expect(gsi.renderButton).toHaveBeenCalled());
+		const config = gsi.initialize.mock.calls[0][0];
+		expect(config).toMatchObject({
+			client_id: "client-123.apps.googleusercontent.com",
+			nonce: "hashed-nonce",
+		});
+		expect(
+			screen.queryByRole("button", { name: "Continue with Google" }),
+		).not.toBeInTheDocument();
+
+		config.callback({ credential: "google-id-token" });
+		await waitFor(() =>
+			expect(auth.signInWithIdToken).toHaveBeenCalledWith({
+				provider: "google",
+				token: "google-id-token",
+				nonce: "raw-nonce",
+			}),
+		);
+		expect(auth.signInWithOAuth).not.toHaveBeenCalled();
 	});
 
 	it("starts the Google OAuth redirect", async () => {

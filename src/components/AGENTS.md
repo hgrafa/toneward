@@ -43,6 +43,7 @@ and Audio popovers live in the header (global), not in the Braco toolbar.
 - `AccountButton` renders nothing when Supabase is not configured (`useAuth().configured`), so builds without the env vars show no account UI.
 - Reads `useAuth` (`@/hooks/AuthContext`); never import `@/lib/supabase` from a component.
 - `GoogleMark`: the official multicolor Google "G" (inline SVG). The one exception to the lucide/phosphor-only icon rule - Google's sign-in branding guidelines require this mark, not an icon-set glyph.
+- `GoogleSignInButton`: with `VITE_GOOGLE_CLIENT_ID` set, renders Google's own button (Google Identity Services, `lib/googleIdentity.ts`) and hands the ID token + raw nonce to `signInWithGoogleCredential` - Google's consent screen then names this site instead of the Supabase project domain. Without the env var (preview deploys: their origins can't be listed in Google Cloud) or if Google's script fails to load, it falls back to the Supabase redirect button.
 
 ### Persistent player - PersistentPlayer / PlayerLoader / SpeedControl / VolumeControl / PlayerSlider
 - `PersistentPlayer` is mounted ONCE in `App.tsx`'s shell body and never unmounts on tab change, so the hidden `<audio>` + YouTube container keep playing across tabs. Reads `useMediaPlayerCtx` (`@/hooks/MediaPlayerContext`). Mini pill <-> expanded card; auto-minimizes on mouse-leave UNLESS pinned or a control popover is open (`speedOpen`/`volumeOpen` guard - the popover panel is portaled outside the player). "Switch/Trocar" re-opens the loader to swap the track.

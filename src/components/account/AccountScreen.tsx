@@ -3,7 +3,6 @@ import {
 	type ComponentProps,
 	type FormEvent,
 	type ReactNode,
-	useEffect,
 	useId,
 	useState,
 } from "react";
@@ -22,6 +21,7 @@ import { useView } from "@/hooks/ViewContext";
 import { NotationLayer } from "./backdrops/NotationLayer";
 import { WavesBackdrop } from "./backdrops/WavesBackdrop";
 import { GoogleMark } from "./GoogleMark";
+import { GoogleSignInButton } from "./GoogleSignInButton";
 import { displayName, UserAvatar } from "./UserAvatar";
 
 type Mode = "signIn" | "register" | "reset";
@@ -135,13 +135,7 @@ export function AccountScreen() {
 
 function SignedOut() {
 	const { t } = useTranslation();
-	const {
-		signInWithGoogle,
-		signInWithPassword,
-		signUp,
-		sendPasswordReset,
-		error,
-	} = useAuth();
+	const { signInWithPassword, signUp, sendPasswordReset, error } = useAuth();
 	const errorText = useAuthErrorText();
 	const [mode, setMode] = useState<Mode>("signIn");
 	const [name, setName] = useState("");
@@ -153,23 +147,13 @@ function SignedOut() {
 		kind: "confirm" | "reset";
 		email: string;
 	} | null>(null);
-	const [redirecting, setRedirecting] = useState(false);
-
-	// Coming back from Google with the Back button restores this page from bfcache.
-	useEffect(() => {
-		const reset = () => setRedirecting(false);
-		window.addEventListener("pageshow", reset);
-		return () => window.removeEventListener("pageshow", reset);
-	}, []);
+	const [googleError, setGoogleError] = useState<string | null>(null);
+	const googleFailure = googleError ?? error;
 
 	function switchMode(next: Mode) {
 		setMode(next);
 		setFormError(null);
-	}
-
-	async function handleGoogle() {
-		setRedirecting(true);
-		if (!(await signInWithGoogle())) setRedirecting(false);
+		setGoogleError(null);
 	}
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -276,32 +260,20 @@ function SignedOut() {
 				</p>
 			</div>
 
-			{error && mode !== "reset" && (
+			{googleFailure && mode !== "reset" && (
 				<ErrorNote>
 					<p className="font-semibold">{t("ui.account.signInFailed")}</p>
-					<p className="opacity-80">{error}</p>
+					<p className="opacity-80">{googleFailure}</p>
 				</ErrorNote>
 			)}
 
 			{mode !== "reset" && (
 				<>
-					<button
-						type="button"
-						onClick={handleGoogle}
-						disabled={redirecting}
+					<GoogleSignInButton
+						mode={mode}
 						className={PRIMARY}
-					>
-						{redirecting ? (
-							<Loader2 className="size-5 animate-spin" />
-						) : (
-							<GoogleMark className="size-5" />
-						)}
-						{t(
-							redirecting
-								? "ui.account.redirecting"
-								: "ui.account.continueWithGoogle",
-						)}
-					</button>
+						onError={setGoogleError}
+					/>
 					<div className="flex items-center gap-3 text-muted-foreground text-xs uppercase tracking-wider">
 						<span className="h-px flex-1 bg-border" />
 						{t("ui.account.orEmail")}

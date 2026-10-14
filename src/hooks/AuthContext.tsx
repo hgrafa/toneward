@@ -59,6 +59,11 @@ interface AuthState {
 	recovering: boolean;
 	/** Resolves `true` once the browser is being redirected to Google. */
 	signInWithGoogle: () => Promise<boolean>;
+	/** Exchanges a Google Identity Services ID token (and its raw nonce) for a session. */
+	signInWithGoogleCredential: (
+		credential: string,
+		nonce: string,
+	) => Promise<AuthResult>;
 	signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
 	signUp: (
 		name: string,
@@ -107,6 +112,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		if (error) setError(error.message);
 		return !error;
 	}, []);
+
+	const signInWithGoogleCredential = useCallback(
+		async (credential: string, nonce: string) => {
+			if (!supabase) return NOT_CONFIGURED;
+			setError(null);
+			const { error } = await supabase.auth.signInWithIdToken({
+				provider: "google",
+				token: credential,
+				nonce,
+			});
+			return { error: failure(error) };
+		},
+		[],
+	);
 
 	const signInWithPassword = useCallback(
 		async (email: string, password: string) => {
@@ -169,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			error,
 			recovering,
 			signInWithGoogle,
+			signInWithGoogleCredential,
 			signInWithPassword,
 			signUp,
 			sendPasswordReset,
@@ -181,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			error,
 			recovering,
 			signInWithGoogle,
+			signInWithGoogleCredential,
 			signInWithPassword,
 			signUp,
 			sendPasswordReset,
