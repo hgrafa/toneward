@@ -179,11 +179,12 @@ describe("AccountScreen", () => {
 		expect(alert).toHaveTextContent("provider is not enabled");
 	});
 
-	it("closes when continuing without an account", async () => {
+	it("closes from the top bar", async () => {
 		await openAccount();
-		fireEvent.click(
-			screen.getByRole("button", { name: "Continue without an account" }),
-		);
+		expect(
+			screen.queryByRole("button", { name: "Continue without an account" }),
+		).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole("button", { name: "Close" }));
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 

@@ -42,7 +42,6 @@ const ptBR: TranslationSchema = {
 			newPasswordTitle: "Defina uma nova senha",
 			newPasswordSubtitle: "Escolha a senha que você vai usar para entrar.",
 			savePassword: "Salvar senha",
-			skip: "Continuar sem conta",
 			signInFailed: "Não foi possível entrar com o Google. Tente de novo.",
 			errors: {
 				invalid_credentials: "E-mail ou senha incorretos.",

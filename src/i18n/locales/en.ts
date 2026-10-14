@@ -40,7 +40,6 @@ const en = {
 			newPasswordTitle: "Set a new password",
 			newPasswordSubtitle: "Choose the password you'll use to sign in.",
 			savePassword: "Save password",
-			skip: "Continue without an account",
 			signInFailed: "Couldn't sign in with Google. Please try again.",
 			errors: {
 				invalid_credentials: "Wrong email or password.",

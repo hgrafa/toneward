@@ -142,7 +142,6 @@ function SignedOut() {
 		sendPasswordReset,
 		error,
 	} = useAuth();
-	const { setAccountOpen } = useView();
 	const errorText = useAuthErrorText();
 	const [mode, setMode] = useState<Mode>("signIn");
 	const [name, setName] = useState("");
@@ -385,14 +384,6 @@ function SignedOut() {
 					{t("ui.account.backToSignIn")}
 				</button>
 			)}
-
-			<button
-				type="button"
-				onClick={() => setAccountOpen(false)}
-				className={`${LINK} self-center`}
-			>
-				{t("ui.account.skip")}
-			</button>
 		</div>
 	);
 }
