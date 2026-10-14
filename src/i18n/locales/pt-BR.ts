@@ -9,6 +9,56 @@ const ptBR: TranslationSchema = {
 			practice: "Prática",
 			langToggle: "Selecionar idioma",
 		},
+		account: {
+			section: "Conta",
+			close: "Fechar",
+			pauseMotion: "Pausar animação do fundo",
+			playMotion: "Retomar animação do fundo",
+			signIn: "Entrar",
+			createAccount: "Criar conta",
+			modeLabel: "Entrar ou criar uma conta",
+			signInTitle: "Que bom te ver de novo",
+			signInSubtitle: "Sua conta Google é o jeito mais rápido de entrar.",
+			registerTitle: "Crie sua conta",
+			registerSubtitle:
+				"É grátis. Continue com o Google em um clique ou use seu e-mail.",
+			name: "Nome",
+			email: "E-mail",
+			password: "Senha",
+			passwordHint: "Pelo menos 8 caracteres",
+			forgotPassword: "Esqueceu a senha?",
+			orEmail: "ou use seu e-mail",
+			continueWithGoogle: "Continuar com Google",
+			redirecting: "Indo para o Google…",
+			resetTitle: "Redefinir sua senha",
+			resetSubtitle: "Vamos te enviar um link para escolher uma nova.",
+			sendResetLink: "Enviar link",
+			backToSignIn: "Voltar para entrar",
+			checkEmailTitle: "Confira seu e-mail",
+			confirmSent:
+				"Enviamos um link de confirmação para {{email}}. Abra-o para ativar sua conta.",
+			resetSent:
+				"Se existir uma conta para {{email}}, o link de redefinição está a caminho.",
+			newPasswordTitle: "Defina uma nova senha",
+			newPasswordSubtitle: "Escolha a senha que você vai usar para entrar.",
+			savePassword: "Salvar senha",
+			signInFailed: "Não foi possível entrar com o Google. Tente de novo.",
+			errors: {
+				invalid_credentials: "E-mail ou senha incorretos.",
+				email_not_confirmed:
+					"Confirme seu e-mail primeiro: procure o link na sua caixa de entrada.",
+				user_already_exists:
+					"Já existe uma conta com este e-mail. Tente entrar.",
+				weak_password: "Escolha uma senha mais forte.",
+				over_email_send_rate_limit:
+					"Muitos e-mails enviados. Espere um pouco e tente de novo.",
+			},
+			unavailable: "O login não está disponível no momento.",
+			signedInWithGoogle: "Conectado com Google",
+			signedInWithEmail: "Conectado com e-mail",
+			backToApp: "Voltar ao Toneward",
+			signOut: "Sair",
+		},
 		editor: {
 			label: "Notas ou intervalos",
 			placeholder:
