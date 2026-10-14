@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useState } from "react";
 import type { BackdropProps } from "./WavesBackdrop";
 
 type GlyphName =
@@ -122,7 +122,11 @@ const GLYPHS: Record<GlyphName, { viewBox: string; body: ReactNode }> = {
 	},
 };
 
-type Placement = {
+const GLYPH_NAMES = Object.keys(GLYPHS) as GlyphName[];
+const COLORS = ["#ffffff", "#ffffff", "#ff9cb4", "#FBA63F", "#F2683C"];
+const SLOTS = 12;
+
+type Spec = {
 	glyph: GlyphName;
 	/** Position, as % of the viewport. */
 	x: number;
@@ -130,196 +134,104 @@ type Placement = {
 	/** Rendered height in px. */
 	size: number;
 	color: string;
+	/** Peak opacity of the fade cycle. */
 	opacity: number;
 	rotate: number;
-	/** Float cycle in seconds; the negative delay staggers the phase. */
-	duration: number;
-	delay: number;
-	/** Hidden below `sm`, where the card covers most of the screen. */
-	wide?: boolean;
+	/** Sideways drift over one cycle, in px. */
+	drift: number;
 };
 
-const PINK = "#ff9cb4";
-const AMBER = "#FBA63F";
-const ORANGE = "#F2683C";
-const WHITE = "#ffffff";
+const rand = (min: number, max: number) => min + Math.random() * (max - min);
+const pick = <T,>(items: readonly T[]) =>
+	items[Math.floor(Math.random() * items.length)];
 
-const PLACEMENTS: Placement[] = [
-	{
-		glyph: "treble",
-		x: 6,
-		y: 12,
-		size: 120,
-		color: WHITE,
-		opacity: 0.08,
-		rotate: -8,
-		duration: 22,
-		delay: 0,
-	},
-	{
-		glyph: "bass",
-		x: 85,
-		y: 9,
-		size: 70,
-		color: PINK,
-		opacity: 0.1,
-		rotate: 6,
-		duration: 19,
-		delay: 4,
-	},
-	{
-		glyph: "quarter",
-		x: 36,
-		y: 7,
-		size: 50,
-		color: WHITE,
-		opacity: 0.07,
-		rotate: 10,
-		duration: 17,
-		delay: 9,
-		wide: true,
-	},
-	{
-		glyph: "rest",
-		x: 61,
-		y: 15,
-		size: 52,
-		color: ORANGE,
-		opacity: 0.09,
-		rotate: -4,
-		duration: 21,
-		delay: 2,
-		wide: true,
-	},
-	{
-		glyph: "bass",
-		x: 13,
-		y: 36,
-		size: 50,
-		color: WHITE,
-		opacity: 0.06,
-		rotate: -10,
-		duration: 24,
-		delay: 11,
-		wide: true,
-	},
-	{
-		glyph: "flat",
-		x: 3,
-		y: 55,
-		size: 50,
-		color: AMBER,
-		opacity: 0.09,
-		rotate: 8,
-		duration: 18,
-		delay: 6,
-	},
-	{
-		glyph: "beamed",
-		x: 29,
-		y: 40,
-		size: 50,
-		color: ORANGE,
-		opacity: 0.07,
-		rotate: -6,
-		duration: 20,
-		delay: 13,
-		wide: true,
-	},
-	{
-		glyph: "sharp",
-		x: 90,
-		y: 45,
-		size: 44,
-		color: PINK,
-		opacity: 0.1,
-		rotate: 12,
-		duration: 16,
-		delay: 3,
-	},
-	{
-		glyph: "eighth",
-		x: 21,
-		y: 70,
-		size: 56,
-		color: AMBER,
-		opacity: 0.1,
-		rotate: -12,
-		duration: 19,
-		delay: 8,
-	},
-	{
-		glyph: "beamed",
-		x: 69,
-		y: 73,
-		size: 60,
-		color: WHITE,
-		opacity: 0.08,
-		rotate: 8,
-		duration: 23,
-		delay: 1,
-	},
-	{
-		glyph: "treble",
-		x: 80,
-		y: 80,
-		size: 96,
-		color: AMBER,
-		opacity: 0.07,
-		rotate: 10,
-		duration: 26,
-		delay: 15,
-		wide: true,
-	},
-	{
-		glyph: "eighth",
-		x: 94,
-		y: 68,
-		size: 46,
-		color: WHITE,
-		opacity: 0.07,
-		rotate: 14,
-		duration: 18,
-		delay: 10,
-		wide: true,
-	},
-	{
-		glyph: "half",
-		x: 12,
-		y: 87,
-		size: 54,
-		color: PINK,
-		opacity: 0.08,
-		rotate: -6,
-		duration: 21,
-		delay: 5,
-	},
-	{
-		glyph: "sharp",
-		x: 49,
-		y: 89,
-		size: 36,
-		color: WHITE,
-		opacity: 0.07,
-		rotate: -14,
-		duration: 17,
-		delay: 12,
-		wide: true,
-	},
-];
+function randomSpec(): Spec {
+	const glyph = pick(GLYPH_NAMES);
+	let x: number;
+	let y: number;
+	// Keep clear of the card in the middle and the top bar, so every glyph is actually seen.
+	do {
+		x = rand(2, 93);
+		y = rand(9, 88);
+	} while (x > 27 && x < 67 && y > 20 && y < 74);
+	return {
+		glyph,
+		x,
+		y,
+		size:
+			glyph === "treble"
+				? rand(80, 120)
+				: glyph === "bass"
+					? rand(50, 72)
+					: rand(36, 60),
+		color: pick(COLORS),
+		opacity: rand(0.07, 0.13),
+		rotate: rand(-14, 14),
+		drift: rand(-12, 12),
+	};
+}
 
-// Only animate when the user hasn't asked for reduced motion; otherwise glyphs sit still.
+// Each cycle: fade in, drift, fade out, then rest invisible while the slot moves elsewhere.
+// Under reduced motion there is no animation: glyphs sit still at their peak opacity.
 const KEYFRAMES = `
-@keyframes toneward-notation-float {
-	0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r)); }
-	50% { transform: translate3d(var(--dx), -14px, 0) rotate(calc(var(--r) + 4deg)); }
+@keyframes toneward-notation-cycle {
+	0% { opacity: 0; transform: translate3d(0, 12px, 0) rotate(var(--r)) scale(0.9); }
+	18%, 62% { opacity: var(--o); }
+	80%, 100% { opacity: 0; transform: translate3d(var(--dx), -16px, 0) rotate(calc(var(--r) + 5deg)) scale(1); }
 }
 @media (prefers-reduced-motion: no-preference) {
-	.toneward-notation-glyph { animation: toneward-notation-float ease-in-out infinite; }
+	.toneward-notation-glyph { animation: toneward-notation-cycle ease-in-out infinite; }
 }
 `;
 
-/** Faint clefs, notes and accidentals drifting over a backdrop. */
+function GlyphSlot({ index, paused }: { index: number; paused: boolean }) {
+	const [duration] = useState(() => rand(9, 15));
+	const [spec, setSpec] = useState(randomSpec);
+	const glyph = GLYPHS[spec.glyph];
+	const [, , w, h] = glyph.viewBox.split(" ").map(Number);
+
+	return (
+		<div
+			// Odd slots only on `sm`+, where there's room around the card.
+			className={`toneward-notation-glyph absolute ${index % 2 ? "hidden sm:block" : ""}`}
+			// The cycle ends fully transparent, so jumping to a new spot here is invisible.
+			onAnimationIteration={(e) => {
+				if (e.target === e.currentTarget) setSpec(randomSpec());
+			}}
+			style={
+				{
+					left: `${spec.x}%`,
+					top: `${spec.y}%`,
+					color: spec.color,
+					opacity: spec.opacity,
+					transform: `rotate(${spec.rotate}deg)`,
+					"--o": spec.opacity,
+					"--r": `${spec.rotate}deg`,
+					"--dx": `${spec.drift}px`,
+					animationDuration: `${duration}s`,
+					animationDelay: `-${(index / SLOTS) * duration}s`,
+					animationPlayState: paused ? "paused" : "running",
+				} as CSSProperties
+			}
+		>
+			<svg
+				viewBox={glyph.viewBox}
+				width={(spec.size * w) / h}
+				height={spec.size}
+				fill="none"
+				stroke="currentColor"
+				strokeWidth={2.6}
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				role="presentation"
+			>
+				{glyph.body}
+			</svg>
+		</div>
+	);
+}
+
+/** Faint clefs, notes and accidentals that fade in and out at random spots. */
 export function NotationLayer({ paused = false }: BackdropProps) {
 	return (
 		<div
@@ -327,47 +239,10 @@ export function NotationLayer({ paused = false }: BackdropProps) {
 			className="pointer-events-none absolute inset-0 overflow-hidden"
 		>
 			<style>{KEYFRAMES}</style>
-			{PLACEMENTS.map((p, i) => {
-				const glyph = GLYPHS[p.glyph];
-				const aspect =
-					Number(glyph.viewBox.split(" ")[2]) /
-					Number(glyph.viewBox.split(" ")[3]);
-				return (
-					<div
-						// biome-ignore lint/suspicious/noArrayIndexKey: static, never reordered
-						key={i}
-						className={`toneward-notation-glyph absolute ${p.wide ? "hidden sm:block" : ""}`}
-						style={
-							{
-								left: `${p.x}%`,
-								top: `${p.y}%`,
-								color: p.color,
-								opacity: p.opacity,
-								transform: `rotate(${p.rotate}deg)`,
-								"--r": `${p.rotate}deg`,
-								"--dx": `${i % 2 ? 8 : -8}px`,
-								animationDuration: `${p.duration}s`,
-								animationDelay: `-${p.delay}s`,
-								animationPlayState: paused ? "paused" : "running",
-							} as CSSProperties
-						}
-					>
-						<svg
-							viewBox={glyph.viewBox}
-							width={p.size * aspect}
-							height={p.size}
-							fill="none"
-							stroke="currentColor"
-							strokeWidth={2.6}
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							role="presentation"
-						>
-							{glyph.body}
-						</svg>
-					</div>
-				);
-			})}
+			{Array.from({ length: SLOTS }, (_, i) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: fixed slots, never reordered
+				<GlyphSlot key={i} index={i} paused={paused} />
+			))}
 		</div>
 	);
 }
