@@ -147,13 +147,10 @@ function SignedOut() {
 		kind: "confirm" | "reset";
 		email: string;
 	} | null>(null);
-	const [googleError, setGoogleError] = useState<string | null>(null);
-	const googleFailure = googleError ?? error;
 
 	function switchMode(next: Mode) {
 		setMode(next);
 		setFormError(null);
-		setGoogleError(null);
 	}
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -260,20 +257,16 @@ function SignedOut() {
 				</p>
 			</div>
 
-			{googleFailure && mode !== "reset" && (
+			{error && mode !== "reset" && (
 				<ErrorNote>
 					<p className="font-semibold">{t("ui.account.signInFailed")}</p>
-					<p className="opacity-80">{googleFailure}</p>
+					<p className="opacity-80">{error}</p>
 				</ErrorNote>
 			)}
 
 			{mode !== "reset" && (
 				<>
-					<GoogleSignInButton
-						mode={mode}
-						className={PRIMARY}
-						onError={setGoogleError}
-					/>
+					<GoogleSignInButton className={PRIMARY} />
 					<div className="flex items-center gap-3 text-muted-foreground text-xs uppercase tracking-wider">
 						<span className="h-px flex-1 bg-border" />
 						{t("ui.account.orEmail")}

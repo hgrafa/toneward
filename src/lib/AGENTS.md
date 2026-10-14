@@ -6,7 +6,7 @@
 - `tuningStorage.ts` - load/save the tuning to localStorage (`fretboard.tuning`). Validates shape on load and falls back to the default instrument on anything invalid.
 - `documentStorage.ts` - persist the Showroom PDF across reloads: bytes in IndexedDB (`ArrayBuffer` + MIME type), name marker in localStorage (`fretboard.showroom.document`). When the marker survives but the bytes don't, `loadStoredDocument` returns a tombstone (`{ name, blob: null }`) so the UI can say "couldn't reopen".
 - `supabase.ts` - the one Supabase client (`null` without `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`). PKCE OAuth flow; the session lives in localStorage under `toneward.auth`. Only `hooks/AuthContext` should import it for auth.
-- `googleIdentity.ts` - loads Google Identity Services once (`loadGoogleIdentity`) and makes the sign-in nonce pair (`createNonce`: Google gets the SHA-256 hex, Supabase gets the raw value).
+- `googleSignIn.ts` - direct Google OpenID redirect: `createGoogleSignInUrl` (stores state + raw nonce in sessionStorage; Google gets the nonce's SHA-256), `readGoogleRedirect` / `clearGoogleRedirect` for the ID token in the return URL's hash.
 
 ## Conventions
 

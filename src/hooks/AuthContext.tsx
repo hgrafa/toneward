@@ -8,6 +8,11 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import {
+	clearGoogleRedirect,
+	createGoogleSignInUrl,
+	readGoogleRedirect,
+} from "@/lib/googleSignIn";
 import { supabase } from "@/lib/supabase";
 
 const REDIRECT_ERROR_PARAMS = ["error", "error_code", "error_description"];
@@ -59,11 +64,6 @@ interface AuthState {
 	recovering: boolean;
 	/** Resolves `true` once the browser is being redirected to Google. */
 	signInWithGoogle: () => Promise<boolean>;
-	/** Exchanges a Google Identity Services ID token (and its raw nonce) for a session. */
-	signInWithGoogleCredential: (
-		credential: string,
-		nonce: string,
-	) => Promise<AuthResult>;
 	signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
 	signUp: (
 		name: string,
@@ -84,11 +84,30 @@ const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(supabase !== null);
-	const [error, setError] = useState<string | null>(readRedirectError);
+	const [error, setError] = useState<string | null>(() => {
+		const google = readGoogleRedirect();
+		if (google) return "error" in google ? google.error : null;
+		return readRedirectError();
+	});
 	const [recovering, setRecovering] = useState(false);
 
 	useEffect(() => {
-		if (readRedirectError()) clearRedirectError();
+		const google = readGoogleRedirect();
+		if (!google) {
+			if (readRedirectError()) clearRedirectError();
+			return;
+		}
+		clearGoogleRedirect();
+		if (!supabase || !("credential" in google)) return;
+		supabase.auth
+			.signInWithIdToken({
+				provider: "google",
+				token: google.credential,
+				nonce: google.nonce,
+			})
+			.then(({ error }) => {
+				if (error) setError(error.message);
+			});
 	}, []);
 
 	useEffect(() => {
@@ -105,6 +124,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const signInWithGoogle = useCallback(async () => {
 		if (!supabase) return false;
 		setError(null);
+		// Straight to Google and back, so its screens name this site, not the Supabase domain.
+		// Preview deploys leave the client ID unset: their URLs can't be registered with Google.
+		const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+		if (clientId) {
+			window.location.assign(
+				await createGoogleSignInUrl(clientId, window.location.origin),
+			);
+			return true;
+		}
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: "google",
 			options: { redirectTo: redirectUrl() },
@@ -112,20 +140,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		if (error) setError(error.message);
 		return !error;
 	}, []);
-
-	const signInWithGoogleCredential = useCallback(
-		async (credential: string, nonce: string) => {
-			if (!supabase) return NOT_CONFIGURED;
-			setError(null);
-			const { error } = await supabase.auth.signInWithIdToken({
-				provider: "google",
-				token: credential,
-				nonce,
-			});
-			return { error: failure(error) };
-		},
-		[],
-	);
 
 	const signInWithPassword = useCallback(
 		async (email: string, password: string) => {
@@ -188,7 +202,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			error,
 			recovering,
 			signInWithGoogle,
-			signInWithGoogleCredential,
 			signInWithPassword,
 			signUp,
 			sendPasswordReset,
@@ -201,7 +214,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			error,
 			recovering,
 			signInWithGoogle,
-			signInWithGoogleCredential,
 			signInWithPassword,
 			signUp,
 			sendPasswordReset,

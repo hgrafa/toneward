@@ -38,15 +38,16 @@ vi.mock("@/components/account/backdrops/WavesBackdrop", () => ({
 	WavesBackdrop: () => null,
 }));
 
-const gsi = vi.hoisted(() => ({
-	initialize: vi.fn(),
-	renderButton: vi.fn(),
+const google = vi.hoisted(() => ({
+	redirect: null as null | { credential: string; nonce: string },
+	createGoogleSignInUrl: vi.fn(),
+	clearGoogleRedirect: vi.fn(),
 }));
 
-vi.mock("@/lib/googleIdentity", () => ({
-	loadGoogleIdentity: () => Promise.resolve(gsi),
-	createNonce: () =>
-		Promise.resolve({ nonce: "raw-nonce", hashed: "hashed-nonce" }),
+vi.mock("@/lib/googleSignIn", () => ({
+	createGoogleSignInUrl: google.createGoogleSignInUrl,
+	readGoogleRedirect: () => google.redirect,
+	clearGoogleRedirect: google.clearGoogleRedirect,
 }));
 
 const USER = {
@@ -85,10 +86,13 @@ function submit() {
 describe("AccountScreen", () => {
 	beforeEach(() => {
 		localStorage.clear();
-		// Default to the redirect fallback; the Google-button test opts in.
+		// Default to the Supabase redirect; the direct-to-Google tests opt in.
 		vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
-		gsi.initialize.mockReset();
-		gsi.renderButton.mockReset();
+		google.redirect = null;
+		google.createGoogleSignInUrl
+			.mockReset()
+			.mockResolvedValue("https://accounts.google.com/o/oauth2/v2/auth");
+		google.clearGoogleRedirect.mockReset();
 		auth.session = null;
 		auth.signInWithOAuth.mockReset().mockResolvedValue({ error: null });
 		auth.signInWithIdToken.mockReset().mockResolvedValue({ error: null });
@@ -102,6 +106,7 @@ describe("AccountScreen", () => {
 
 	afterEach(() => {
 		vi.unstubAllEnvs();
+		vi.restoreAllMocks();
 	});
 
 	it("opens full-screen from the header and switches to create account", async () => {
@@ -173,32 +178,37 @@ describe("AccountScreen", () => {
 		);
 	});
 
-	it("signs in with Google's own button when a client ID is configured", async () => {
+	it("goes straight to Google when a client ID is configured", async () => {
 		vi.stubEnv(
 			"VITE_GOOGLE_CLIENT_ID",
 			"client-123.apps.googleusercontent.com",
 		);
+		// jsdom can't navigate away and reports it on console.error.
+		vi.spyOn(console, "error").mockImplementation(() => {});
 		await openAccount();
+		fireEvent.click(
+			screen.getByRole("button", { name: "Continue with Google" }),
+		);
 
-		await waitFor(() => expect(gsi.renderButton).toHaveBeenCalled());
-		const config = gsi.initialize.mock.calls[0][0];
-		expect(config).toMatchObject({
-			client_id: "client-123.apps.googleusercontent.com",
-			nonce: "hashed-nonce",
-		});
-		expect(
-			screen.queryByRole("button", { name: "Continue with Google" }),
-		).not.toBeInTheDocument();
-
-		config.callback({ credential: "google-id-token" });
 		await waitFor(() =>
-			expect(auth.signInWithIdToken).toHaveBeenCalledWith({
-				provider: "google",
-				token: "google-id-token",
-				nonce: "raw-nonce",
-			}),
+			expect(google.createGoogleSignInUrl).toHaveBeenCalledWith(
+				"client-123.apps.googleusercontent.com",
+				window.location.origin,
+			),
 		);
 		expect(auth.signInWithOAuth).not.toHaveBeenCalled();
+	});
+
+	it("finishes the Google sign-in when Google sends the user back", async () => {
+		google.redirect = { credential: "google-id-token", nonce: "raw-nonce" };
+		await openAccount();
+
+		expect(auth.signInWithIdToken).toHaveBeenCalledWith({
+			provider: "google",
+			token: "google-id-token",
+			nonce: "raw-nonce",
+		});
+		expect(google.clearGoogleRedirect).toHaveBeenCalled();
 	});
 
 	it("starts the Google OAuth redirect", async () => {
