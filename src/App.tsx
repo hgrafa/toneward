@@ -42,12 +42,12 @@ export default function App() {
 
 function AppShell() {
 	const { view, setAccountOpen } = useView();
-	const { error } = useAuth();
+	const { error, recovering } = useAuth();
 
-	// A failed Google round-trip lands back here; show why on the account screen.
+	// A failed auth redirect or a password-reset link lands back here; continue on the account screen.
 	useEffect(() => {
-		if (error) setAccountOpen(true);
-	}, [error, setAccountOpen]);
+		if (error || recovering) setAccountOpen(true);
+	}, [error, recovering, setAccountOpen]);
 
 	return (
 		<div className="flex h-screen flex-col bg-background text-foreground">

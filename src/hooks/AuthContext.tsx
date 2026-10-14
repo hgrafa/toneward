@@ -31,16 +31,48 @@ function clearRedirectError() {
 	window.history.replaceState(window.history.state, "", url);
 }
 
+const redirectUrl = () =>
+	`${window.location.origin}${window.location.pathname}`;
+
+export interface AuthFailure {
+	/** Supabase error code (e.g. `invalid_credentials`), used to pick a translated message. */
+	code?: string;
+	message: string;
+}
+
+export interface AuthResult {
+	error: AuthFailure | null;
+	/** Sign-up succeeded but the account must be confirmed from the email link first. */
+	confirmEmail?: boolean;
+}
+
+const failure = (error: { code?: string; message: string } | null) =>
+	error ? { code: error.code, message: error.message } : null;
+
 interface AuthState {
 	/** False when the Supabase env vars are missing; accounts are then hidden. */
 	configured: boolean;
 	loading: boolean;
 	user: User | null;
 	error: string | null;
+	/** True after following a password-reset link, until a new password is saved. */
+	recovering: boolean;
 	/** Resolves `true` once the browser is being redirected to Google. */
 	signInWithGoogle: () => Promise<boolean>;
+	signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
+	signUp: (
+		name: string,
+		email: string,
+		password: string,
+	) => Promise<AuthResult>;
+	sendPasswordReset: (email: string) => Promise<AuthResult>;
+	updatePassword: (password: string) => Promise<AuthResult>;
 	signOut: () => Promise<void>;
 }
+
+const NOT_CONFIGURED: AuthResult = {
+	error: { message: "Sign-in is not configured." },
+};
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -48,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(supabase !== null);
 	const [error, setError] = useState<string | null>(readRedirectError);
+	const [recovering, setRecovering] = useState(false);
 
 	useEffect(() => {
 		if (readRedirectError()) clearRedirectError();
@@ -55,9 +88,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (!supabase) return;
-		const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+		const { data } = supabase.auth.onAuthStateChange((event, session) => {
 			setUser(session?.user ?? null);
 			setLoading(false);
+			if (event === "PASSWORD_RECOVERY") setRecovering(true);
+			if (event === "SIGNED_OUT") setRecovering(false);
 		});
 		return () => data.subscription.unsubscribe();
 	}, []);
@@ -67,12 +102,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setError(null);
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: "google",
-			options: {
-				redirectTo: `${window.location.origin}${window.location.pathname}`,
-			},
+			options: { redirectTo: redirectUrl() },
 		});
 		if (error) setError(error.message);
 		return !error;
+	}, []);
+
+	const signInWithPassword = useCallback(
+		async (email: string, password: string) => {
+			if (!supabase) return NOT_CONFIGURED;
+			setError(null);
+			const { error } = await supabase.auth.signInWithPassword({
+				email,
+				password,
+			});
+			return { error: failure(error) };
+		},
+		[],
+	);
+
+	const signUp = useCallback(
+		async (name: string, email: string, password: string) => {
+			if (!supabase) return NOT_CONFIGURED;
+			setError(null);
+			const { data, error } = await supabase.auth.signUp({
+				email,
+				password,
+				options: {
+					emailRedirectTo: redirectUrl(),
+					data: name ? { full_name: name } : undefined,
+				},
+			});
+			if (error) return { error: failure(error) };
+			return { error: null, confirmEmail: !data.session };
+		},
+		[],
+	);
+
+	const sendPasswordReset = useCallback(async (email: string) => {
+		if (!supabase) return NOT_CONFIGURED;
+		const { error } = await supabase.auth.resetPasswordForEmail(email, {
+			redirectTo: redirectUrl(),
+		});
+		return { error: failure(error) };
+	}, []);
+
+	const updatePassword = useCallback(async (password: string) => {
+		if (!supabase) return NOT_CONFIGURED;
+		const { error } = await supabase.auth.updateUser({ password });
+		if (!error) setRecovering(false);
+		return { error: failure(error) };
 	}, []);
 
 	const signOut = useCallback(async () => {
@@ -88,10 +167,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			loading,
 			user,
 			error,
+			recovering,
 			signInWithGoogle,
+			signInWithPassword,
+			signUp,
+			sendPasswordReset,
+			updatePassword,
 			signOut,
 		}),
-		[loading, user, error, signInWithGoogle, signOut],
+		[
+			loading,
+			user,
+			error,
+			recovering,
+			signInWithGoogle,
+			signInWithPassword,
+			signUp,
+			sendPasswordReset,
+			updatePassword,
+			signOut,
+		],
 	);
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
