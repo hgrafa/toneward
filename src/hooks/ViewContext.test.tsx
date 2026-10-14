@@ -17,13 +17,13 @@ function Probe() {
 describe("ViewContext", () => {
 	beforeEach(() => localStorage.clear());
 
-	it("defaults to the fretboard view", () => {
+	it("defaults to the home view", () => {
 		render(
 			<ViewProvider>
 				<Probe />
 			</ViewProvider>,
 		);
-		expect(screen.getByTestId("view")).toHaveTextContent("fretboard");
+		expect(screen.getByTestId("view")).toHaveTextContent("home");
 	});
 
 	it("switches view and persists it to localStorage", () => {

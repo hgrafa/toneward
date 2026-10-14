@@ -1,12 +1,21 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountButton } from "@/components/account/AccountButton";
 import { AccountScreen } from "@/components/account/AccountScreen";
 import { AuthProvider } from "@/hooks/AuthContext";
 import { ViewProvider } from "@/hooks/ViewContext";
 
+type Session = null | { user: Record<string, unknown> };
+
 const auth = vi.hoisted(() => ({
-	session: null as null | { user: Record<string, unknown> },
+	session: null as Session,
+	emit: (_event: string, _session: Session) => {},
 	signInWithOAuth: vi.fn(),
 	signInWithIdToken: vi.fn(),
 	signInWithPassword: vi.fn(),
@@ -18,9 +27,8 @@ const auth = vi.hoisted(() => ({
 vi.mock("@/lib/supabase", () => ({
 	supabase: {
 		auth: {
-			onAuthStateChange: (
-				cb: (event: string, session: typeof auth.session) => void,
-			) => {
+			onAuthStateChange: (cb: (event: string, session: Session) => void) => {
+				auth.emit = cb;
 				queueMicrotask(() => cb("INITIAL_SESSION", auth.session));
 				return { data: { subscription: { unsubscribe: () => {} } } };
 			},
@@ -57,7 +65,7 @@ const USER = {
 	user_metadata: { full_name: "Hugo Rafael" },
 };
 
-async function openAccount(trigger: "Sign in" | "Account" = "Sign in") {
+function renderAccount() {
 	render(
 		<AuthProvider>
 			<ViewProvider>
@@ -66,7 +74,11 @@ async function openAccount(trigger: "Sign in" | "Account" = "Sign in") {
 			</ViewProvider>
 		</AuthProvider>,
 	);
-	fireEvent.click(await screen.findByRole("button", { name: trigger }));
+}
+
+async function openAccount() {
+	renderAccount();
+	fireEvent.click(await screen.findByRole("button", { name: "Sign in" }));
 	return screen.getByRole("dialog");
 }
 
@@ -248,14 +260,34 @@ describe("AccountScreen", () => {
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 
-	it("shows the signed-in profile and signs out", async () => {
+	it("shows the first name in the header and signs out from its menu", async () => {
 		auth.session = { user: USER };
-		await openAccount("Account");
-		expect(screen.getByText("Hugo Rafael")).toBeInTheDocument();
-		expect(screen.getByText("hugo@example.com")).toBeInTheDocument();
-		expect(screen.getByText("Signed in with Google")).toBeInTheDocument();
+		renderAccount();
+		const trigger = await screen.findByRole("button", {
+			name: "Account menu, Hugo",
+		});
+		expect(trigger).toHaveTextContent("Hugo");
 
-		fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+		// Radix opens dropdowns on pointerdown/keydown, not click.
+		fireEvent.keyDown(trigger, { key: "Enter" });
+		const menu = await screen.findByRole("menu");
+		expect(menu).toHaveTextContent("Hugo Rafael");
+		expect(menu).not.toHaveTextContent("hugo@example.com");
+		expect(menu).not.toHaveTextContent("Signed in with Google");
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }));
 		expect(auth.signOut).toHaveBeenCalled();
+	});
+
+	it("closes the account screen once sign-in succeeds", async () => {
+		await openAccount();
+		act(() => auth.emit("SIGNED_IN", { user: USER }));
+		await waitFor(() =>
+			expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+		);
+		expect(
+			screen.getByRole("button", { name: "Account menu, Hugo" }),
+		).toBeInTheDocument();
 	});
 });

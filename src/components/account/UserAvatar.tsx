@@ -7,6 +7,14 @@ export function displayName(user: User): string {
 	return meta.full_name ?? meta.name ?? user.email ?? "";
 }
 
+/** "Hugo" for "Hugo Rafael"; the email's local part when no name was given. */
+export function firstName(user: User): string {
+	const meta = user.user_metadata;
+	const name: string | undefined = meta.full_name ?? meta.name;
+	if (name?.trim()) return name.trim().split(/\s+/)[0];
+	return user.email?.split("@")[0] ?? "";
+}
+
 export function UserAvatar({
 	user,
 	className,

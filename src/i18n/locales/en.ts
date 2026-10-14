@@ -2,6 +2,7 @@ const en = {
 	ui: {
 		appName: "Toneward",
 		sidebar: {
+			home: "Home",
 			fretboard: "Fretboard",
 			showroom: "Showroom",
 			practice: "Practice",
@@ -52,10 +53,44 @@ const en = {
 					"Too many emails sent. Please wait a moment and try again.",
 			},
 			unavailable: "Sign-in isn't available right now.",
-			signedInWithGoogle: "Signed in with Google",
-			signedInWithEmail: "Signed in with email",
 			backToApp: "Back to Toneward",
 			signOut: "Sign out",
+			menuLabel: "Account menu, {{name}}",
+		},
+		home: {
+			greeting: "Hello, {{name}}!",
+			greetingAnonymous: "Hello there!",
+			phrases: {
+				morning: [
+					"Good morning! Starting the practices for today?",
+					"Fresh ears, fresh fingers. Let's warm up.",
+					"Coffee in one hand, guitar in the other?",
+				],
+				afternoon: [
+					"Good afternoon! Time for a few scales?",
+					"A quick session now keeps the rust away.",
+					"Let's turn this afternoon into practice time.",
+				],
+				evening: [
+					"Good evening! Ready to wind down with some playing?",
+					"The best jams happen after sunset.",
+					"One more run through before dinner?",
+				],
+				night: [
+					"Late-night session? Keep it quiet for the neighbours.",
+					"Night owls make great musicians.",
+					"Still up? A few minutes of practice won't hurt.",
+				],
+				anytime: [
+					"Let's get back to work.",
+					"Pick up where you left off.",
+					"Every minute on the fretboard counts.",
+				],
+			},
+			shortcuts: "Jump back in",
+			fretboardHint: "Map notes, scales and intervals across the neck.",
+			showroomHint: "Play along with a track and your sheet music.",
+			practiceHint: "Train your interval recognition against the clock.",
 		},
 		editor: {
 			label: "Notes or intervals",

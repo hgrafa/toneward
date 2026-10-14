@@ -10,17 +10,15 @@ import type { AppView } from "@/types/showroom";
 
 const VIEW_KEY = "fretboard.view";
 
-const VALID_VIEWS: AppView[] = ["fretboard", "showroom", "practice"];
+const VALID_VIEWS: AppView[] = ["home", "fretboard", "showroom", "practice"];
 
 function loadView(): AppView {
 	try {
 		const saved = localStorage.getItem(VIEW_KEY);
-		return VALID_VIEWS.includes(saved as AppView)
-			? (saved as AppView)
-			: "fretboard";
+		return VALID_VIEWS.includes(saved as AppView) ? (saved as AppView) : "home";
 	} catch {
 		/* storage unavailable */
-		return "fretboard";
+		return "home";
 	}
 }
 

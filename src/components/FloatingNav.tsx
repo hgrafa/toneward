@@ -1,4 +1,4 @@
-import { Guitar, Music4, Target } from "lucide-react";
+import { Guitar, House, Music4, Target } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useView } from "@/hooks/ViewContext";
@@ -10,6 +10,7 @@ export function FloatingNav() {
 	const [expanded, setExpanded] = useState(false);
 
 	const NAV: { view: AppView; label: string; icon: typeof Guitar }[] = [
+		{ view: "home", label: t("ui.sidebar.home"), icon: House },
 		{ view: "fretboard", label: t("ui.sidebar.fretboard"), icon: Guitar },
 		{ view: "showroom", label: t("ui.sidebar.showroom"), icon: Music4 },
 		{ view: "practice", label: t("ui.sidebar.practice"), icon: Target },
