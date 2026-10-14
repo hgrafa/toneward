@@ -11,6 +11,9 @@ const ptBR: TranslationSchema = {
 		},
 		account: {
 			section: "Conta",
+			close: "Fechar",
+			pauseMotion: "Pausar animação do fundo",
+			playMotion: "Retomar animação do fundo",
 			signIn: "Entrar",
 			createAccount: "Criar conta",
 			modeLabel: "Entrar ou criar uma conta",

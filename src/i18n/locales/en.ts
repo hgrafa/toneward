@@ -9,6 +9,9 @@ const en = {
 		},
 		account: {
 			section: "Account",
+			close: "Close",
+			pauseMotion: "Pause background animation",
+			playMotion: "Play background animation",
 			signIn: "Sign in",
 			createAccount: "Create account",
 			modeLabel: "Sign in or create an account",

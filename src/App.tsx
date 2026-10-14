@@ -1,12 +1,13 @@
+import { useEffect } from "react";
 import { AppHeader } from "@/components/AppHeader";
-import { AccountView } from "@/components/account/AccountView";
+import { AccountScreen } from "@/components/account/AccountScreen";
 import { FloatingNav } from "@/components/FloatingNav";
 import { FretboardView } from "@/components/FretboardView";
 import { PersistentPlayer } from "@/components/PersistentPlayer";
 import { PracticeView } from "@/components/practice/PracticeView";
 import { ShowroomView } from "@/components/showroom/ShowroomView";
 import { AudioDevicesProvider } from "@/hooks/AudioDevicesContext";
-import { AuthProvider } from "@/hooks/AuthContext";
+import { AuthProvider, useAuth } from "@/hooks/AuthContext";
 import { MediaPlayerProvider } from "@/hooks/MediaPlayerContext";
 import { MetronomeProvider } from "@/hooks/MetronomeContext";
 import { NotePlaybackProvider } from "@/hooks/NotePlaybackContext";
@@ -40,7 +41,13 @@ export default function App() {
 }
 
 function AppShell() {
-	const { view } = useView();
+	const { view, setAccountOpen } = useView();
+	const { error } = useAuth();
+
+	// A failed Google round-trip lands back here; show why on the account screen.
+	useEffect(() => {
+		if (error) setAccountOpen(true);
+	}, [error, setAccountOpen]);
 
 	return (
 		<div className="flex h-screen flex-col bg-background text-foreground">
@@ -50,11 +57,11 @@ function AppShell() {
 					{view === "fretboard" && <FretboardView />}
 					{view === "showroom" && <ShowroomView />}
 					{view === "practice" && <PracticeView />}
-					{view === "account" && <AccountView />}
 				</main>
 				<FloatingNav />
 				<PersistentPlayer />
 			</div>
+			<AccountScreen />
 		</div>
 	);
 }

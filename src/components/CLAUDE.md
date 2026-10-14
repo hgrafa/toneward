@@ -32,15 +32,16 @@ and Áudio popovers live in the header (global), not in the Braço toolbar.
 - `Editor` → `useInput`; `Toolbar` → `useDisplay`; `TuningControls` → `useInstrument`.
 
 ### App shell — AppHeader / FloatingNav / LanguageToggle
-- `AppHeader`: fixed top bar — `BrandMark` squircle logo + wordmark + current section name; right side composes `LanguageToggle` + the global `MetronomePanel`/`AudioControlPanel` popovers + `account/AccountButton`. The section name maps the current `useView()` view to `ui.sidebar.{fretboard,showroom,practice}` (or `ui.account.section`).
+- `AppHeader`: fixed top bar — `BrandMark` squircle logo + wordmark + current section name; right side composes `LanguageToggle` + the global `MetronomePanel`/`AudioControlPanel` popovers + `account/AccountButton`. The section name maps the current `useView()` view to `ui.sidebar.{fretboard,showroom,practice}`.
 - `BrandMark`: the gradient "T" squircle. Reuse it; don't re-inline the gradient.
 - `FloatingNav`: floating left capsule, hover-expand; the 3 view buttons drive `useView`; the active item uses the `bg-brand-gradient` utility.
 - `LanguageToggle`: the flag `Select`, extracted so it can live in the header.
 - Accent discipline: the brand gradient appears only on the logo mark + active nav; header pills are stone-neutral and invert to dark ink when open.
 
-### Accounts — account/AccountView / AccountButton / UserAvatar
+### Accounts — account/AccountScreen / AccountButton / UserAvatar / backdrops
 - Sign-in is **optional**: every feature works signed out. Google OAuth only (Supabase Auth); "Create account" and "Sign in" are the same Google redirect with different copy.
-- `AccountView` is the `account` view (not in `FloatingNav`; opened from the header). Signed out: Sign in / Create account toggle + "Continue with Google". Signed in: avatar, name, email, sign out.
+- `AccountScreen` is a full-screen Radix `Dialog` (open state: `useView().accountOpen`) layered OVER the shell, not a view — the current view and `PersistentPlayer` stay mounted and keep playing underneath. Header/nav/player are covered so the screen stays focused. Signed out: Sign in / Create account toggle + "Continue with Google". Signed in: avatar, name, email, sign out. `App.tsx` opens it when an OAuth redirect comes back with an error.
+- `backdrops/`: the decorative background behind the card — `WavesBackdrop` (layered brand-gradient sine waves) plus `NotationLayer` (faint drifting clefs/notes). CSS transform animations only, `aria-hidden`, static under `prefers-reduced-motion`, paused when the tab is hidden or via the screen's pause button (`paused` prop, WCAG 2.2.2).
 - `AccountButton` renders nothing when Supabase isn't configured (`useAuth().configured`), so builds without the env vars show no account UI.
 - Reads `useAuth` (`@/hooks/AuthContext`); never import `@/lib/supabase` from a component.
 

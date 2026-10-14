@@ -5,27 +5,24 @@ import { useView } from "@/hooks/ViewContext";
 import { UserAvatar } from "./UserAvatar";
 
 const PILL =
-	"flex h-9 items-center gap-2 rounded-lg border border-border bg-card font-semibold text-secondary-foreground text-sm transition-colors hover:bg-muted data-[active=true]:border-transparent data-[active=true]:bg-foreground data-[active=true]:text-background";
+	"flex h-9 items-center gap-2 rounded-lg border border-border bg-card font-semibold text-secondary-foreground text-sm transition-colors hover:bg-muted";
 
 export function AccountButton() {
 	const { t } = useTranslation();
 	const { configured, loading, user } = useAuth();
-	const { view, setView } = useView();
+	const { setAccountOpen } = useView();
 
 	if (!configured) return null;
 	if (loading) {
 		return <div aria-hidden="true" className="size-9 rounded-lg bg-muted" />;
 	}
 
-	const active = view === "account";
-
 	if (user) {
 		return (
 			<button
 				type="button"
 				aria-label={t("ui.account.section")}
-				data-active={active}
-				onClick={() => setView("account")}
+				onClick={() => setAccountOpen(true)}
 				className={`${PILL} w-9 justify-center`}
 			>
 				<UserAvatar user={user} className="size-6" />
@@ -37,8 +34,7 @@ export function AccountButton() {
 		<button
 			type="button"
 			aria-label={t("ui.account.signIn")}
-			data-active={active}
-			onClick={() => setView("account")}
+			onClick={() => setAccountOpen(true)}
 			className={`${PILL} px-3`}
 		>
 			<LogIn className="size-4 shrink-0" />

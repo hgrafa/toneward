@@ -14,7 +14,7 @@ updates do not re-render them.
 
 ## Other app-level contexts (NOT part of the FretboardProvider split)
 These live here too but are separate concerns, composed directly in `App.tsx`:
-- `ViewContext.tsx` - `useView`: the active tab (`view`/`setView`), persisted to localStorage (`fretboard.view`).
+- `ViewContext.tsx` - `useView`: the active tab (`view`/`setView`), persisted to localStorage (`fretboard.view`), plus `accountOpen`/`setAccountOpen` for the full-screen account overlay (not persisted).
 - `MediaPlayerContext.tsx` - `useMediaPlayerCtx`: the persistent player's `source`, `setSource` (revokes a prior mp3 blob), the `<audio>`/YouTube refs, and the `useMediaPlayer` controller. Mounted ONCE at the shell so playback survives tab changes. Link (YouTube) sources persist to localStorage (`tw-player-source`); uploaded files cannot (their blob URL dies on reload).
 - `ShowroomContext.tsx` - `useShowroom`: the Showroom PDF document only (audio moved out to `MediaPlayerContext`).
 - `MetronomeContext.tsx` / `AudioDevicesContext.tsx` - the metronome engine + shared audio-output-device discovery (used by the header Metronome/Audio popovers).

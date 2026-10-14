@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountButton } from "@/components/account/AccountButton";
-import { AccountView } from "@/components/account/AccountView";
+import { AccountScreen } from "@/components/account/AccountScreen";
 import { AuthProvider } from "@/hooks/AuthContext";
 import { ViewProvider } from "@/hooks/ViewContext";
 
@@ -26,24 +26,30 @@ vi.mock("@/lib/supabase", () => ({
 	},
 }));
 
+vi.mock("@/components/account/backdrops/WavesBackdrop", () => ({
+	WavesBackdrop: () => null,
+}));
+
 const USER = {
 	id: "user-1",
 	email: "hugo@example.com",
 	user_metadata: { full_name: "Hugo Rafael" },
 };
 
-function renderAccount() {
-	return render(
+async function openAccount(trigger: "Sign in" | "Account" = "Sign in") {
+	render(
 		<AuthProvider>
 			<ViewProvider>
 				<AccountButton />
-				<AccountView />
+				<AccountScreen />
 			</ViewProvider>
 		</AuthProvider>,
 	);
+	fireEvent.click(await screen.findByRole("button", { name: trigger }));
+	return screen.getByRole("dialog");
 }
 
-describe("AccountView", () => {
+describe("AccountScreen", () => {
 	beforeEach(() => {
 		localStorage.clear();
 		auth.session = null;
@@ -51,9 +57,9 @@ describe("AccountView", () => {
 		auth.signOut.mockReset().mockResolvedValue({ error: null });
 	});
 
-	it("switches between the sign-in and create-account screens", async () => {
-		renderAccount();
-		expect(await screen.findByText("Welcome back")).toBeInTheDocument();
+	it("opens full-screen from the header and switches to create account", async () => {
+		await openAccount();
+		expect(screen.getByText("Welcome back")).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole("button", { name: "Create account" }));
 		expect(screen.getByText("Create your account")).toBeInTheDocument();
@@ -63,9 +69,9 @@ describe("AccountView", () => {
 	});
 
 	it("starts the Google OAuth redirect", async () => {
-		renderAccount();
+		await openAccount();
 		fireEvent.click(
-			await screen.findByRole("button", { name: "Continue with Google" }),
+			screen.getByRole("button", { name: "Continue with Google" }),
 		);
 		expect(auth.signInWithOAuth).toHaveBeenCalledWith(
 			expect.objectContaining({ provider: "google" }),
@@ -79,9 +85,9 @@ describe("AccountView", () => {
 		auth.signInWithOAuth.mockResolvedValue({
 			error: { message: "Unsupported provider: provider is not enabled" },
 		});
-		renderAccount();
+		await openAccount();
 		fireEvent.click(
-			await screen.findByRole("button", { name: "Continue with Google" }),
+			screen.getByRole("button", { name: "Continue with Google" }),
 		);
 		const alert = await screen.findByRole("alert");
 		expect(alert).toHaveTextContent(
@@ -90,28 +96,21 @@ describe("AccountView", () => {
 		expect(alert).toHaveTextContent("provider is not enabled");
 	});
 
+	it("closes when continuing without an account", async () => {
+		await openAccount();
+		fireEvent.click(
+			screen.getByRole("button", { name: "Continue without an account" }),
+		);
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
+
 	it("shows the signed-in profile and signs out", async () => {
 		auth.session = { user: USER };
-		renderAccount();
-		expect(await screen.findByText("Hugo Rafael")).toBeInTheDocument();
+		await openAccount("Account");
+		expect(screen.getByText("Hugo Rafael")).toBeInTheDocument();
 		expect(screen.getByText("hugo@example.com")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Account" })).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
 		expect(auth.signOut).toHaveBeenCalled();
-	});
-
-	it("offers a header sign-in button while signed out", async () => {
-		render(
-			<AuthProvider>
-				<ViewProvider>
-					<AccountButton />
-				</ViewProvider>
-			</AuthProvider>,
-		);
-		const button = await screen.findByRole("button", { name: "Sign in" });
-		expect(button).toHaveAttribute("data-active", "false");
-		fireEvent.click(button);
-		expect(button).toHaveAttribute("data-active", "true");
 	});
 });

@@ -16,7 +16,6 @@ export function AppHeader() {
 		fretboard: t("ui.sidebar.fretboard"),
 		showroom: t("ui.sidebar.showroom"),
 		practice: t("ui.sidebar.practice"),
-		account: t("ui.account.section"),
 	};
 
 	return (
