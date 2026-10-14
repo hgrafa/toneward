@@ -28,7 +28,6 @@ const ptBR: TranslationSchema = {
 			passwordHint: "Pelo menos 8 caracteres",
 			forgotPassword: "Esqueceu a senha?",
 			orEmail: "ou use seu e-mail",
-			googleHint: "Recomendado: um clique, sem senha nova para lembrar.",
 			continueWithGoogle: "Continuar com Google",
 			redirecting: "Indo para o Google…",
 			resetTitle: "Redefinir sua senha",

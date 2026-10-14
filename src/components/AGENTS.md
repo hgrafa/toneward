@@ -42,6 +42,7 @@ and Audio popovers live in the header (global), not in the Braco toolbar.
 - `backdrops/`: the decorative background behind the card - `WavesBackdrop` (layered brand-gradient sine waves) plus `NotationLayer` (faint drifting clefs/notes). CSS transform animations only, `aria-hidden`, static under `prefers-reduced-motion`, paused when the tab is hidden or via the screen's pause button (`paused` prop, WCAG 2.2.2).
 - `AccountButton` renders nothing when Supabase is not configured (`useAuth().configured`), so builds without the env vars show no account UI.
 - Reads `useAuth` (`@/hooks/AuthContext`); never import `@/lib/supabase` from a component.
+- `GoogleMark`: the official multicolor Google "G" (inline SVG). The one exception to the lucide/phosphor-only icon rule - Google's sign-in branding guidelines require this mark, not an icon-set glyph.
 
 ### Persistent player - PersistentPlayer / PlayerLoader / SpeedControl / VolumeControl / PlayerSlider
 - `PersistentPlayer` is mounted ONCE in `App.tsx`'s shell body and never unmounts on tab change, so the hidden `<audio>` + YouTube container keep playing across tabs. Reads `useMediaPlayerCtx` (`@/hooks/MediaPlayerContext`). Mini pill <-> expanded card; auto-minimizes on mouse-leave UNLESS pinned or a control popover is open (`speedOpen`/`volumeOpen` guard - the popover panel is portaled outside the player). "Switch/Trocar" re-opens the loader to swap the track.

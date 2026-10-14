@@ -26,7 +26,6 @@ const en = {
 			passwordHint: "At least 8 characters",
 			forgotPassword: "Forgot password?",
 			orEmail: "or use your email",
-			googleHint: "Recommended: one click, no new password to remember.",
 			continueWithGoogle: "Continue with Google",
 			redirecting: "Redirecting to Google…",
 			resetTitle: "Reset your password",

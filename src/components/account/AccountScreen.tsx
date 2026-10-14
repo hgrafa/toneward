@@ -1,4 +1,3 @@
-import { GoogleLogo } from "@phosphor-icons/react";
 import { Loader2, LogOut, Mail, Pause, Play, X } from "lucide-react";
 import {
 	type ComponentProps,
@@ -22,6 +21,7 @@ import { type AuthFailure, useAuth } from "@/hooks/AuthContext";
 import { useView } from "@/hooks/ViewContext";
 import { NotationLayer } from "./backdrops/NotationLayer";
 import { WavesBackdrop } from "./backdrops/WavesBackdrop";
+import { GoogleMark } from "./GoogleMark";
 import { displayName, UserAvatar } from "./UserAvatar";
 
 type Mode = "signIn" | "register" | "reset";
@@ -286,28 +286,23 @@ function SignedOut() {
 
 			{mode !== "reset" && (
 				<>
-					<div className="flex flex-col gap-2">
-						<button
-							type="button"
-							onClick={handleGoogle}
-							disabled={redirecting}
-							className={PRIMARY}
-						>
-							{redirecting ? (
-								<Loader2 className="size-5 animate-spin" />
-							) : (
-								<GoogleLogo weight="bold" className="size-5" />
-							)}
-							{t(
-								redirecting
-									? "ui.account.redirecting"
-									: "ui.account.continueWithGoogle",
-							)}
-						</button>
-						<p className="text-center text-muted-foreground text-xs">
-							{t("ui.account.googleHint")}
-						</p>
-					</div>
+					<button
+						type="button"
+						onClick={handleGoogle}
+						disabled={redirecting}
+						className={PRIMARY}
+					>
+						{redirecting ? (
+							<Loader2 className="size-5 animate-spin" />
+						) : (
+							<GoogleMark className="size-5" />
+						)}
+						{t(
+							redirecting
+								? "ui.account.redirecting"
+								: "ui.account.continueWithGoogle",
+						)}
+					</button>
 					<div className="flex items-center gap-3 text-muted-foreground text-xs uppercase tracking-wider">
 						<span className="h-px flex-1 bg-border" />
 						{t("ui.account.orEmail")}
@@ -472,7 +467,7 @@ function SignedIn() {
 				)}
 				<p className="mt-1 inline-flex items-center justify-center gap-1.5 text-muted-foreground text-sm">
 					{viaGoogle ? (
-						<GoogleLogo weight="bold" className="size-4" />
+						<GoogleMark className="size-4" />
 					) : (
 						<Mail className="size-4" />
 					)}
